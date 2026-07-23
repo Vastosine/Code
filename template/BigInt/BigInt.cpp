@@ -12,9 +12,13 @@ class BigInt {
     typedef unsigned long long size_t;
     typedef std::string string;
     BigInt() = default;
-    template<typename T> BigInt(T x) { set(x); }
-    template<typename T> BigInt operator=(T x) { return set(x), *this; }
+    template<typename T> BigInt(const T &x) { set(x); }
+    template<typename T> BigInt operator=(const T &x) { return set(x), *this; }
+    void clear() { a.clear(), sig = false; }
+    size_t operator[](int i) const { return a[i]; }
+    size_t &operator[](int i) { return a[i]; }
     
+    // Set BigInt with Other Types
     template<typename T>
     void set(T x) {
         clear();
@@ -37,17 +41,13 @@ class BigInt {
 
     void set(const char *s) { set((string)s); }
 
-    void clear() {
-        a.clear();
-        sig = false;
-    }
-
     BigInt operator-() const {
         BigInt ans = *this;
-        ans.sig ^= true;
+        ans.sig ^= (bool)*this;
         return ans;
     }
 
+    // Transfer to Other Types
     template<typename T>
     operator T() const {
         T ans = 0;
@@ -56,6 +56,8 @@ class BigInt {
         }
         return sig ? -ans : ans;
     }
+
+    operator bool() const { return !a.empty(); }
 
     operator string() const {
         if (!*this) return "0";
@@ -71,6 +73,7 @@ class BigInt {
         return ans;
     }
 
+    // Input And Output
     friend std::istream &operator>>(std::istream &in, BigInt &bigInt) {
         string s;
         in >> s;
@@ -82,7 +85,47 @@ class BigInt {
         return out << (string)bigInt;
     }
 
-    operator bool() const { return !a.empty(); }
+    // BigInt Compare BigInt
+    bool operator==(const BigInt &bigInt) const {
+        return (a.empty() && bigInt.a.empty()) || 
+            (a == bigInt.a && sig == bigInt.sig);
+    }
+
+    bool operator<(const BigInt &bigInt) const {
+        if (!*this && !bigInt) return false;
+        if (!*this) return !bigInt.sig;
+        if (!bigInt) return sig;
+        if (sig != bigInt.sig) return bigInt.sig < sig;
+        if (a.size() != bigInt.a.size()) return sig ^ (a.size() < bigInt.a.size());
+        for (size_t i = a.size() - 1; i + 1; i--) {
+            if (a[i] != bigInt[i]) {
+                return sig ^ (a[i] < bigInt[i]);
+            }
+        }
+        return false;
+    }
+
+    bool operator!=(const BigInt &bigInt) const { return !(*this == bigInt); }
+    bool operator> (const BigInt &bigInt) const { return bigInt < *this; }
+    bool operator<=(const BigInt &bigInt) const { return !(bigInt < *this); }
+    bool operator>=(const BigInt &bigInt) const { return !(*this < bigInt); }
+
+    // BigInt Compare Other Types
+    template<typename T> bool operator==(const T &x) const { return *this == (BigInt)x; }
+    template<typename T> bool operator< (const T &x) const { return *this <  (BigInt)x; }
+    template<typename T> bool operator!=(const T &x) const { return *this != (BigInt)x; }
+    template<typename T> bool operator> (const T &x) const { return *this >  (BigInt)x; }
+    template<typename T> bool operator<=(const T &x) const { return *this <= (BigInt)x; }
+    template<typename T> bool operator>=(const T &x) const { return *this >= (BigInt)x; }
+
+    // Other Types Compare BigInt
+    template<typename T> friend bool operator==(const T &x, const BigInt &bigInt) { return (BigInt)x == bigInt; }
+    template<typename T> friend bool operator< (const T &x, const BigInt &bigInt) { return (BigInt)x <  bigInt; }
+    template<typename T> friend bool operator!=(const T &x, const BigInt &bigInt) { return (BigInt)x != bigInt; }
+    template<typename T> friend bool operator> (const T &x, const BigInt &bigInt) { return (BigInt)x >  bigInt; }
+    template<typename T> friend bool operator<=(const T &x, const BigInt &bigInt) { return (BigInt)x <= bigInt; }
+    template<typename T> friend bool operator>=(const T &x, const BigInt &bigInt) { return (BigInt)x >= bigInt; }
+    
 
   private:
 
@@ -102,9 +145,7 @@ using std::cout;
 using std::cin;
 
 int main() {
-    BigInt a, b, c;
-    cin >> a;
-    b = c = 12435235;
-    cout << a << " " << b << " " << c;
-    std::string s;
+    BigInt a, b;
+    cin >> a >> b;
+    cout << (a < b);
 }
