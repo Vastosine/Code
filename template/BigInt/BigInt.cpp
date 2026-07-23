@@ -4,22 +4,19 @@
 #include <vector>
 #include <string>
 
-using std::vector;
-using std::string;
-using std::to_string;
 
 class BigInt {
   public:
     typedef unsigned long long size_t;
     
     template<typename T> BigInt(T x) { set(x); }
-    BigInt(const string &s) { set(s); }
+    BigInt(const std::string &s) { set(s); }
     
     template<typename T> BigInt operator=(T x) { 
         set(x); 
         return *this;
     }
-    BigInt operator=(const string &s) { 
+    BigInt operator=(const std::string &s) { 
         set(s); 
         return *this;
     }
@@ -31,7 +28,7 @@ class BigInt {
         while (x) a.push_back(x % MOD), x /= MOD;
     }
 
-    void set(const string &s) {
+    void set(const std::string &s) {
         clear();
         if (s[0] == '-') sig = true;
         for (size_t i = s.length() - 1, j = 0; i >= 0 && s[i] != '-'; i--, j++) {
@@ -60,28 +57,33 @@ class BigInt {
         return sig ? -ans : ans;
     }
 
-    operator string() const {
-        string ans;
+    operator std::string() const {
+        std::string ans;
         if (sig) ans = "-";
-        for (size_t i = a.size() - 1; i >= 0; i--) {
-            string s = to_string(i);
+        for (size_t i = a.size() - 1; i + 1; i--) {
+            std::string s = std::to_string(a[i]);
             if (i + 1 < a.size()) {
-                ans += string(BASE - s.length(), '0');
+                ans += std::string(BASE - s.length(), '0');
             }
             ans += s;
         }
         return ans;
     }
 
+    
+
   private:
 
-    vector<size_t> a;
+    std::vector<size_t> a;
     bool sig;
     static const size_t BASE = 8;
     static const size_t MOD = 1e8;
 };
 
 #endif
+
+
+
 
 #include <iostream>
 using std::cout;
@@ -91,5 +93,5 @@ int main() {
     // a = 1;
 
 
-    cout << (string)a;
+    cout << (std::string)a;
 }
