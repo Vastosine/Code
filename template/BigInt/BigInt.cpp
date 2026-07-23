@@ -1,6 +1,9 @@
 #ifndef __BIG_INT__
 #define __BIG_INT__
 
+#include <cstddef>
+#include <istream>
+#include <ostream>
 #include <vector>
 #include <string>
 
@@ -8,15 +11,16 @@
 class BigInt {
   public:
     typedef unsigned long long size_t;
+    typedef std::string string;
     
-    template<typename T> BigInt(T x) { set(x); }
-    BigInt(const std::string &s) { set(s); }
+    template<typename T = size_t> BigInt(T x = 0) { set(x); }
+    BigInt(const string &s) { set(s); }
     
     template<typename T> BigInt operator=(T x) { 
         set(x); 
         return *this;
     }
-    BigInt operator=(const std::string &s) { 
+    BigInt operator=(const string &s) { 
         set(s); 
         return *this;
     }
@@ -28,13 +32,17 @@ class BigInt {
         while (x) a.push_back(x % MOD), x /= MOD;
     }
 
-    void set(const std::string &s) {
+    void set(const string &s) {
         clear();
         if (s[0] == '-') sig = true;
-        for (size_t i = s.length() - 1, j = 0; i >= 0 && s[i] != '-'; i--, j++) {
-            if (!(j % BASE)) a.push_back(s[i] - '0');
-            else (*(a.end() - 1) *= MOD) += s[i] - '0';
+        size_t n = s.length() - sig;
+        a.assign((n - 1) / BASE + 1, 0);
+        for (size_t i = (n - 1) / BASE, j = sig; i + 1; i--) {
+            do {
+                (a[i] *= 10) += s[j++] - '0';
+            } while ((n - j) % BASE);
         }
+        while (!a.back()) a.pop_back();
     }
 
     void clear() {
@@ -57,20 +65,29 @@ class BigInt {
         return sig ? -ans : ans;
     }
 
-    operator std::string() const {
-        std::string ans;
+    operator string() const {
+        string ans;
         if (sig) ans = "-";
         for (size_t i = a.size() - 1; i + 1; i--) {
-            std::string s = std::to_string(a[i]);
+            string s = std::to_string(a[i]);
             if (i + 1 < a.size()) {
-                ans += std::string(BASE - s.length(), '0');
+                ans += string(BASE - s.length(), '0');
             }
             ans += s;
         }
         return ans;
     }
 
-    
+    friend std::istream &operator>>(std::istream &in, BigInt &bigInt) {
+        string s;
+        in >> s;
+        bigInt = s;
+        return in;
+    }
+
+    friend std::ostream &operator<<(std::ostream &out, const BigInt &bigInt) {
+        return out << (string)bigInt;
+    }
 
   private:
 
@@ -87,11 +104,10 @@ class BigInt {
 
 #include <iostream>
 using std::cout;
+using std::cin;
 
 int main() {
-    BigInt a = 123456789123;
-    // a = 1;
-
-
-    cout << (std::string)a;
+    BigInt a;
+    cin >> a;
+    cout << a;
 }
