@@ -1,7 +1,6 @@
 #ifndef __BIG_INT__
 #define __BIG_INT__
 
-#include <cstddef>
 #include <istream>
 #include <ostream>
 #include <vector>
@@ -12,18 +11,9 @@ class BigInt {
   public:
     typedef unsigned long long size_t;
     typedef std::string string;
-    
-    template<typename T = size_t> BigInt(T x = 0) { set(x); }
-    BigInt(const string &s) { set(s); }
-    
-    template<typename T> BigInt operator=(T x) { 
-        set(x); 
-        return *this;
-    }
-    BigInt operator=(const string &s) { 
-        set(s); 
-        return *this;
-    }
+    BigInt() = default;
+    template<typename T> BigInt(T x) { set(x); }
+    template<typename T> BigInt operator=(T x) { return set(x), *this; }
     
     template<typename T>
     void set(T x) {
@@ -40,10 +30,12 @@ class BigInt {
         for (size_t i = (n - 1) / BASE, j = sig; i + 1; i--) {
             do {
                 (a[i] *= 10) += s[j++] - '0';
-            } while ((n - j) % BASE);
+            } while ((n + sig - j) % BASE);
         }
         while (!a.back()) a.pop_back();
     }
+
+    void set(const char *s) { set((string)s); }
 
     void clear() {
         a.clear();
@@ -66,6 +58,7 @@ class BigInt {
     }
 
     operator string() const {
+        if (!*this) return "0";
         string ans;
         if (sig) ans = "-";
         for (size_t i = a.size() - 1; i + 1; i--) {
@@ -89,6 +82,8 @@ class BigInt {
         return out << (string)bigInt;
     }
 
+    operator bool() const { return !a.empty(); }
+
   private:
 
     std::vector<size_t> a;
@@ -107,7 +102,9 @@ using std::cout;
 using std::cin;
 
 int main() {
-    BigInt a;
+    BigInt a, b, c;
     cin >> a;
-    cout << a;
+    b = c = 12435235;
+    cout << a << " " << b << " " << c;
+    std::string s;
 }
