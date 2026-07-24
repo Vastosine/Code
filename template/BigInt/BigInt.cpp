@@ -17,6 +17,7 @@ class BigInt {
     void clear() { a.clear(), sig = false; }
     size_t operator[](int i) const { return a[i]; }
     size_t &operator[](int i) { return a[i]; }
+    signed sign() const { return *this ? sig ? -1 : 1 : 0; }
     
     // Set BigInt with Other Types
     template<typename T>
@@ -48,13 +49,19 @@ class BigInt {
     }
 
     // Transfer to Other Types
-    template<typename T>
-    operator T() const {
-        T ans = 0;
+    // template<typename T>
+    operator long long() const {
+        long long ans = (size_t)*this;
+        if (sig) ans = -ans;
+        return ans;
+    }
+
+    operator size_t() const {
+        size_t ans = 0;
         for (size_t i : a) {
             (ans *= MOD) += i;
         }
-        return sig ? -ans : ans;
+        return ans;
     }
 
     operator bool() const { return !a.empty(); }
@@ -88,14 +95,11 @@ class BigInt {
     // BigInt Compare BigInt
     bool operator==(const BigInt &bigInt) const {
         return (a.empty() && bigInt.a.empty()) || 
-            (a == bigInt.a && sig == bigInt.sig);
+            (a == bigInt.a && sign() == bigInt.sign());
     }
 
     bool operator<(const BigInt &bigInt) const {
-        if (!*this && !bigInt) return false;
-        if (!*this) return !bigInt.sig;
-        if (!bigInt) return sig;
-        if (sig != bigInt.sig) return bigInt.sig < sig;
+        if (sign() != bigInt.sign()) return sign() < bigInt.sign();
         if (a.size() != bigInt.a.size()) return sig ^ (a.size() < bigInt.a.size());
         for (size_t i = a.size() - 1; i + 1; i--) {
             if (a[i] != bigInt[i]) {
@@ -126,6 +130,42 @@ class BigInt {
     template<typename T> friend bool operator<=(const T &x, const BigInt &bigInt) { return (BigInt)x <= bigInt; }
     template<typename T> friend bool operator>=(const T &x, const BigInt &bigInt) { return (BigInt)x >= bigInt; }
     
+    // operator
+    BigInt operator+(const BigInt bigInt) const {
+        if (sign() != bigInt.sign()) {
+            if (!bigInt) return *this;
+            if (!*this) return bigInt;
+            return *this - (-bigInt);
+        }
+        BigInt ans;
+        ans.sig = sig;
+        size_t n = a.size(), m = bigInt.a.size(), add = 0;
+        for (int i = 0; i < n && i < m; i++) {
+            if (i < n) add += a[i];
+            if (i < m) add += bigInt[i];
+            ans.a.push_back(add % MOD);
+            add = add / MOD;
+        }
+        return ans;
+    }
+
+    BigInt operator-(const BigInt bigInt) const { 
+        if (sign() != bigInt.sign()) {
+            if (!bigInt) return *this;
+            if (!*this) return -bigInt;
+            return *this + (-bigInt);
+        }
+        if ((*this < bigInt) ^ sig) return -(bigInt - *this);
+        BigInt ans = *this;
+        int n = a.size(), m = bigInt.a.size();
+        for (int i = 0; i < n; i++) {
+            if (i < m) ans[i] -= bigInt[i];
+            if (ans[i] + MOD < MOD) ans[i] += MOD, ans[i + 1]--;
+            else if (i >= m) break;
+        }
+        while (!ans.a.back()) ans.a.pop_back();
+        return ans;
+    }
 
   private:
 
@@ -147,5 +187,5 @@ using std::cin;
 int main() {
     BigInt a, b;
     cin >> a >> b;
-    cout << (a < b);
+    cout << a - b;
 }
