@@ -6,7 +6,6 @@
 #include <vector>
 #include <string>
 
-
 class BigInt {
   public:
     typedef unsigned long long size_t;
@@ -15,8 +14,8 @@ class BigInt {
     template<typename T> BigInt(const T &x) { set(x); }
     template<typename T> BigInt operator=(const T &x) { return set(x), *this; }
     void clear() { a.clear(), sig = false; }
-    size_t operator[](int i) const { return a[i]; }
-    size_t &operator[](int i) { return a[i]; }
+    size_t operator[](size_t i) const { return a[i]; }
+    size_t &operator[](size_t i) { return a[i]; }
     signed sign() const { return *this ? sig ? -1 : 1 : 0; }
     
     // Set BigInt with Other Types
@@ -140,7 +139,7 @@ class BigInt {
         BigInt ans;
         ans.sig = sig;
         size_t n = a.size(), m = bigInt.a.size(), add = 0;
-        for (int i = 0; i < n && i < m; i++) {
+        for (size_t i = 0; i < n && i < m; i++) {
             if (i < n) add += a[i];
             if (i < m) add += bigInt[i];
             ans.a.push_back(add % MOD);
@@ -157,13 +156,34 @@ class BigInt {
         }
         if ((*this < bigInt) ^ sig) return -(bigInt - *this);
         BigInt ans = *this;
-        int n = a.size(), m = bigInt.a.size();
-        for (int i = 0; i < n; i++) {
+        size_t n = a.size(), m = bigInt.a.size();
+        for (size_t i = 0; i < n; i++) {
             if (i < m) ans[i] -= bigInt[i];
             if (ans[i] + MOD < MOD) ans[i] += MOD, ans[i + 1]--;
             else if (i >= m) break;
         }
         while (!ans.a.back()) ans.a.pop_back();
+        return ans;
+    }
+
+    BigInt operator*(const BigInt &bigInt) const {
+        if (!*this || !bigInt) return BigInt();
+        BigInt ans;
+        ans.sig = sig ^ bigInt.sig;
+        size_t add = 0, n = a.size(), m = bigInt.a.size();
+        for (size_t i = 0; ; i++) {
+            if (!add && i >= n + m - 1) break;
+            size_t ADD = add / MOD, j = 0;
+            add %= MOD;
+            if (i >= m) j = i - m + 1;
+            for (; j <= i && j < n; j++) {
+                add += a[j] * bigInt[i - j];
+                ADD += add / MOD;
+                add %= MOD; 
+            }
+            ans.a.push_back(add);
+            add = ADD;
+        }
         return ans;
     }
 
@@ -184,8 +204,8 @@ class BigInt {
 using std::cout;
 using std::cin;
 
-int main() {
+signed main() {
     BigInt a, b;
     cin >> a >> b;
-    cout << a - b;
+    cout << a * b;
 }

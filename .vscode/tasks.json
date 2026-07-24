@@ -14,7 +14,7 @@
                 "-Wall",
                 "-std=c++17",
                 "-ftemplate-depth=1000000",
-                "-O3"
+                // "-O3"
                 // "-I/media/yuxinhao/data/code/programs/CP-template",
                 // "-I${workspaceFolder}/programs/CP-template"
             ],
