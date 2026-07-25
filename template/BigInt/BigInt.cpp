@@ -1,6 +1,7 @@
 #ifndef __BIG_INT__
 #define __BIG_INT__
 
+#include <cmath>
 #include <cstddef>
 #include <exception>
 #include <istream>
@@ -39,7 +40,7 @@ class BigInt {
                 (a[i] *= 10) += s[j++] - '0';
             } while ((n + sig - j) % BASE);
         }
-        while (!a.back()) a.pop_back();
+        clear_zero();
     }
 
     void set(const char *s) { set((string)s); }
@@ -102,7 +103,7 @@ class BigInt {
 
     bool operator<(const BigInt &bigInt) const {
         if (sign() != bigInt.sign()) return sign() < bigInt.sign();
-        if (a.size() != bigInt.a.size()) return sig ^ (a.size() < bigInt.a.size());
+        if (a.size() != bigInt.size()) return sig ^ (a.size() < bigInt.size());
         for (size_t i = a.size() - 1; i + 1; i--) {
             if (a[i] != bigInt[i]) {
                 return sig ^ (a[i] < bigInt[i]);
@@ -141,7 +142,7 @@ class BigInt {
         }
         BigInt ans;
         ans.sig = sig;
-        size_t n = a.size(), m = bigInt.a.size(), add = 0;
+        size_t n = a.size(), m = bigInt.size(), add = 0;
         for (size_t i = 0; i < n && i < m; i++) {
             if (i < n) add += a[i];
             if (i < m) add += bigInt[i];
@@ -159,13 +160,13 @@ class BigInt {
         }
         if ((*this < bigInt) ^ sig) return -(bigInt - *this);
         BigInt ans = *this;
-        size_t n = a.size(), m = bigInt.a.size();
+        size_t n = a.size(), m = bigInt.size();
         for (size_t i = 0; i < n; i++) {
             if (i < m) ans[i] -= bigInt[i];
             if (ans[i] + MOD < MOD) ans[i] += MOD, ans[i + 1]--;
             else if (i >= m) break;
         }
-        while (!ans.a.back()) ans.a.pop_back();
+        ans.clear_zero();
         return ans;
     }
 
@@ -173,7 +174,7 @@ class BigInt {
         if (!*this || !bigInt) return BigInt();
         BigInt ans;
         ans.sig = sig ^ bigInt.sig;
-        size_t add = 0, n = a.size(), m = bigInt.a.size();
+        size_t add = 0, n = a.size(), m = bigInt.size();
         for (size_t i = 0; ; i++) {
             if (!add && i >= n + m - 1) break;
             size_t ADD = add / MOD, j = 0;
@@ -196,20 +197,31 @@ class BigInt {
         BigInt x = this->abs(), y = bigInt.abs(), ans;
         ans.sig = sig ^ bigInt.sig;
         if (x < y) return BigInt();
-        size_t n = a.size(), m = bigInt.a.size();
-        ans.a.assign(n - m + 1, 0);
-        for (size_t i = n - m; i + 1; i--) {
-            size_t l = 0, r = MOD;
-            while (l < r - 1) {
-                size_t mid = (l + r) >> 1;
-                BigInt z = (y * mid).switch_to(i);
-                if (z > x) r = mid;
-                else l = mid;
+        size_t t = DIVIDE_CUSTOM / y.back();
+        x *= t;
+        y *= t;
+        size_t e = x.size() - y.size(), top = y.back();
+        BigInt z = y.switch_to(e);
+        ans.a.assign(e + 1, 0);
+        while (true) {
+            while (x > y && x.size() > z.size()) {
+                x -= z * (MOD / (top + 1));
+                ans[e] += MOD / (top + 1);
             }
-            ans[i] = l;
-            x -= (y * l).switch_to(i);
+            if (x < y) break;
+            size_t add = 0;
+            while (x.size() == z.size() && (add = x.back() / (top + 1))) {
+                x -= z * add;
+                ans[e] += add;
+            }
+            while (x >= z) {
+                x -= z;
+                ans[e]++;
+            }
+            z = z.switch_to(-1);
+            e--;
         }
-        while (!ans.a.back()) ans.a.pop_back();
+        ans.clear_zero();
         return ans;
     }
 
@@ -257,9 +269,13 @@ class BigInt {
     bool sig;
     static const size_t BASE = 8;
     static const size_t MOD = 1e8;
+    static const size_t DIVIDE_CUSTOM = 3e8 - 1;
 
+    void clear_zero() { while (!a.empty() && !a.back()) a.pop_back(); }
+    size_t size() const { return a.size(); }
+    size_t &back() { return a.back(); }
+    size_t back() const { return a.back(); }
     BigInt(const std::vector<size_t> &a, bool sig = false) : a(a), sig(sig) {}
-    public:
     BigInt switch_to(long long x) const {
         if (!x) return *this;
         long long n = a.size();
