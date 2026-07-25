@@ -197,9 +197,12 @@ class BigInt {
         BigInt x = this->abs(), y = bigInt.abs(), ans;
         ans.sig = sig ^ bigInt.sig;
         if (x < y) return BigInt();
-        size_t t = DIVIDE_CUSTOM / y.back();
-        x *= t;
-        y *= t;
+        if (y.back() >= 10) {
+            size_t t = 10;
+            while (y.back() * t < MOD) t *= 10;
+            x *= t;
+            y *= t;
+        }
         size_t e = x.size() - y.size(), top = y.back();
         BigInt z = y.switch_to(e);
         ans.a.assign(e + 1, 0);
