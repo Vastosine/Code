@@ -253,11 +253,11 @@ template<> struct std::hash<BigInt> {
 #undef int
 #endif
 
-#include <iostream>
-signed main() {
-    using namespace std;
-    BigInt a, b;
-    cin >> a >> b;
-    // cout << a - BigInt(0) * b;
-    cout << a + b << endl << a - b << endl << a * b << endl << a / b << endl << a % b;
-}
+// #include <iostream>
+// signed main() {
+//     using namespace std;
+//     BigInt a, b;
+//     cin >> a >> b;
+//     // cout << a - BigInt(0) * b;
+//     cout << a + b << endl << a - b << endl << a * b << endl << a / b << endl << a % b;
+// }
