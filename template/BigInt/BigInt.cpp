@@ -1,13 +1,8 @@
 #ifndef __BIG_INT__
 #define __BIG_INT__
 
-#include <cmath>
-#include <cstddef>
-#include <exception>
-#include <istream>
-#include <ostream>
+#include <iostream>
 #include <vector>
-#include <string>
 
 class BigInt {
   public:
@@ -24,7 +19,8 @@ class BigInt {
     
     // Set BigInt with Other Types
     template<typename T>
-    void set(T x) {
+    void set(const T &X) {
+        T x = X;
         clear();
         if (x < 0) x = -x, sig = true;
         while (x) a.push_back(x % MOD), x /= MOD;
@@ -73,9 +69,9 @@ class BigInt {
         if (!*this) return "0";
         string ans;
         if (sig) ans = "-";
-        for (size_t i = a.size() - 1; i + 1; i--) {
+        for (size_t i = size() - 1; i + 1; i--) {
             string s = std::to_string(a[i]);
-            if (i + 1 < a.size()) {
+            if (i + 1 < size()) {
                 ans += string(BASE - s.length(), '0');
             }
             ans += s;
@@ -103,8 +99,8 @@ class BigInt {
 
     bool operator<(const BigInt &bigInt) const {
         if (sign() != bigInt.sign()) return sign() < bigInt.sign();
-        if (a.size() != bigInt.size()) return sig ^ (a.size() < bigInt.size());
-        for (size_t i = a.size() - 1; i + 1; i--) {
+        if (size() != bigInt.size()) return sig ^ (size() < bigInt.size());
+        for (size_t i = size() - 1; i + 1; i--) {
             if (a[i] != bigInt[i]) {
                 return sig ^ (a[i] < bigInt[i]);
             }
@@ -133,8 +129,8 @@ class BigInt {
     template<typename T> friend bool operator<=(const T &x, const BigInt &bigInt) { return (BigInt)x <= bigInt; }
     template<typename T> friend bool operator>=(const T &x, const BigInt &bigInt) { return (BigInt)x >= bigInt; }
     
-    // operator
-    BigInt operator+(const BigInt bigInt) const {
+    // operator (BigInt op BigInt)
+    BigInt operator+(const BigInt &bigInt) const {
         if (sign() != bigInt.sign()) {
             if (!bigInt) return *this;
             if (!*this) return bigInt;
@@ -142,8 +138,8 @@ class BigInt {
         }
         BigInt ans;
         ans.sig = sig;
-        size_t n = a.size(), m = bigInt.size(), add = 0;
-        for (size_t i = 0; i < n && i < m; i++) {
+        size_t n = size(), m = bigInt.size(), add = 0;
+        for (size_t i = 0; i < n || i < m; i++) {
             if (i < n) add += a[i];
             if (i < m) add += bigInt[i];
             ans.a.push_back(add % MOD);
@@ -152,7 +148,7 @@ class BigInt {
         return ans;
     }
 
-    BigInt operator-(const BigInt bigInt) const { 
+    BigInt operator-(const BigInt &bigInt) const { 
         if (sign() != bigInt.sign()) {
             if (!bigInt) return *this;
             if (!*this) return -bigInt;
@@ -160,7 +156,7 @@ class BigInt {
         }
         if ((*this < bigInt) ^ sig) return -(bigInt - *this);
         BigInt ans = *this;
-        size_t n = a.size(), m = bigInt.size();
+        size_t n = size(), m = bigInt.size();
         for (size_t i = 0; i < n; i++) {
             if (i < m) ans[i] -= bigInt[i];
             if (ans[i] + MOD < MOD) ans[i] += MOD, ans[i + 1]--;
@@ -174,7 +170,7 @@ class BigInt {
         if (!*this || !bigInt) return BigInt();
         BigInt ans;
         ans.sig = sig ^ bigInt.sig;
-        size_t add = 0, n = a.size(), m = bigInt.size();
+        size_t add = 0, n = size(), m = bigInt.size();
         for (size_t i = 0; ; i++) {
             if (!add && i >= n + m - 1) break;
             size_t ADD = add / MOD, j = 0;
@@ -228,30 +224,26 @@ class BigInt {
         return ans;
     }
 
-    template<typename T>
-    BigInt operator+(T x) const { return *this + (BigInt)x; }
+    BigInt operator%(const BigInt &bigInt) const {
+        return *this - *this / bigInt * bigInt; 
+    }
 
-    template<typename T>
-    friend BigInt operator+(T x, const BigInt bigInt) { return BigInt(x) + bigInt; }
+    // operator (BigInt op Other Types, Other Types op BigInt, BigInt op= Types)
+    template<typename T> BigInt operator+(const T &x) const { return *this + (BigInt)x; }
+    template<typename T> friend BigInt operator+(const T &x, const BigInt &bigInt) { return BigInt(x) + bigInt; }
+    template<typename T> BigInt &operator+=(const T &x) { return *this = *this + x; }
 
-    template<typename T>
-    BigInt &operator+=(T x) { return *this = *this + x; }
+    template<typename T> BigInt operator-(const T &x) const { return *this - (BigInt)x; }
+    template<typename T> friend BigInt operator-(const T &x, const BigInt &bigInt) { return BigInt(x) - bigInt; }
+    template<typename T> BigInt &operator-=(const T &x) { return *this = *this - x; }
 
-    template<typename T>
-    BigInt operator-(T x) const { return *this - (BigInt)x; }
-
-    template<typename T>
-    friend BigInt operator-(T x, const BigInt bigInt) { return BigInt(x) - bigInt; }
-
-    template<typename T>
-    BigInt &operator-=(T x) { return *this = *this - x; }
-
-    template<typename T>
-    BigInt operator*(T x) const {
+    template<typename T> 
+    BigInt operator*(const T &X) const {
+        T x = X;
         if (x > 1e9 || x < -1e9) return *this * (BigInt) x;
         BigInt ans;
         if (x < 0) ans.sig = true, x = -x;
-        size_t n = a.size(), add = 0;
+        size_t n = size(), add = 0;
         for (size_t i = 0; i < n || add; i++) {
             if (i < n) add += x * a[i];
             ans.a.push_back(add % MOD);
@@ -259,12 +251,34 @@ class BigInt {
         }
         return ans;
     }
+    template<typename T> friend BigInt operator*(const T &x, const BigInt &bigInt) { return bigInt * x; }
+    template<typename T> BigInt &operator*=(const T &x) { return *this = *this * x; }
 
     template<typename T>
-    friend BigInt operator*(T x, const BigInt bigInt) { return bigInt * x; }
+    BigInt operator/(const T &X) const {
+        if (!X) throw std::exception();
+        if (!*this) return BigInt();
+        if (X > 1e9 || X < -1e9) return *this / (BigInt)X;
+        size_t add = 0;
+        BigInt ans;
+        ans.sig = sig ^ (X < 0);
+        ans.a.assign(size(), 0);
+        T x = X;
+        if (x < 0) x = -x;
+        for (size_t i = size() - 1; i + 1; i--) {
+            (add *= MOD) += a[i];
+            ans[i] += add / x;
+            add %= x;
+        }
+        ans.clear_zero();
+        return ans;
+    }
+    template<typename T> friend BigInt operator/(const T &x, const BigInt &bigInt) { return (BigInt)x / bigInt; }
+    template<typename T> BigInt &operator/=(const T &x) { return *this = *this / x; }
 
-    template<typename T>
-    BigInt &operator*=(T x) { return *this = *this * x; }
+    template<typename T> BigInt operator%(const T &x) const { return *this - *this / x * x; }
+    template<typename T> friend BigInt operator%(const T &x, const BigInt &bigInt) { return new BigInt(x) % bigInt; }
+    template<typename T> BigInt &operator%=(const T &x) { return *this = *this % x; }
 
   private:
 
@@ -272,7 +286,6 @@ class BigInt {
     bool sig;
     static const size_t BASE = 8;
     static const size_t MOD = 1e8;
-    static const size_t DIVIDE_CUSTOM = 3e8 - 1;
 
     void clear_zero() { while (!a.empty() && !a.back()) a.pop_back(); }
     size_t size() const { return a.size(); }
@@ -281,7 +294,7 @@ class BigInt {
     BigInt(const std::vector<size_t> &a, bool sig = false) : a(a), sig(sig) {}
     BigInt switch_to(long long x) const {
         if (!x) return *this;
-        long long n = a.size();
+        long long n = size();
         if (x + n < 0) return BigInt();
         BigInt ans;
         ans.sig = sig;
@@ -301,9 +314,10 @@ class BigInt {
 #include <iostream>
 using std::cout;
 using std::cin;
+#define endl '\n'
 
 signed main() {
     BigInt a, b;
     cin >> a >> b;
-    cout << a / b;
+    cout << a + b << endl << a - b << endl << a * b << endl << a / b << endl << a % b << endl;;
 }
