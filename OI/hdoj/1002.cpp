@@ -1,3 +1,8 @@
+#include <iostream>
+
+using std::cin;
+using std::cout;
+
 #ifndef __BIG_INT__
 #define __BIG_INT__
 
@@ -308,18 +313,13 @@ class BigInt {
 
 #endif
 
-
-
-
-// #include <iostream>
-// using std::cout;
-// using std::cin;
-// #define endl '\n'
-
-// // signed main() {
-// //     int t;
-// //     cin >> t;
-// //     for (int i = 1; i <= t; i++) {
-// //         cou
-// //     }
-// // }
+int main() {
+    int t;
+    cin >> t;
+    for (int i = 1; i <= t; i++) {
+        cout << "Case " << i << ":\n";
+        BigInt a, b;
+        cin >> a >> b;
+        cout << a << " + " << b << " = " << a + b << "\n\n";
+    }
+}
