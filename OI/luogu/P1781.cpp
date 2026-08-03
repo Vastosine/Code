@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -7,7 +6,6 @@ using std::cin;
 using std::cout;
 using std::vector;
 using std::string;
-using std::sort;
 
 bool cmp(const string &x, const string &y) {
     return x.size() < y.size() || (x.size() == y.size() && x < y);
