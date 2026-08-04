@@ -1,33 +1,25 @@
 #include <iostream>
-using namespace std;
-#ifdef LOCAL
-const int maxn = 6;
-#else
-const int maxn = 2e5 + 5;
-#endif
-int n, x, a[maxn], b[maxn], sum;
-int px(int y, int z) {
-    return max(min(y, z), 0);
-}
+#include <vector>
 
-int main(int argc, char const *argv[]) {
-#ifdef LOCAL
-    LOCALfo
-#endif
-    cin >> n >> x;
-    for (int i = 0; i < n; i++) {
-        cin >> a[i];
-        if (i > 0)
-            b[i - 1] = a[i] + a[i - 1];
+using std::cin;
+using std::cout;
+using std::vector;
+
+int main() {
+    int n, m;
+    cin >> n >> m;
+    vector<int> a(n);
+    for (int &i : a) cin >> i;
+    long long ans = 0;
+    if (a[0] > m) {
+        ans += a[0] - m;
+        a[0] = m;
     }
-    for (int i = 1; i < n - 1; i++) {
-        int c = px(a[i], max(b[i], b[i - 1]) - x);
-        sum += c;
-        b[i] -= c;
-        b[i - 1] -= c;
+    for (int i = 1; i < n; i++) {
+        int x = a[i] + a[i - 1] - m;
+        if (x <= 0) continue;
+        a[i] -= x;
+        ans += x;
     }
-    sum += px(a[0], b[0] - x);
-    sum += px(a[n - 1], b[n - 2] - x);
-    cout << sum;
-    return 0;
+    cout << ans;
 }

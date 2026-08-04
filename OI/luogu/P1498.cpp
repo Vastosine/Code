@@ -29,6 +29,7 @@ int main() {
         copy(b, a, t, t * 2, t, t * 2);
         copy(b, a, 0, t, t, t * 2);
         a = b;
+        t *= 2;
     }
     for (const string &i : a) cout << i << "\n";
 }
