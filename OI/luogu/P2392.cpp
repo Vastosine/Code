@@ -1,31 +1,31 @@
-#include <algorithm>
-#include <cmath>
-#include <cstdio>
-using namespace std;
-int tx(int *a, int n) {
-    int b1 = 0, b2 = 0, c, d, e;
-    if (n == 1) {
-        return a[0];
-    }
-    if (n == 2) {
-        return max(a[0], a[1]);
-    }
-    sort(a, a + n);
-    for (c = n - 1; c >= 0; c--) {
-        (b1 <= b2 ? b1 : b2) += a[c];
-    }
-    return max(b1, b2);
+#include <iostream>
+#include <vector>
+
+using std::cin;
+using std::cout;
+using std::vector;
+using std::istream;
+using std::max;
+
+template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i : x) cin >> i; return in; }
+
+int dfs(vector<int> &a, int mid, int x = 0, int sum = 0) {
+    if (x == a.size()) return sum;
+    int ans = dfs(a, mid, x + 1, sum);
+    if (sum + a[x] <= mid) ans = max(ans, dfs(a, mid, x + 1, sum + a[x]));
+    return ans;
 }
-int a[100], b, c, d, e, n[4];
+
 int main() {
-    for (c = 0; c < 4; c++) {
-        scanf("%d", &n[c]);
+    int ans = 0;
+    vector<int> ns(4);
+    cin >> ns;
+    for (int n : ns) {
+        vector<int> a(n);
+        cin >> a;
+        int sum = 0;
+        for (int i : a) sum += i;
+        ans += sum - dfs(a, sum / 2);
     }
-    for (c = 0; c < 4; c++) {
-        for (d = 0; d < n[c]; d++) {
-            scanf("%d", &a[d]);
-        }
-        e += tx(a, n[c]);
-    }
-    printf("%d", e);
+    cout << ans;
 }

@@ -1,8 +1,10 @@
-#ifndef __BIG_INT__
-#define __BIG_INT__
-
 #include <iostream>
 #include <vector>
+
+using std::cin;
+using std::cout;
+using std::vector;
+
 
 class BigInt {
   public:
@@ -306,20 +308,13 @@ class BigInt {
     }
 };
 
-#endif
-
-
-
-
-// #include <iostream>
-// using std::cout;
-// using std::cin;
-// #define endl '\n'
-
-// // signed main() {
-// //     int t;
-// //     cin >> t;
-// //     for (int i = 1; i <= t; i++) {
-// //         cou
-// //     }
-// // }
+int main() {
+    int n;
+    cin >> n;
+    vector<BigInt> f(n + 1);
+    f[1] = f[0] = 1;
+    for (int i = 2; i <= n; i++) {
+        f[i] = f[i - 1] + f[i - 2];
+    }
+    cout << f[n];
+}
