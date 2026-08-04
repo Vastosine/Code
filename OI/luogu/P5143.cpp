@@ -9,7 +9,7 @@ using std::cout;
 using std::vector;
 using std::istream;
 
-template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i : x) cin >> i; return in; }
+template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
 
 double f(double x, double y, double z) {
     return sqrt(x * x + y * y + z * z);

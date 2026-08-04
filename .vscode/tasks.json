@@ -13,7 +13,7 @@
                 "-Wshadow",
                 "-DLOCAL",
                 "-Wall",
-                "-std=c++17",
+                "-std=c++20",
                 "-ftemplate-depth=1000000",
                 // "-O3"
                 // "-I/media/yuxinhao/data/code/programs/CP-template",
