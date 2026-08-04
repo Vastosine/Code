@@ -24,7 +24,7 @@ int main() {
             if (t >= k) ans++;
         }
     }
-    for (int j = 0; j < m; j++) {
+    if (k > 1) for (int j = 0; j < m; j++) {
         int t = 0;
         for (int i = 0; i < n; i++) {
             if (a[i][j] == '.') t++;
