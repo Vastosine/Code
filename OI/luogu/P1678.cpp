@@ -1,34 +1,25 @@
 #include <algorithm>
-#include <cstdio>
-#define abs(X) ((X) < 0 ? -(X) : (X))
+#include <iostream>
+#include <vector>
 
-const int maxn(10);
-int a[maxn], b[maxn];
+using std::cin;
+using std::cout;
+using std::vector;
+using std::istream;
 
-int find(int l, int r, int k) {
-	if (l >= r)
-		return -1;
-	if (r - l == 1)
-		return abs(k - a[l]);
-	int next = (r + l) / 2;
-	int x = k - a[next - 1], y = k - a[next];
-	return abs(x - y) > 0 ? find(next, r, k) : find(l, next, k);
-}
+template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
 
 int main() {
-#ifdef LOCAL
-	freopen("D:\\code\\in.in", "r", stdin);
-	freopen("D:\\code\\out.out", "w", stdout);
-#endif
-	int n, m, num = 0;
-	scanf("%d%d", &n, &m);
-	for (int c = 0; c < n; c++) {
-		scanf("%d", &a[c]);
+	int m, n;
+	cin >> m >> n;
+	vector<int> a(m), b(n);
+	cin >> a >> b;
+	std::sort(a.begin(), a.end());
+	std::sort(b.begin(), b.end());
+	long long ans = 0;
+	for (int i = 0, j = 0; i < n; i++) {
+		while (j + 1 < m && abs(b[i] - a[j]) >= abs(b[i] - a[j + 1])) j++;
+		ans += abs(b[i] - a[j]);
 	}
-	std::sort(a, a + n);
-	for (int c = 0; c < m; c++) {
-		scanf("%d", &b[c]);
-		num += find(0, n, b[c]);
-	}
-	printf("%d", num);
+	cout << ans;
 }
