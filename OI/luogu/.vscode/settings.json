@@ -1,8 +1,0 @@
-{
-    "clangd.fallbackFlags": [
-        // "-Ie:/programs/mingw64/include/c++/14.2.0",
-        "-I${workspaceFolder}/programs/CP-template",
-        "-I/media/yuxinhao/data/code/programs/CP-template",
-    ],
-    // "clangd.arguments": ["--completion-style=2"]
-}
