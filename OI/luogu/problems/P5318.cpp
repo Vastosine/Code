@@ -1,53 +1,67 @@
-#include <cstdio>
+// Problem : P5318 【深基18.例3】查找文献 https://www.luogu.com.cn/problem/P5318
+// Time    : 2026-08-18 17:48:04
+
+#include <functional>
+#include <iostream>
 #include <queue>
 #include <set>
-#include<string.h>
+#include <vector>
 
-const int maxn = 100005, maxm = 1000005;
-std::set<int> *a=new std::set<int>[maxn], *b=new std::set<int>[maxn];
-bool *df=new bool[maxn], *bf=new bool[maxn];
+using std::cin;
+using std::cout;
+using std::vector;
+typedef vector<int> vi;
+typedef std::pair<int, int> pii;
+template<typename T> std::istream &operator>>(std::istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
 
-void dfs(int k) {
-    if (df[k])
-        return;
-    printf("%d ", k);
-    df[k] = true;
+using std::set;
 
-    for (std::set<int>::iterator it = a[k].begin(); it != a[k].end(); it++)
-        dfs(*it);
-}
+vector<set<int>> e;
+vector<int> vis;
 
-void bfs(int k) {
-    std::set<int>::iterator it;
-    std::queue<int> s;
-    s.push(k);
-    bf[k] = true;
-    while (!s.empty()) {
-        int x = s.front();
-        for (it = a[x].begin(); it != a[x].end() && !bf[*it]; it++)
-            bf[*it] = true, s.push(*it);
-        printf("%d ", x);
-        s.pop();
+void dfs(int u) {
+    if (vis[u]) return;
+    vis[u] = true;
+    cout << u << " ";
+    for (int v : e[u]) {
+        dfs(v);
     }
 }
 
-int n, m, u, v, c, d, e;
+void solve() {
+    int n, m;
+    cin >> n >> m;
+    e.assign(n + 1, {});
+    while (m--) {
+        int u, v;
+        cin >> u >> v;
+        e[u].insert(v);
+    }
+    vis.assign(n + 1, 0);
+    for (int i = 1; i <= 1; i++) {
+        dfs(i);
+    }
+    cout << "\n";
+    vis.assign(n + 1, 0);
+    for (int i = 1; i <= 1; i++) {
+        std::queue<int> q;
+        q.push(i);
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+            if (vis[u]) continue;
+            vis[u] = true;
+            cout << u << " ";
+            for (int v : e[u]) {
+                q.push(v);
+            }
+        }
+    }
+}
 
 int main() {
-#ifdef LOCAL
-    freopen("in.in", "r", stdin);
-    freopen("out.out", "w", stdout);
-#endif
-    scanf("%d%d", &n, &m);
-    memset(df,false,maxn);
-    memset(bf,false,maxn);
-    for (c = 0; c < m; c++)
-        scanf("%d%d", &u, &v), a[u].insert(v), b[v].insert(u);
-    for (c = 1; c <= n; c++)
-        if (b[c].size() == 0) {
-            dfs(c);
-            printf("\n");
-            bfs(c);
-            return 0;
-        }
+    int c = 1;
+    // cin >> c;
+    while (c--) solve();
+    return 0;
 }
