@@ -1,5 +1,5 @@
-// Problem : P3386 【模板】二分图最大匹配 https://www.luogu.com.cn/problem/P3386
-// Time    : 2026-08-23 07:00:58
+// Problem : U721285 Minecraft Shapeless Matches https://www.luogu.com.cn/problem/U721285
+// Time    : 2026-08-23 08:22:32
 
 #include <iostream>
 #include <vector>
@@ -36,33 +36,37 @@ int dfs(int u, int c, int s = 0) {
 }
 
 void solve() {
-    int n, m, en;
-    cin >> n >> m >> en;
+    int n, m;
+    cin >> n >> m;
     e[0].assign(n, {});
     e[1].assign(m, {});
-    count[0].assign(n, 1);
-    count[1].assign(m, 1);
+    count[0].assign(n, {});
+    count[1].assign(m, {});
     match.assign(m, {});
     w.assign(n, vi(m));
-    while (en--) {
-        int u, v;
-        cin >> u >> v;
-        u--, v--;
-        e[0][u].push_back(v);
-        e[1][v].push_back(u);
+    cin >> count[0] >> count[1];
+    for (int u = 0; u < n; u++) {
+        int tn;
+        cin >> tn;
+        while (tn--) {
+            int v;
+            cin >> v;
+            e[0][u].push_back(v);
+            e[1][v].push_back(u);
+        }
     }
-    int ans = 0;
+    bool ans = true;
     for (int i = 0; i < n; i++) {
         vis[0].assign(n, {});
         vis[1].assign(m, {});
-        ans += dfs(i, count[0][i]);
+        ans &= dfs(i, count[0][i]) == count[0][i];
     }
     cout << ans << "\n";
 }
 
 int main() {
     int c = 1;
-    // cin >> c;
+    cin >> c;
     while (c--) solve();
     return 0;
 }
