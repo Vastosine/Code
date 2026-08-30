@@ -33,7 +33,7 @@ vi getPrimes(int max) {
     return ans;
 }
 
-vi primes = getPrimes(4e3 + 1);
+vi primes = getPrimes(1e6 + 1);
 
 int phi(int x) {
     int ans = x;
@@ -50,12 +50,25 @@ int phi(int x) {
 void solve() {
     int l, r;
     cin >> l >> r;
-    int ans = 0;
+    int n = r - l + 1;
+    vi ans(n);
     for (int i = l; i <= r; i++) {
-        cout << i - phi(i) << "\n";
-        (ans += i - phi(i)) %= M;
+        ans[i - l] = i;
     }
-    cout << ans;
+    vi x = ans;
+    for (int p : primes) {
+        for (int i = (p - (l % p)) % p; i < n; i += p) {
+            ans[i] = ans[i] / p * (p - 1);
+            while (x[i] % p == 0) x[i] /= p;
+        }
+    }
+    for (int i = l; i <= r; i++) {
+        if (x[i - l] > 1) ans[i - l] = ans[i - l] / x[i - l] * (x[i - l] - 1);
+        ans[i - l] = i - ans[i - l];
+    }
+    int out = 0;
+    for (int i : ans) (out += i) %= M;
+    cout << out;
 }
 
 #undef int
