@@ -1,9 +1,8 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : P8218 【深进1.例1】求区间和 https://www.luogu.com.cn/problem/P8218
+// Time    : 2026-08-30 11:52:45
 
 #include <iostream>
 #include <vector>
-#include <algorithm>
 
 // #define int long long
 
@@ -14,11 +13,21 @@ using std::string;
 typedef vector<int> vi;
 typedef std::pair<int, int> pii;
 template<typename T> std::istream &operator>>(std::istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
-template<typename T> void sort(vector<T> &a) { std::sort(a.begin(), a.end()); }
-template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.begin(), a.end(), cmp); }
 
 void solve() {
-    $CURSOR_PLACEHOLDER
+    int n, q;
+    cin >> n;
+    vi a(n + 1), b(n + 1);
+    for (int i = 1; i <= n; i++) {
+        cin >> a[i];
+        b[i] = b[i - 1] + a[i];
+    }
+    cin >> q;
+    while (q--) {
+        int l, r;
+        cin >> l >> r;
+        cout << b[r] - b[l - 1] << "\n";
+    }
 }
 
 #undef int

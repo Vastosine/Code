@@ -1,5 +1,5 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : P2004 领地选择 https://www.luogu.com.cn/problem/P2004
+// Time    : 2026-08-30 13:03:15
 
 #include <iostream>
 #include <vector>
@@ -18,7 +18,24 @@ template<typename T> void sort(vector<T> &a) { std::sort(a.begin(), a.end()); }
 template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.begin(), a.end(), cmp); }
 
 void solve() {
-    $CURSOR_PLACEHOLDER
+    int n, m, c;
+    cin >> n >> m >> c;
+    vector<vi> a(n + 1, vi(m + 1));
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m; j++) {
+            cin >> a[i][j];
+            a[i][j] += a[i - 1][j] + a[i][j - 1] - a[i - 1][j - 1];
+        }
+    }
+    int x, y, z = 0x80000000;
+    for (int i = 0; i + c <= n; i++) {
+        for (int j = 0; j + c <= m; j++) {
+            int p = i + c, q = j + c;
+            int w = a[p][q] + a[i][j] - a[p][j] - a[i][q];
+            if (w > z) x = i, y = j, z = w;
+        }
+    }
+    cout << x + 1 << " " << y + 1;
 }
 
 #undef int
