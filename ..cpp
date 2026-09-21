@@ -1,68 +1,77 @@
-// Problem : P3601 签到题 https://www.luogu.com.cn/problem/P3601
-// Time    : 2026-08-30 10:40:25
-
 #include <iostream>
 #include <vector>
-#include <cmath>
-
 #define int long long
 
 using std::cin;
 using std::cout;
 using std::vector;
-using std::string;
-typedef vector<int> vi;
-typedef std::pair<int, int> pii;
-template<typename T> std::istream &operator>>(std::istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
 
-const int M = 666623333;
+struct SegTree {
+#define ln ((size + 1) / 2)
+#define rn (size / 2)
+#define update data = ls->data + rs->data
+	struct Node {
+		int data;
+		int lazy;
+		int size;
+		Node *ls, *rs;
+		void push_down() {
+			ls->data += ln * lazy;
+			rs->data += rn * lazy;
+			ls->lazy += lazy;
+			rs->lazy += lazy;
+			lazy = 0;
+		}
 
-vi getPrimes(int max) {
-    vector<bool> is(max + 1, true);
-    vi ans;
-    for (int i = 2; i * i <= max; i++) {
-        if (is[i]) {
-            for (int j = i * 2; j <= max; j += i) {
-                is[j] = false;
-            } 
-        }
-    }
-    for (int i = 2; i <= max; i++) {
-        if (is[i]) ans.push_back(i);
-    }
-    return ans;
-}
+		Node() : data(0), lazy(0), size(0), ls(nullptr), rs(nullptr) {}
 
-vi primes = getPrimes(4e3 + 1);
+		Node(const int *begin, const int *end) : Node() { build(begin, end); }
+		Node(const vector<int> &data) : Node(data.begin().base(), data.end().base()) {}
 
-int phi(int x) {
-    int ans = x;
-    for (int p : primes) {
-        if (p > x) break;
-        if (x % p) continue;
-        while (x % p == 0) x /= p;
-        ans = ans / p * (p - 1);
-    }
-    if (x > 1) ans = ans / x * (x - 1);
-    return ans;
-}
+		void build(const int *begin, const int *end) {
+			size = end - begin;
+			if (size == 1) data = *begin;
+			else {
+				ls = new Node(begin, begin + ln);
+				rs = new Node(begin + ln, end);
+				update;
+			}
+		}
 
-void solve() {
-    int l, r;
-    cin >> l >> r;
-    int ans = 0;
-    for (int i = l; i <= r; i++) {
-        cout << i - phi(i) << "\n";
-        (ans += i - phi(i)) %= M;
-    }
-    cout << ans;
-}
+		// [l, r)
+		void add(int l, int r, int x) { 
+			if (l >= size || r <= 0) return;
+			if (l <= 0 && r >= size) return data += x * size, lazy += x, void();
+			push_down();
+			ls->add(l, r, x);
+			rs->add(l - ln, r - ln, x);
+			update;
+		}
 
-#undef int
+		int query(int l, int r) {
+			if (l >= size || r <= 0) return 0;
+			if (l <= 0 && r >= size) return data;
+			push_down();
+			return ls->query(l, r) + rs->query(l - ln, r - ln);
+		}
+	};
+	Node root;
+	SegTree(const vector<int> &data) : root(data) {}
+	void add(int l, int r, int x) { root.add(l, r, x); }
+	int query(int l, int r) { return root.query(l, r); }
+};
 
-int main() {
-    int c = 1;
-    // cin >> c;
-    while (c--) solve();
-    return 0;
+signed main() {
+	int n, m;
+	cin >> n >> m;
+	vector<int> a(n);
+	for (int &i : a) cin >> i;
+	SegTree s(a);
+	while (m--) {
+		int op, l, r, x;
+		cin >> op >> l >> r;
+		l--;
+		if (op == 1) cin >> x, s.add(l, r, x);
+		else cout << s.query(l, r) << "\n";
+	}
 }
