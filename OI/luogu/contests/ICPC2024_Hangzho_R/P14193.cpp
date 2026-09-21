@@ -1,5 +1,5 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : P14193 [ICPC 2024 Hangzhou R] Gathering Mushrooms https://www.luogu.com.cn/problem/P14193?contestId=281894
+// Time    : 2026-09-20 17:30:23
 
 #include <iostream>
 #include <vector>

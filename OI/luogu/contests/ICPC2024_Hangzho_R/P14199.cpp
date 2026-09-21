@@ -1,5 +1,5 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : P14199 [ICPC 2024 Hangzhou R] Make It Divisible https://www.luogu.com.cn/problem/P14199?contestId=281894
+// Time    : 2026-09-20 17:30:24
 
 #include <iostream>
 #include <vector>
