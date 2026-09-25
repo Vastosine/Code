@@ -1,5 +1,5 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : H. Deque Malfunction https://codeforces.com/contest/2266/problem/H
+// Time    : 2026-09-21 22:37:13
 
 #include <iostream>
 #include <vector>
@@ -15,31 +15,9 @@ typedef std::pair<int, int> pii;
 template<typename T> std::istream &operator>>(std::istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
 template<typename T> void sort(vector<T> &a) { std::sort(a.begin(), a.end()); }
 template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.begin(), a.end(), cmp); }
-template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
-
-template<typename... Args>
-auto sum(Args... args) -> decltype((args + ...)) {
-    std::cerr << "1 eqdfq";
-    return (args * ...);
-}
-
-template<typename... Args>
-void show(Args&&... args) {
-    (std::cout << ... << args) << '\n';  // C++17 折叠表达式
-}
-
-template<typename... Args>
-void assign(int n, vector<Args>&... args) {
-    (..., args.assign(n, {}));
-}
 
 void solve() {
-    // vi a, b;
-    // vector<vi> c;
-    // assign(10, 5, a, b);
-    // assign(10, a, b, c);
-    int x, y;
-    cout << scanf("%d%d", &x, &y);
+
 }
 
 #undef int
