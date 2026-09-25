@@ -1,2 +1,2 @@
-mkdir D:\code\OI\luogu\contests\%1
-code D:\code\OI\luogu\contests\%1
+mkdir D:\code\OI\contests\%1
+code D:\code\OI\contests\%1
