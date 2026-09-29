@@ -1,6 +1,7 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : E. Chronostasis https://codeforces.com/contest/2254/problem/E
+// Time    : 2026-09-28 16:22:05
 #include <iostream>
+#include <set>
 #include <vector>
 #include <algorithm>
 #define int long long
@@ -18,8 +19,28 @@ template<typename... Args> void assign(int n, vector<Args>&... args) { (..., arg
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 int abs(int x) { return x < 0 ? -x : x; }
 
-auto solve() {
-    return 0;
+vi solve() {
+    int n;
+    cin >> n;
+    vi a;
+    std::multiset<int> b;
+    int sum = 0;
+    for (int i = 0; i < n; i++) {
+        int x;
+        cin >> x;
+        if (x > 0) a.push_back(x);
+        else b.insert(-x);
+        sum += x;
+    }
+    if (sum <= 0) return {-1};
+    sort(a);
+    vi ans;
+    for (int i = 0, x = 0, p = 0; i < n; i++) {
+        auto it = b.lower_bound(x);
+        if (it == b.cbegin()) ans.push_back(x += a[p++]);
+        else ans.push_back(x -= *--it), b.erase(it);
+    }
+    return ans;
 }
 
 #undef int

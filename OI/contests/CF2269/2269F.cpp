@@ -1,9 +1,10 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : F. AghaBalaSar and Hamed https://codeforces.com/contest/2269/problem/F
+// Time    : 2026-09-26 22:38:54
 #include <iostream>
+#include <stack>
 #include <vector>
 #include <algorithm>
-// #define int long long
+#define int long long
 using std::cin;
 using std::cout;
 using std::vector;
@@ -16,20 +17,41 @@ template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.be
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
+vi a, L, R, dp, vis;
+
+void solve(int l, int r) {
+    dp[r] = r - l;
+    int x = r;
+    for (int i = r - 1; i >= l; i--) {
+        while (x + 1 && (L[x] > i || !~L[x])) x--;
+        cout << x << " ";
+    }
+    cout << "\n";
+}
+
 void solve() {
     int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
-    int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
+    cin >> n;
+    assign(n, -1, a, R, L);
+    assign(n, vis, dp);
+    cin >> a;
+    std::stack<int> s;
+    for (int i = 0; i < n; i++) {
+        while (!s.empty() && a[s.top()] < a[i]) {
+            R[s.top()] = i;
+            s.pop();
         }
+        s.push(i);
     }
-    cout << ans << "\n";
+    for (int i = n - 1; i + 1; i--) {
+        if (~R[i]) L[R[i]] = i;
+    }
+    for (int l = 0, r = 0; r < n; l = ++r) {
+        while (r + 1 < n && ~R[r]) r++;
+        solve(l, r);
+    }
+    // for (int i : R) cout << i << " ";
+    cout << "\n";
 }
 
 #undef int

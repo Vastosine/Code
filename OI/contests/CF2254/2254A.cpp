@@ -1,5 +1,5 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : A. Riptide https://codeforces.com/contest/2254/problem/A
+// Time    : 2026-09-28 11:06:24
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -16,23 +16,18 @@ template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.be
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
-void solve() {
-    int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
-    int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
-        }
-    }
-    cout << ans << "\n";
+int solve() {
+    vi a(3);
+    cin >> a;
+    sort(a);
+    cout << std::min(a[1] - a[0], a[2] - a[1]) << "\n";
+    return 0;
 }
 
 #undef int
+
+const string OUT[2] = {"NO", "YES"};
+const string Out[2] = {"No", "Yes"};
 
 int main() {
     std::ios::sync_with_stdio(false);
@@ -40,5 +35,7 @@ int main() {
     int c = 1;
     cin >> c;
     while (c--) solve();
+    // while (c--) cout << OUT[solve()] << "\n";
+    // while (c--) cout << Out[solve()] << "\n";
     return 0;
 }

@@ -1,5 +1,5 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : E. KiaKio and Energy Intervals https://codeforces.com/contest/2269/problem/E
+// Time    : 2026-09-26 22:38:54
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -17,19 +17,7 @@ template<typename... Args> void assign(int n, vector<Args>&... args) { (..., arg
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
 void solve() {
-    int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
-    int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
-        }
-    }
-    cout << ans << "\n";
+
 }
 
 #undef int
@@ -38,7 +26,7 @@ int main() {
     std::ios::sync_with_stdio(false);
     cin.tie(0), cout.tie(0);
     int c = 1;
-    cin >> c;
+    // cin >> c;
     while (c--) solve();
     return 0;
 }

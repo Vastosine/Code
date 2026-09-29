@@ -1,9 +1,9 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : C. K Is Important https://codeforces.com/contest/2269/problem/C
+// Time    : 2026-09-26 22:38:54
 #include <iostream>
 #include <vector>
 #include <algorithm>
-// #define int long long
+#define int long long
 using std::cin;
 using std::cout;
 using std::vector;
@@ -17,18 +17,16 @@ template<typename... Args> void assign(int n, vector<Args>&... args) { (..., arg
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
 void solve() {
-    int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
+    int n, k;
+    cin >> n >> k;
+    vi a(n);
+    cin >> a;
+    int m = n - k + 1;
     int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
-        }
+    for (int i = 0; i < m && i < k - 1; i++) {
+        ans += std::max(a[i], a[n - 1 - i]);
     }
+    for (int i = k - 1; i <= n - k; i++) ans += a[i];
     cout << ans << "\n";
 }
 

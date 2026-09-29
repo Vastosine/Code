@@ -1,9 +1,9 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : A. SauSaGe Bank https://codeforces.com/contest/2269/problem/A
+// Time    : 2026-09-26 22:38:37
 #include <iostream>
 #include <vector>
 #include <algorithm>
-// #define int long long
+#define int long long
 using std::cin;
 using std::cout;
 using std::vector;
@@ -17,19 +17,9 @@ template<typename... Args> void assign(int n, vector<Args>&... args) { (..., arg
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
 void solve() {
-    int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
-    int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
-        }
-    }
-    cout << ans << "\n";
+    int n, m;
+    cin >> n >> m;
+    cout << (m - 1) * 2 + (1 << (n - m + 1)) << "\n";
 }
 
 #undef int

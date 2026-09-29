@@ -1,5 +1,5 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : D. Silhouette https://codeforces.com/contest/2254/problem/D
+// Time    : 2026-09-28 15:53:24
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -16,10 +16,39 @@ template<typename T> void sort(vector<T> &a) { std::sort(a.begin(), a.end()); }
 template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
-int abs(int x) { return x < 0 ? -x : x; }
 
-auto solve() {
-    return 0;
+vi solve() {
+    int n;
+    cin >> n;
+    struct Data {
+        int x, i;
+        bool operator<(const Data &data) const { return x < data.x; } 
+    };
+    vector<Data> a(n);
+    for (int i = 0; i < n; i++) {
+        cin >> a[i].x;
+        a[i].i = i;
+    }
+    sort(a);
+    vi b(n);
+    if (a[0].x) return {-1};
+    for (int l = 0, r = 1, x = 0; l < n; l = r++) {
+        while (r < n && a[r].x == a[l].x) r++;
+        if (r == n) x++;
+        else {
+            int y = a[r].x - a[l].x;
+            if (y % (r - l)) return {-1};
+            int X = y / (r - l);
+            if (X <= x) return {-1};
+            x = X;
+        }
+        for (int i = l; i < r; i++) b[i] = x;
+    }
+    vi ans(n);
+    for (int i = 0; i < n; i++) {
+        ans[a[i].i] = b[i];
+    }
+    return ans;
 }
 
 #undef int

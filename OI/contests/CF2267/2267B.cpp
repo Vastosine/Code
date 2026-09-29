@@ -16,8 +16,22 @@ template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.be
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
-void solve() {
+const int maxn = 101;
 
+void solve() {
+    int n;
+    cin >> n;
+    vi a(n), b(maxn);
+    cin >> a;
+    for (int i : a) b[i]++;
+    while (true) {
+        int t = 0;
+        for (int i = maxn - 1; i + 1; i--) {
+            if (b[i]) b[i]--, cout << i << " ", t++;
+        }
+        if (!t) break;
+    }
+    cout << "\n";    
 }
 
 #undef int
@@ -26,7 +40,7 @@ int main() {
     std::ios::sync_with_stdio(false);
     cin.tie(0), cout.tie(0);
     int c = 1;
-    // cin >> c;
+    cin >> c;
     while (c--) solve();
     return 0;
 }

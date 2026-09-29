@@ -1,5 +1,5 @@
-// Problem : $name$ $url$
-// Time    : $date$ $time$
+// Problem : G. Nightcrawler https://codeforces.com/contest/2254/problem/G
+// Time    : 2026-09-28 16:22:05
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -19,7 +19,44 @@ template<typename... Args, typename T> void assign(int n, const T &x, vector<Arg
 int abs(int x) { return x < 0 ? -x : x; }
 
 auto solve() {
-    return 0;
+    int n;
+    cin >> n;
+    vi a(n + 1), f(n + 1);
+    vector<vi> s(n + 1);
+    for (int i = 1; i <= n; i++) cin >> a[i];
+    for (int i = 2; i <= n; i++) cin >> f[i], s[f[i]].push_back(i);
+    vi vis(n + 1);
+    auto dfs = [&] (auto &&self, int u) -> int {
+        if (s[u].empty()) return u;
+        if (s[u].size() == 1) {
+            int v = s[u][0];
+            int x = self(self, v);
+            return a[u] > a[x] ? u : x;
+        } 
+        int min = -1;
+        for (int v : s[u]) {
+            int x = self(self, v);
+            vis[x] = true;
+            if (!~min || a[min] > a[x]) min = x;
+        }
+        vis[min] = false;
+        int ret = a[u] > a[min] ? u : min;
+        return ret;
+    };
+    vis[dfs(dfs, 1)] = true;
+    vi list;
+    int st = 0;
+    for (int i = 1; i <= n; i++) {
+        if (!vis[i]) list.push_back(a[i]);
+        else st += a[i];
+    }
+    vi ans(n - list.size() - 1, -1);
+    sort(list, [] (int x, int y) { return x > y; });
+    ans.push_back(st);
+    for (int x : list) {
+        ans.push_back(ans.back() + x);
+    }
+    return ans;
 }
 
 #undef int

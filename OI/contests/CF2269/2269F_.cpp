@@ -1,9 +1,9 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : F. AghaBalaSar and Hamed https://codeforces.com/contest/2269/problem/F
+// Time    : 2026-09-26 22:38:54
 #include <iostream>
 #include <vector>
 #include <algorithm>
-// #define int long long
+#define int long long
 using std::cin;
 using std::cout;
 using std::vector;
@@ -16,17 +16,27 @@ template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.be
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
+int check(const vi &a, int i, int j) {
+    int n = a.size();
+    int ans = 0;
+    for (int k = i; k < n && i < j; k++) {
+        if (a[k] > a[i]) {
+            i = k;
+            ans++;
+        }
+    }
+    return i < j ? 0 : ans + (i > j);
+}
+
 void solve() {
     int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
-    int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
+    cin >> n;
+    vi a(n);
+    cin >> a;
+    int ans = n * (n - 1) / 2;
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            ans += check(a, i, j);
         }
     }
     cout << ans << "\n";

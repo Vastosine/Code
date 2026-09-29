@@ -1,5 +1,5 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : B. KiaKio and Squared Numbers https://codeforces.com/contest/2269/problem/B
+// Time    : 2026-09-26 22:38:54
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -16,18 +16,34 @@ template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.be
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 
+int sqr(int x) { return x * x; }
+
+int get(int x) {
+    int ans = 0;
+    while (x) {
+        ans += sqr(x % 10);
+        x /= 10;
+    }
+    return ans;
+}
+
+int f(int x) {
+    return x * (x - 1) / 2;
+}
+
 void solve() {
     int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
+    cin >> n;
+    vi a(n);
+    cin >> a;
+    for (int i = 0; i < 1e4; i++) {
+        for (int &j : a) j = get(j);
+    }
+    sort(a);
     int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
-        }
+    for (int l = 0, r = 0; r < n; l = ++r) {
+        while (r < n - 1 && a[l] == a[r + 1]) r++;
+        ans += f(r - l + 1);
     }
     cout << ans << "\n";
 }

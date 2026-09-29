@@ -1,5 +1,5 @@
-// Problem : A. Turn Into a Palindrome https://codeforces.com/contest/2267/problem/A
-// Time    : 2026-09-25 22:57:24
+// Problem : A. Watermelon https://codeforces.com/problemset/problem/4/A
+// Time    : 2026-09-28 10:47:40
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -18,18 +18,9 @@ template<typename... Args, typename T> void assign(int n, const T &x, vector<Arg
 
 void solve() {
     int n;
-    char c;
-    string s;
-    cin >> n >> c >> s;
-    int ans = 0;
-    for (int i = 0; i * 2 < n; i++) {
-        int j = n - i - 1;
-        if (s[i] != s[j]) {
-            if (s[i] == c || s[j] == c) ans++;
-            else ans += 2;
-        }
-    }
-    cout << ans << "\n";
+    cin >> n;
+    const string OUT[2] = {"NO", "YES"};
+    cout << OUT[n % 2 == 0 && n >= 4];
 }
 
 #undef int
@@ -38,7 +29,7 @@ int main() {
     std::ios::sync_with_stdio(false);
     cin.tie(0), cout.tie(0);
     int c = 1;
-    cin >> c;
+    // cin >> c;
     while (c--) solve();
     return 0;
 }
