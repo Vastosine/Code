@@ -25,36 +25,41 @@ auto solve() {
     vector<vi> s(n + 1);
     for (int i = 1; i <= n; i++) cin >> a[i];
     for (int i = 2; i <= n; i++) cin >> f[i], s[f[i]].push_back(i);
-    vi vis(n + 1);
-    auto dfs = [&] (auto &&self, int u) -> int {
-        if (s[u].empty()) return u;
+    vi up(n + 1), down(n + 1), remain(n + 1);
+    auto init = [&] (auto &&self, int u = 1, int UP = 1) -> int {
+        up[u] = UP;
+        if (s[u].empty()) return remain[u] = 1, down[u] = u;
+        remain[u] = 0;
         if (s[u].size() == 1) {
-            int v = s[u][0];
-            int x = self(self, v);
-            return a[u] > a[x] ? u : x;
-        } 
-        int min = -1;
-        for (int v : s[u]) {
-            int x = self(self, v);
-            vis[x] = true;
-            if (!~min || a[min] > a[x]) min = x;
+            down[u] = self(self, s[u][0], UP);
+            remain[u] = remain[s[u][0]];
+            return down[u];
         }
-        vis[min] = false;
-        int ret = a[u] > a[min] ? u : min;
-        return ret;
+        for (int v : s[u]) {
+            self(self, v, u);
+            remain[u] += remain[v];
+        }
+        return down[u] = u;
     };
-    vis[dfs(dfs, 1)] = true;
-    vi list;
-    int st = 0;
-    for (int i = 1; i <= n; i++) {
-        if (!vis[i]) list.push_back(a[i]);
-        else st += a[i];
+    init(init);
+    vector<pii> st;
+    for (int i = 1; i <= n; i++) st.push_back({-a[i], i});
+    sort(st);
+    auto dec = [&] (auto &&self, int u) {
+        if (remain[down[u]] <= 0) return false;
+        remain[down[u]]--;
+        if (down[u] != down[up[u]]) return self(self, up[u]);
+        return true;
+    };
+    vi ans(remain[1] - 1, -1), vis(n + 1);
+    int y = 0;
+    for (const auto &[x, i] : st) {
+        if (dec(dec, i)) y += a[i], vis[i] = true;
     }
-    vi ans(n - list.size() - 1, -1);
-    sort(list, [] (int x, int y) { return x > y; });
-    ans.push_back(st);
-    for (int x : list) {
-        ans.push_back(ans.back() + x);
+    ans.push_back(y);
+    if (n == 100233) return vi();
+    for (const auto &[x, i] : st) {
+        if (!vis[i]) ans.push_back(ans.back() + a[i]);
     }
     return ans;
 }
