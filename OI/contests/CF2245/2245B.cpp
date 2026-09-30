@@ -1,5 +1,6 @@
 // Problem : B. Delete and Concatenate https://codeforces.com/contest/2245/problem/B
 // Time    : 2026-09-30 09:57:49
+#include <deque>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -28,17 +29,15 @@ auto solve() {
     for (int i = 0; i < n; i++) b[i % 2].push_back(a[i]);
     sort(b[0]);
     sort(b[1]);
-    vi l(2, 0), r(2);
-    r[0] = b[0].size() - 1, r[1] = b[1].size() - 1;
-    b[0].push_back(0);
-    b[1].push_back(0);
+    std::deque<int> q[2];
+    for (int i : b[0]) q[0].push_front(i);
+    for (int i : b[1]) q[1].push_front(i);
     int ans = 0;
-    while (l[0] <= r[0] || l[1] <= r[1]) {
-        int k = l[1] <= r[1] && (l[0] > r[0] || b[1][r[1]] > b[0][r[0]]);
-        if (l[!k] <= r[!k] && b[!k][l[!k]] > 0) ans += b[!k][l[!k]];
-        ans += b[k][r[k]];
-        if (l[!k] <= r[!k]) l[!k]++;
-        r[k]--;
+    while (!(q[0].empty() && q[1].empty())) {
+        int k = !q[1].empty() && (q[0].empty() || q[1].front() - q[0].back() > q[0].front() - q[1].back());
+        if (!q[!k].empty()) ans += std::max(0ll, q[!k].back()), q[!k].pop_back();
+        ans += q[k].front();
+        q[k].pop_front();
     }
     return ans;
 }
