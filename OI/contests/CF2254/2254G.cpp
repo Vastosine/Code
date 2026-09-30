@@ -17,6 +17,7 @@ template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.be
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 int abs(int x) { return x < 0 ? -x : x; }
+using std::min;
 
 struct SegTree {
 #define ls (k << 1)
@@ -24,18 +25,19 @@ struct SegTree {
 #define mid ((l + r) >> 1)
 #define Ls ls, l, mid
 #define Rs rs, mid + 1, r
-#define update a[k] = a[ls] + a[rs]
-#define pushdown a[ls] += b[k] * (mid - l + 1), a[rs] += b[k] * (r - mid), b[ls] += b[k], b[rs] += b[k], b[k] = 0
+#define update a[k] = min(a[ls], a[rs])
+#define pushdown a[ls] += b[k], a[rs] += b[k], b[ls] += b[k], b[rs] += b[k], b[k] = 0
     vi a, b;
     int n;
+    SegTree() = default;
     SegTree(const vi &data) {
-        n = data.size();
+        n = data.size() - 1;
         assign(n << 2, a, b);
         build(1, 1, n, data);
     }
 
     void build(int k, int l, int r, const vi &data) {
-        if (l == r) return a[k] = data[l - 1], void();
+        if (l == r) return a[k] = data[l], void();
         build(Ls, data);
         build(Rs, data);
         update;
@@ -43,7 +45,7 @@ struct SegTree {
 
     void add(int k, int l, int r, int L, int R, int x) {
         if (l > R || L > r) return;
-        if (l >= L && r <= R) return a[k] += x * (r - l + 1), b[k] += x, void();
+        if (l >= L && r <= R) return a[k] += x, b[k] += x, void();
         pushdown;
         add(Ls, L, R, x);
         add(Rs, L, R, x);
@@ -51,81 +53,90 @@ struct SegTree {
     }
 
     int query(int k, int l, int r, int L, int R) {
-        if (l > R || L > r) return 0;
+        if (l > R || L > r) return 1e18;
         if (l >= L && r <= R) return a[k];
         pushdown;
-        return query(Ls, L, R) + query(Rs, L, R);
+        return min(query(Ls, L, R), query(Rs, L, R));
     }
 
     void add(int L, int R, int x) { add(1, 1, n, L, R, x); }
     void add(int i, int x) { add(1, 1, n, i, i, x); }
-    int query(int L, int R) { return std::max(0ll, query(1, 1, n, L, R)); }
-};
+    int query(int L, int R) { return query(1, 1, n, L, R); }
+} tr;
+
+int n, cnt;
+vi a, dep, son, fa, size, top, dfn, data, lsize;
+vector<vi> s;
+
+void dfs1(int u = 1) {
+    dep[u] = dep[fa[u]] + 1;
+    size[u] = 1;
+    son[u] = 0;
+    lsize[u] = s[u].empty();
+    for (int v : s[u]) {
+        dfs1(v);
+        size[u] += size[v];
+        if (!son[u] || size[son[u]] < size[v]) son[u] = v;
+        lsize[u] += lsize[v];
+    }
+}
+
+void dfs2(int u = 1, int t = 1) {
+    dfn[u] = ++cnt;
+    top[u] = t;
+    if (son[u]) dfs2(son[u], t);
+    for (int v : s[u]) {
+        if (v != son[u]) dfs2(v, v);
+    }
+}   
+
+void add(int u, int v, int x) {
+    while (top[u] != top[v]) {
+        int &p = dep[top[u]] > dep[top[v]] ? u : v;
+        tr.add(dfn[top[p]], dfn[p], x);
+        p = fa[top[p]];
+    }
+    if (dep[v] < dep[u]) std::swap(u, v);
+    tr.add(dfn[u], dfn[v], x);
+}
+
+int query(int u, int v) {
+    int ans = 1e18;
+    while (top[u] != top[v]) {
+        int &p = dep[top[u]] > dep[top[v]] ? u : v;
+        ans = min(ans, tr.query(dfn[top[p]], dfn[p]));
+        p = fa[top[p]];
+    }
+    if (dep[v] < dep[u]) std::swap(u, v);
+    return min(ans, tr.query(dfn[u], dfn[v]));
+}
 
 auto solve() {
-    int n;
+    cnt = 0;
     cin >> n;
-    vi a(n + 1), f(n + 1);
-    vector<vi> s(n + 1);
+    assign(n + 1, lsize, a, s, dep, son, fa, size, top, dfn, data);
     for (int i = 1; i <= n; i++) cin >> a[i];
-    for (int i = 2; i <= n; i++) cin >> f[i], s[f[i]].push_back(i);
-    vi up(n + 1), down(n + 1), remain(n + 1), l(n + 1), r(n + 1), data, map(n + 1, -1);
-    
-    auto init = [&] (auto &&self, int u = 1, int UP = 1) -> int {
-        up[u] = UP;
-        if (s[u].empty()) {
-            map[u] = data.size();
-            data.push_back(1);
-            l[u] = r[u] = map[u];
-            remain[u] = 1;
-            return down[u] = u;
-        }
-        remain[u] = 0;
-        if (s[u].size() == 1) {
-            int v = s[u][0];
-            down[u] = self(self, v, UP);
-            remain[u] = remain[v];
-            l[u] = l[v];
-            r[u] = r[v];
-            return down[u];
-        }
-        l[u] = n, r[u] = 0;
-        for (int v : s[u]) {
-            self(self, v, u);
-            remain[u] += remain[v];
-            l[u] = std::min(l[u], l[v]);
-            r[u] = std::max(r[u], r[v]);
-        }
-        return down[u] = u;
-    };
-
-    init(init);
-    SegTree t(data);
-    vector<pii> st;
-    for (int i = 1; i <= n; i++) st.push_back({-a[i], i});
-    sort(st);
-
-    vi use(n + 1);
-
-    auto dec = [&] (int u) {
-        int remain = t.query(l[u] + 1, r[u] + 1) - use[down[u]];
-        if (remain <= 0) return false;
-        use[down[u]]++;
-        if (remain == 1) t.add(l[u] + 1, r[u] + 1, -use[down[u]]);
-        return true;
-    };
-
-    vi ans(remain[1] - 1, -1), vis(n + 1);
+    for (int i = 2; i <= n; i++) cin >> fa[i], s[fa[i]].push_back(i);
+    dfs1();
+    dfs2();
+    for (int i = 1; i <= n; i++) data[dfn[i]] = lsize[i];
+    tr = data;
+    vector<int> srt;
+    for (int i = 1; i <= n; i++) srt.push_back(i);
+    sort(srt, [] (int x, int y) { return a[x] > a[y]; });
+    int x = lsize[1];
+    vi ans(x - 1, -1), vis(n + 1);
     int y = 0;
-    for (const auto &[x, i] : st) {
-        if (dec( i)) y += a[i], vis[i] = true;
+    for (int i : srt) {
+        if (query(1, i) > 0) 
+            add(1, i, -1), y += a[i], vis[i] = 1;
     }
     ans.push_back(y);
-    if (n == 100233) return vi();
-    for (const auto &[x, i] : st) {
+    for (int i : srt) {
         if (!vis[i]) ans.push_back(ans.back() + a[i]);
     }
     return ans;
+    // return 0;
 }
 
 #undef int
