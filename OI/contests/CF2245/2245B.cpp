@@ -25,19 +25,10 @@ auto solve() {
     vi a(n);
     cin >> a;
     for (int &i : a) i -= m;
-    vector<vi> b(2);
-    for (int i = 0; i < n; i++) b[i % 2].push_back(a[i]);
-    sort(b[0]);
-    sort(b[1]);
-    std::deque<int> q[2];
-    for (int i : b[0]) q[0].push_front(i);
-    for (int i : b[1]) q[1].push_front(i);
-    int ans = 0;
-    while (!(q[0].empty() && q[1].empty())) {
-        int k = !q[1].empty() && (q[0].empty() || q[1].front() - q[0].back() > q[0].front() - q[1].back());
-        if (!q[!k].empty()) ans += std::max(0ll, q[!k].back()), q[!k].pop_back();
-        ans += q[k].front();
-        q[k].pop_front();
+    sort(a, [] (int x, int y) { return x > y; });
+    int ans = 0, k = 0;
+    for (int i : a) {
+        if (i > 0 || k * 2 < n) ans += i, k++;
     }
     return ans;
 }

@@ -1,6 +1,7 @@
 // Problem : D2. Construct an Array (Hard Version) https://codeforces.com/contest/2245/problem/D2
 // Time    : 2026-09-30 09:57:49
 #include <iostream>
+#include <queue>
 #include <vector>
 #include <algorithm>
 #define int long long
@@ -17,9 +18,78 @@ template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.be
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 int abs(int x) { return x < 0 ? -x : x; }
+int n, m;
+vector<vector<pii>> e;
+vector<vi> t;
+vi a, vis, in, ans;
 
-auto solve() {
-    return 0;
+using std::queue;
+
+vi solve() {
+    cin >> n >> m;
+    assign(n + 1, e, a, vis, t, in, ans);
+    queue<int> q;
+    struct Input {
+        int op, u, v;
+    };
+    vector<Input> inputs;
+    while (m--) {
+        int op, u, v;
+        cin >> op >> u >> v;
+        inputs.push_back({op, u, v});
+        if (u == v) {
+            a[u] = op;
+            q.push(u);
+            continue;
+        }
+        e[u].push_back({v, op});
+        e[v].push_back({u, op});
+    }
+    for (int i = 0; i <= n; i++) {
+        if (i && !a[i]) {
+            q.push(i);
+            a[i] = 1;
+        }
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+            if (vis[u]) continue;
+            vis[u] = true;
+            for (const auto &[v, w] : e[u]) {
+                if (a[v]) continue;
+                if (w != a[u]) {
+                    a[v] = w;
+                    q.push(v);
+                }
+            }
+        }
+    }
+    for (const auto &[op, u, v] : inputs) {
+        if (a[u] == a[v] && a[u] != op) return {};
+        if (u != v && a[u] != a[v]) {
+            if (a[u] == op) t[v].push_back(u);
+            else t[u].push_back(v);
+        }
+    }
+    for (int u = 1; u <= n; u++) {
+        for (int v : t[u]) in[v]++;
+    }
+    for (int i = 1; i <= n; i++) {
+        if (!in[i]) q.push(i);
+    }
+    int cnt = 0;
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        ans[u] = ++cnt;
+        if (a[u] == 2) ans[u] = - ans[u];
+        for (int v : t[u]) {
+            in[v]--;
+            if (!in[v]) q.push(v);
+        }
+    }
+    if (cnt < n) return {};
+    return ans;
 }
 
 #undef int
@@ -29,9 +99,19 @@ int main() {
     cin.tie(0), cout.tie(0);
     int c = 1;
     cin >> c;
-    while (c--) cout << solve() << "\n";
+    // while (c--) cout << solve() << "\n";
     // while (c--) solve();
-    // const string OUT[2] = {"NO", "YES"}; while (c--) cout << OUT[solve()] << "\n";
+    while (c--) {
+        auto res = solve();
+        if (res.empty()) cout << "NO\n";
+        else {
+            cout << "YES\n";
+            for (int i = 1; i <= n; i++) {
+                cout << res[i] << " ";
+            }
+            cout << "\n";
+        }
+    }
     // const string Out[2] = {"No", "Yes"}; while (c--) cout << Out[solve()] << "\n";
     return 0;
 }
