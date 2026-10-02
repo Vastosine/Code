@@ -25,17 +25,21 @@ int rand(int l, int r) {
 
 void Main() {
     freopen("in.in", "w", stdout);
-    cout << 1 << "\n";
-    int n = rand(3, 5);
-    cout << n << " " << n * (n + 1) / 2 << "\n";
+    int n = rand(3, 10);
+    struct Input {
+        int op, u, v;
+    };
+    vector<Input> inputs;
     vi a(n);
     for (int &i : a) i = rand(-10, 10);
     for (int i = 0; i < n; i++) {
         for (int j = i; j < n; j++) {
-            if (a[i] + a[j] < 0) cout << "2 ";
-            else cout << "1 ";
-            cout << i + 1 << " " << j + 1 << "\n";
+            if (rand(0, 100) < 20) inputs.push_back({1 + (a[i] + a[j] < 0), i, j});
         }
+    }
+    cout << "1\n" << n << " " << inputs.size() << "\n";
+    for (const auto &[op, u, v] : inputs) {
+        cout << op << " " << u + 1 << " " << v + 1 << "\n";
     }
     freopen("ans.out", "w", stdout);
     cout << a << "\n";
@@ -48,13 +52,8 @@ void Main() {
     if (s == "NO") k = false;
     vi b(n);
     cin >> b;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if ((a[i] + a[j] < 0) != (b[i] + b[j] < 0)) {
-                k = false;
-                break;
-            }
-        }
+    for (auto &[op, u, v] : inputs) {
+        if ((b[u] + b[v] >= 0) != (op == 1)) k = false;
     }
     if (!k) std::cerr << "1", exit(0);
     freopen("con", "r", stdin);
@@ -62,7 +61,7 @@ void Main() {
 
 signed main(signed argc, char **args) {
     srand(time(0));
-    system("g++ 2245D1.cpp -o main.exe");
+    system("g++ 2245D2.cpp -o main.exe");
     int c = 10;
     if (c > 1) sscanf(args[1], "%lld", &c);
     while (c--) Main();

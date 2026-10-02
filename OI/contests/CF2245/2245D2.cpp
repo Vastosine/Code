@@ -46,18 +46,35 @@ vi solve() {
         e[v].push_back({u, op});
     }
     for (int i = 0; i <= n; i++) {
+        int k = 1;
+        label:
         if (i && !a[i]) {
             q.push(i);
-            a[i] = 1;
+            a[i] = k;
         }
+        vi changed = i ? vi{i} : vi{};
         while (!q.empty()) {
             int u = q.front();
             q.pop();
             if (vis[u]) continue;
             vis[u] = true;
             for (const auto &[v, w] : e[u]) {
-                if (a[v]) continue;
-                if (w != a[u]) {
+                if (a[v]) {
+                    if (a[u] == a[v] && a[u] != w) {
+                        if (i && k == 1) {
+                            k++;
+                            q = {};
+                            for (int x : changed) {
+                                vis[x] = 0;
+                                a[x] = 0;
+                            }
+                            goto label;
+                        } else return {};
+                    }
+                    continue;
+                } 
+                if (w != a[u] && !vis[v]) {
+                    changed.push_back(v);
                     a[v] = w;
                     q.push(v);
                 }
@@ -65,7 +82,8 @@ vi solve() {
         }
     }
     for (const auto &[op, u, v] : inputs) {
-        if (a[u] == a[v] && a[u] != op) return {};
+        if (a[u] == a[v] && a[u] != op) 
+            return {};
         if (u != v && a[u] != a[v]) {
             if (a[u] == op) t[v].push_back(u);
             else t[u].push_back(v);
