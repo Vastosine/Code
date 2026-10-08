@@ -2,6 +2,7 @@
 // Time    : 2026-09-30 09:57:49
 #include <iostream>
 #include <queue>
+#include <set>
 #include <vector>
 #include <algorithm>
 #define int long long
@@ -19,15 +20,16 @@ template<typename... Args> void assign(int n, vector<Args>&... args) { (..., arg
 template<typename... Args, typename T> void assign(int n, const T &x, vector<Args>&... args) { (..., args.assign(n, x)); }
 int abs(int x) { return x < 0 ? -x : x; }
 int n, m;
-vector<vector<pii>> e;
+vector<vector<pii>> E;
 vector<vi> t;
 vi a, vis, in, ans;
+vector<std::set<pii>> e;
 
 using std::queue;
 
 vi solve() {
     cin >> n >> m;
-    assign(n + 1, e, a, vis, t, in, ans);
+    assign(n + 1, E, a, vis, t, in, ans);
     queue<int> q;
     struct Input {
         int op, u, v;
@@ -42,8 +44,13 @@ vi solve() {
             q.push(u);
             continue;
         }
-        e[u].push_back({v, op});
-        e[v].push_back({u, op});
+        E[u].push_back({v, op});
+        E[v].push_back({u, op});
+    }
+    for (int u = 1; u <= n; u++) {
+        for (const auto &[v, w] : E[u]) {
+            e[u].insert({v, w});
+        }
     }
     for (int i = 0; i <= n; i++) {
         int k = 1;
@@ -79,6 +86,16 @@ vi solve() {
                     q.push(v);
                 }
             }
+        }
+        vector<Input> er;
+        for (int u : changed) {
+            for (const auto &[v, w] : E[u]) {
+                er.push_back({u, v, w});
+            }
+        }
+        for (auto &[u, v, w] : er) {
+            e[u].erase({v, w});
+            e[v].erase({u, w});
         }
     }
     for (const auto &[op, u, v] : inputs) {
