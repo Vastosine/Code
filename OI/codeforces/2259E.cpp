@@ -1,7 +1,6 @@
 // Problem : E. Treasure Map Destruction (Constructive Version) https://codeforces.com/problemset/problem/2259/E
 // Time    : 2026-10-09 09:29:26
 #include <iostream>
-#include <queue>
 #include <vector>
 #include <algorithm>
 #define int long long
