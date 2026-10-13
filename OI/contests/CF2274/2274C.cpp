@@ -21,8 +21,30 @@ template<typename T, typename... Args> void asv(int n, T &&v, vector<Args>&... a
 template<typename F, typename T, typename... Args> T &update(F &&f, T &x, Args &&...args) { return ((x = f(x, args)), ...), x; }
 template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Args &&...args) { T tmp(x); return ((tmp = f(tmp, args)), ...), tmp; }
 
-auto solve() {
-    return 0ll;
+vi solve() {
+    int n;
+    cin >> n;
+    int l = 0, r = n + 1;
+    while (l < r - 1) {
+        int x = (l + r) >> 1;
+        int ans = 0;
+        for (int i = 1; i <= x; i++) {
+            ans += x / i * i;
+        }
+        if (ans < n) l = x;
+        else r = x;
+    }
+    l++;
+    vi ans;
+    for (int i = l, c = 1, t = 0; i; i--) {
+        for (int j = 0; j < l / i; j++, c++) {
+            for (int k = 0; k < i && t < n; k++, t++) {
+                ans.push_back(c);
+            }
+        }
+    }
+    cout << l << "\n";
+    return ans;
 }
 
 #undef int
@@ -35,8 +57,7 @@ int main() {
     while (c--) cout << solve() << "\n";
     // while (c--) {
     //     vi ans = solve();
-    //     if (ans.empty()) cout << "NO";
-    //     else cout << "YES\n" << ans << "\n";
+    //     cout << ans.size() << "\n" << ans << "\n";
     // }
     // while (c--) solve();
     // const string OUT[2] = {"NO", "YES"}; while (c--) cout << OUT[solve()] << "\n";

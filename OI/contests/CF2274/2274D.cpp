@@ -21,8 +21,20 @@ template<typename T, typename... Args> void asv(int n, T &&v, vector<Args>&... a
 template<typename F, typename T, typename... Args> T &update(F &&f, T &x, Args &&...args) { return ((x = f(x, args)), ...), x; }
 template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Args &&...args) { T tmp(x); return ((tmp = f(tmp, args)), ...), tmp; }
 
+vi operator+(const vi &a, const vi &b) {
+    vi ans = a;
+    for (int i : b) ans.push_back(i);
+    return ans;
+}
+
 auto solve() {
-    return 0ll;
+    int n;
+    cin >> n;
+    vi ans;
+    for (int i = 2 * n - 4; i >= 0; i -= 2) ans.push_back(i + 2);
+    if (ans.size() % 3 == 0) ans.push_back(ans[0]);
+    cout << ans.size() * 3 << "\n";
+    return ans + ans + ans;
 }
 
 #undef int
