@@ -68,7 +68,7 @@ auto solve() {
         }
     }
     cout << ans.size() << "\n";
-    for (auto &i : ans) cout << i << "\n";
+    for (auto &i : ans) cout << i.size() << " " << i << "\n";
     return ans;
 }
 
