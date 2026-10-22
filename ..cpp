@@ -22,27 +22,17 @@ template<typename F, typename T, typename... Args> T &update(F &&f, T &x, Args &
 template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Args &&...args) { T tmp(x); return ((tmp = f(tmp, args)), ...), tmp; }
 
 auto solve() {
-    int n, m, k;
-    string s;
-    cin >> n >> k >> m >> s;
-    int ans = 0;
-    for (int i : s) {
-        i -= '0';
-        if (i) {
-            k--;
-            if (k < 0) ans++, k++;
-            
-        } else k++;
-        if (k > n) k--;
-    }
-    return ans;
+    int n = 6000;
+    cout << n << "\n";
+    for (int i = 1; i <= n; i++) cout << i << " ";
+    return 0;
 }
 
 signed main() {
     std::ios::sync_with_stdio(false);
     cin.tie(0), cout.tie(0);
     int c = 1;
-    cin >> c;
+    // cin >> c;
     while (c--) cout << solve() << "\n";
     // while (c--) {
     //     vi ans = solve();

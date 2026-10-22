@@ -1,0 +1,100 @@
+// Problem : F1. Elections in Saransk (easy version) https://codeforces.com/problemset/problem/2236/F1
+// Time    : 2026-10-21 11:57:48
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <vector>
+#include <algorithm>
+#include <utility>
+#include <cstdlib>
+#define int long long
+using std::cin;
+using std::cout;
+using std::vector;
+using std::string;
+typedef vector<int> vi;
+typedef std::pair<int, int> pii;
+template<typename T> std::istream &operator>>(std::istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
+template<typename T> std::ostream &operator<<(std::ostream &out, const vector<T> &x) { for (const T &i : x) out << i << " "; return out; }
+template<typename T> void sort(vector<T> &a) { std::sort(a.begin(), a.end()); }
+template<typename T, typename C> void sort(vector<T> &a, C cmp) { std::sort(a.begin(), a.end(), cmp); }
+template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
+template<typename T, typename... Args> void asv(int n, T &&v, vector<Args>&... args) { (..., args.assign(n, v)); }
+template<typename F, typename T, typename... Args> T &update(F &&f, T &x, Args &&...args) { return ((x = f(x, args)), ...), x; }
+template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Args &&...args) { T tmp(x); return ((tmp = f(tmp, args)), ...), tmp; }
+
+vi is;
+
+vi getPrimes(int n) {
+    vi ans;
+    is.assign(n + 1, true);
+    is[0] = is[1] = false;
+    for (int i = 2; i * i <= n; i++) {
+        if (!is[i]) continue;
+        for (int j = i * 2; j <= n; j += i) {
+            is[j] = false;
+        }
+    }
+    for (int i = 2; i <= n; i++) {
+        if (is[i]) ans.push_back(i);
+    }
+    return ans;
+}
+
+vi primes = getPrimes(5e5);
+
+const int M = 1e9 + 7;
+
+// using std::lcm;
+
+// int dfs(const vi &a, int l = 1, int s = 1, int i = 0) {
+//     if (i == a.size()) return l == s;
+//     int ans = 0;
+//     for (int j = 1; j <= a[i]; j++) {
+//         if (a[i] % j) continue;
+//         ans += dfs(a, lcm(l, j), s * j, i + 1);
+//     }
+//     return ans % M;
+// }
+
+auto solve() {
+    int n, x;
+    cin >> n >> x;
+    vi a(n);
+    cin >> a;
+    std::map<int, int> c;
+    for (int i : a) {
+        for (int p : primes) {
+            if (i < p) break;
+            if (is[i]) {
+                c[i]++;
+                break;
+            }
+            while (i % p == 0) i /= p, c[p]++;
+        }
+    }
+    int ans = 1;
+    for (auto &[p, x] : c) {
+        (ans *= x + 1) %= M;
+    }
+    return ans;
+}
+
+#undef int
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    cin.tie(0), cout.tie(0);
+    int c = 1;
+    cin >> c;
+    while (c--) cout << solve() << "\n";
+    // while (c--) {
+    //     vi ans = solve();
+    //     if (ans.empty()) cout << "NO";
+    //     else cout << "YES\n" << ans << "\n";
+    // }
+    // while (c--) solve();
+    // const string OUT[2] = {"NO", "YES"}; while (c--) cout << OUT[solve()] << "\n";
+    // const string Out[2] = {"No", "Yes"}; while (c--) cout << Out[solve()] << "\n";
+    return 0;
+}

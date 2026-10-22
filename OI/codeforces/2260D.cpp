@@ -21,24 +21,30 @@ template<typename T, typename... Args> void asv(int n, T &&v, vector<Args>&... a
 template<typename F, typename T, typename... Args> T &update(F &&f, T &x, Args &&...args) { return ((x = f(x, args)), ...), x; }
 template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Args &&...args) { T tmp(x); return ((tmp = f(tmp, args)), ...), tmp; }
 
+using std::max;
+using std::min;
+using std::abs;
+
 auto solve() {
     int n;
     string s;
     cin >> n >> s;
-    if (s[0] == '0') return -1ll;
-    int ans = 1;
-    for (int i = 1, c = 1, k = 0; i < n; i++, c++) {
-        if (i < n && s[i] == '0' && s[i] == s[i - 1]) return -1ll;
-        // if (s[i] != '0' && s[i - 1] != '0') ans = std::max(2ll, ans);
-        if (i >= n || s[i] != s[i - 1]) {
-            int K = i < n && s[i] != '0' && s[i - 1] != '0';
-            if (K || c % 2 == 0) ans = std::max(2ll, ans);
-            if (k && K && c == 2) ans = 3;
-            k = K;
-            c = 0;
+    vi a(n + 1);
+    for (int i = 0; i < n; i++) a[i + 1] = s[i] == '0' ? 0 : s[i] == '+' ? 1 : -1;
+    vector<vi> f(n + 1, vi(7, 100));
+    f[0][3] = 0;
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= 3 && (a[i] != '0' || j < 2); j++) {
+            int k = j * a[i] + 3;
+            for (int p = 0; p < 7; p++) {
+                if (p == k) continue;
+                f[i][k] = min(f[i][k], max(f[i - 1][p], abs(p - k)));
+            }
         }
     }
-    return ans;
+    int ans = 10;
+    for (int i : f[n]) ans = min(ans, i);
+    return ans > 3 ? -1 : ans;
 }
 
 #undef int
