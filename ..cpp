@@ -22,9 +22,8 @@ template<typename F, typename T, typename... Args> T &update(F &&f, T &x, Args &
 template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Args &&...args) { T tmp(x); return ((tmp = f(tmp, args)), ...), tmp; }
 
 auto solve() {
-    int n = 6000;
-    cout << n << "\n";
-    for (int i = 1; i <= n; i++) cout << i << " ";
+    vi a(4);
+    cout << a[5];
     return 0;
 }
 

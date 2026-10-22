@@ -91,6 +91,70 @@
             ],
             "group": "build",
             "detail": "不开任何检查、开满优化，用来测真实耗时或和暴力程序对拍"
+        },
+        {
+            // gen.cpp / brute.cpp 固定从 D:\code\stress 读取；sol 用当前打开的文件
+            "label": "对拍：当前文件",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "D:\\code\\stress\\stress.ps1",
+                "-Sol",
+                "${file}",
+                "-N",
+                "300"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "detail": "随机对拍 300 组；gen/brute 取自 D:\\code\\stress，失败时打印可复现的 seed"
+        },
+        {
+            // 运行时会弹框让你填被测文件名（相对当前文件所在目录），无需打开那个文件
+            "label": "对拍：指定被测文件名",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "D:\\code\\stress\\stress.ps1",
+                "-Sol",
+                "${input:solFile}",
+                "-N",
+                "300"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "detail": "弹框输入文件名（如 a.cpp 或 a）；gen/brute 仍取自 D:\\code\\stress"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "solFile",
+            "type": "promptString",
+            "description": "被测文件名（相对当前目录，可省略 .cpp）",
+            "default": "sol.cpp"
         }
     ]
 }
