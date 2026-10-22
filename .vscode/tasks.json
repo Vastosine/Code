@@ -1,8 +1,17 @@
 {
+    // ============================================================
+    // 说明：当前工具链 D:\programs\OI\mingw64 没有编译 sanitizer 运行时，
+    // 加 -fsanitize=address,undefined 会在链接阶段报 "cannot find -lasan"。
+    // 所以日常查错用下面第 2 个任务（libstdc++ 自带检查 + 溢出陷阱）。
+    // 以后装了 MSYS2 UCRT64（自带 libasan/libubsan），把该任务里
+    // 注释掉的那行 -fsanitize=address,undefined 打开即可。
+    // ============================================================
+    "version": "2.0.0",
     "tasks": [
         {
-            "type": "shell",
+            // 注意：label 不要改，launch.json 的 preLaunchTask 依赖它
             "label": "C/C++: clang++.exe 生成活动文件",
+            "type": "shell",
             "command": "clang++",
             "args": [
                 "-g",
@@ -14,7 +23,7 @@
                 "-DLOCAL",
                 "-Wall",
                 "-std=c++20",
-                "-ftemplate-depth=1000000",
+                "-ftemplate-depth=1000000"
                 // "-O3"
                 // "-I/media/yuxinhao/data/code/programs/CP-template",
                 // "-I${workspaceFolder}/programs/CP-template"
@@ -29,8 +38,59 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "调试器生成的任务。",
+            "detail": "正常构建（F5 默认用这个），输出 run.exe"
+        },
+        {
+            "label": "C/C++: 调试构建（STL 越界 + 溢出检查）",
+            "type": "shell",
+            "command": "clang++",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${workspaceFolder}\\run_dbg.exe",
+                "-Wshadow",
+                "-DLOCAL",
+                "-std=c++20",
+                "-O0",
+                "-D_GLIBCXX_DEBUG",
+                "-D_GLIBCXX_ASSERTIONS",
+                "-ftrapv",
+                "-Wall",
+                "-ftemplate-depth=1000000"
+                // 装了 MSYS2 UCRT64 之后，把下面这行注释打开：
+                // "-fsanitize=address,undefined"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "vector/string 等 STL 越界或迭代器失效会当场 abort 并指出下标；有符号整数溢出会直接崩溃（exit 0xC000001D 或 3），崩溃本身就是报错"
+        },
+        {
+            "label": "C/C++: 快速构建（-O2，对拍 / 测时限用）",
+            "type": "shell",
+            "command": "clang++",
+            "args": [
+                "${file}",
+                "-o",
+                "${workspaceFolder}\\run_fast.exe",
+                "-DLOCAL",
+                "-std=c++20",
+                "-O2",
+                "-ftemplate-depth=1000000"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "不开任何检查、开满优化，用来测真实耗时或和暴力程序对拍"
         }
-    ],
-    "version": "2.0.0"
+    ]
 }

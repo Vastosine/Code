@@ -30,6 +30,34 @@
                 }
             ],
             "preLaunchTask": "C/C++: clang++.exe 生成活动文件"
+        },
+        {
+            // 先执行“调试构建”任务，生成 run_dbg.exe 再启动调试。
+            // STL 越界会在断言处停下；-ftrapv 的有符号溢出会以信号形式停下。
+            "name": "clang++.exe - 调试构建（STL 越界检查）",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/run_dbg.exe",
+            "args": [
+                "<",
+                "${workspaceFolder}/IO/in.in",
+                ">",
+                "${workspaceFolder}/IO/out.out"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: 调试构建（STL 越界 + 溢出检查）"
         }
     ]
 }
