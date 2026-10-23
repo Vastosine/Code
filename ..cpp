@@ -20,6 +20,7 @@ template<typename... Args> void assign(int n, vector<Args>&... args) { (..., arg
 template<typename T, typename... Args> void asv(int n, T &&v, vector<Args>&... args) { (..., args.assign(n, v)); }
 template<typename F, typename T, typename... Args> T &update(F &&f, T &x, Args &&...args) { return ((x = f(x, args)), ...), x; }
 template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Args &&...args) { T tmp(x); return ((tmp = f(tmp, args)), ...), tmp; }
+auto invert = [] (auto &&x, auto &&y) { return y < x; };
 
 auto solve() {
     vi a(4);

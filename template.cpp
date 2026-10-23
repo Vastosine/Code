@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef pair<int, int> pii;
-[[maybe_unused]] const ll NEG = -(1LL << 60); [[maybe_unused]] const ll INF = (1LL << 60);
+[[maybe_unused]] const ll INF = (1LL << 60) | (1LL << 30); [[maybe_unused]] const ll NEG = (3LL << 62) | (3LL << 30);
 template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
 template<typename T> ostream &operator<<(ostream &out, const vector<T> &x) { for (const T &i : x) out << i << " "; return out; }
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
