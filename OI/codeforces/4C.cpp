@@ -2,7 +2,6 @@
 // Time    : 2026-10-23 11:46:34
 #include <iostream>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -13,7 +12,6 @@ template<typename T> ostream &operator<<(ostream &out, const vector<T> &x) { for
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
-
 
 auto solve() {
     int n;
@@ -28,7 +26,7 @@ auto solve() {
             if (a.find(t) == a.end()) {
                 cout << t << "\n";
                 a[t] = 1;
-                a[s]++;
+                a[s] = i + 1;
                 break;
             }
         }

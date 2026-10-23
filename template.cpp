@@ -11,7 +11,6 @@ template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 
-
 auto solve() {
     return 0LL;
 }
