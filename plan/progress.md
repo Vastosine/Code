@@ -7,7 +7,7 @@
 
 | 周 | 题数 | 一次通过率 | 平均提交 | RE 次数 | 备注 |
 |---|---|---|---|---|---|
-| W1 | 2 / 12 | 50% | 1.5 | 0 | 进行中 |
+| W1 | 9 / 12 | 67% | 1.44 | 0 | 进行中 |
 
 目标：一次通过率 ≥ 60%，平均提交 ≤ 2.2，RE = 0。
 
@@ -21,13 +21,13 @@
 |---|---|---|---|---|---|
 | 10-23 | 4C Registration System | 10 min | 2 | AC | 数据结构选择：未计数，写成 O(n²)；后修正为 `a[s] = i + 1` |
 | 10-23 | 519C Team Training | 10 min | 1 | AC | 循环版改 O(1)：`min(a, b, (a+b)/3)` |
-| 10-23 | 1159B Expansion coefficient | | | 未做 | 可选加练 |
-| | 1899E Queue Sort | | | 待做 | |
-| | 313C Ilya and Matrix | | | 待做 | |
-| | 994B Knights of a Polygonal Table | | | 待做 | |
-| | 1719C Fighting Tournament | | | 待做 | |
-| | 87A Trains | | | 待做 | |
-| | 825D Suitable Replacement | | | 待做 | |
+| 10-23 | 1159B Expansion coefficient | 8 min | 1 | AC | — |
+| 10-23 | 1899E Queue Sort | 10 min | 1 | AC | — |
+| 10-23 | 313C Ilya and Matrix | 5 min | 1 | AC | — |
+| 10-23 | 994B Knights of a Polygonal Table | 20 min | 2 | AC | 用 set 去重，漏掉 coin 相同的骑士；应 multiset 或计数 |
+| 10-23 | 1719C Fighting Tournament | 16 min | 1 | AC | — |
+| 10-23 | 87A Trains | 8 min | 1 | AC | — |
+| 10-23 | 825D Suitable Replacement | 25 min | 3 | AC | 二分边界/贪心细节 |
 | | 1416A k-Amazing Numbers | | | 待做 | |
 | | 复习 2245B | | | 待做 | 历史 10 次提交 |
 | | 复习 2218D | | | 待做 | 历史 7 次提交 |
