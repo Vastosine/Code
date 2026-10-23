@@ -1,0 +1,10 @@
+*.exe
+1/
+OI/others/
+OI/CP-template
+IO/
+.cph/
+OI/luogu/make-problem/
+.gitignore
+stress/
+plan/cache/
