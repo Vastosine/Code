@@ -22,6 +22,7 @@
                 "-Wshadow",
                 "-DLOCAL",
                 "-Wall",
+                "-Wextra",
                 "-std=c++20",
                 "-ftemplate-depth=1000000"
                 // "-O3"
@@ -50,6 +51,7 @@
                 "-o",
                 "${workspaceFolder}\\run_dbg.exe",
                 "-Wshadow",
+                "-Wextra",
                 "-DLOCAL",
                 "-std=c++20",
                 "-O0",
@@ -57,7 +59,7 @@
                 "-D_GLIBCXX_ASSERTIONS",
                 "-ftrapv",
                 "-Wall",
-                "-ftemplate-depth=1000000"
+                "-ftemplate-depth=1000000",
                 // 装了 MSYS2 UCRT64 之后，把下面这行注释打开：
                 // "-fsanitize=address,undefined"
             ],

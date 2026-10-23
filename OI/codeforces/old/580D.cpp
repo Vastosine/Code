@@ -18,7 +18,7 @@ auto solve() {
     int n, m, K;
     cin >> n >> m >> K;
     vi a(n), vis(n);
-    vector<vi> b(n, vi(n)), f(1 << n, vi(n, -1e18));
+    vector<vi> b(n, vi(n)), f(1 << n, vi(n, -(1LL << 60)));
     cin >> a;
     while (K--) {
         int x, y, c;
@@ -31,7 +31,7 @@ auto solve() {
     int ans = 0;
     for (int i = 1; i < f.size(); i++) {
         for (int j = 0; j < n; j++) {
-            if (f[i][j] > -1e18) {
+            if (f[i][j] > -(1LL << 60)) {
                 if (popcnt(i) < m) {
                     for (int k = 0; k < n; k++) {
                         if (!((1 << k) & i)) 

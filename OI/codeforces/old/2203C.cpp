@@ -24,7 +24,7 @@ template<typename F, typename T, typename... Args> T func(F &&f, const T &x, Arg
 auto solve() {
     int S, m;
     cin >> S >> m;
-    int l = 0, r = 1e18 + 10;
+    int l = 0, r = (long long)1e18 + 10;
     if (S % (m & -m)) return -1ll;
     while (l < r - 1) {
         int x = ((l + r) >> 1), s = S;

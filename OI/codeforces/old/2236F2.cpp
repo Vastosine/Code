@@ -96,7 +96,7 @@ auto solve() {
     for (int i : a) {
         for (int p : primes) {
             if (i < p) break;
-            if (is[i]) {
+            if (i < (int)is.size() && is[i]) {
                 c[i].push_back(1);
                 break;
             }

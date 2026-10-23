@@ -4,14 +4,16 @@
 #include <vector>
 #include <algorithm>
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef pair<int, int> pii;
+[[maybe_unused]] const ll NEG = -(1LL << 60); [[maybe_unused]] const ll INF = (1LL << 60);
 template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
 template<typename T> ostream &operator<<(ostream &out, const vector<T> &x) { for (const T &i : x) out << i << " "; return out; }
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 
+
 auto solve() {
-    return 0;
+    return 0LL;
 }
 
 signed main() {

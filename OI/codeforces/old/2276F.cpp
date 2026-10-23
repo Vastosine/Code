@@ -52,9 +52,10 @@ bool solve() {
     }
     if (ans > k) return false;
     bool _k = true;
-    for (int i = k + 1; i <= n; i++) k &= !q[i];
+    for (int i = k + 1; i <= n; i++) _k &= !q[i];
     if (_k) return true;
-    int sum = 0;
+    // TODO: unfinished, the rest of the logic is missing.
+    return _k;
 }
 
 #undef int

@@ -34,7 +34,7 @@ auto solve() {
     vector<vi> f(n + 1, vi(7, 100));
     f[0][3] = 0;
     for (int i = 1; i <= n; i++) {
-        for (int j = 1; j <= 3 && (a[i] != '0' || j < 2); j++) {
+        for (int j = 1; j <= 3 && (a[i] != 0 || j < 2); j++) {
             int k = j * a[i] + 3;
             for (int p = 0; p < 7; p++) {
                 if (p == k) continue;
