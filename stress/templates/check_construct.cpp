@@ -6,14 +6,14 @@
 // property the statement demands.
 //
 // Interface expected by stress.ps1 -Check:
-//     check.exe <input-file> <output-file>
+//     checker.exe <input-file> <output-file>
 //      exit 0  -> answer accepted
 //      exit 1  -> answer rejected, message printed on stdout
 //      exit 2  -> checker itself broken (bad arguments / unreadable file)
 //
 // Workflow:
-//   Copy-Item templates\check_construct.cpp .\check.cpp   # then edit the EDIT parts
-//   .\stress.ps1 -Sol ..\OI\codeforces\xxx.cpp -Check check -N 200
+//   Copy-Item templates\check_construct.cpp .\checker.cpp   # then edit the EDIT parts
+//   .\stress.ps1 -Sol ..\OI\codeforces\xxx.cpp -Check checker -N 200
 //
 // Checklist when writing the validator:
 //   * output has exactly the claimed number of tokens (nothing extra, nothing
@@ -46,7 +46,7 @@ static void fail(const string &why) {
 }
 
 int main(int argc, char **argv) {
-    if (argc < 3) { cout << "usage: check <input> <output>\n"; return 2; }
+    if (argc < 3) { cout << "usage: checker <input> <output>\n"; return 2; }
 
     ifstream in(argv[1]);
     ifstream out(argv[2]);

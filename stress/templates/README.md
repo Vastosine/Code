@@ -26,12 +26,12 @@ powershell -ExecutionPolicy Bypass -File .\stress.ps1 -Sol ..\..\OI\codeforces\x
 「输出任意一个满足条件的序列」这类题，两个正确答案可以完全不同，**暴力对比必然误报**。这时写一个 checker（评测里的 special judge）：
 
 ```powershell
-Copy-Item .\templates\check_construct.cpp .\check.cpp
+Copy-Item .\templates\check_construct.cpp .\checker.cpp
 # 改标了 ---- EDIT 的两处：读输入、验证答案
-powershell -ExecutionPolicy Bypass -File .\stress.ps1 -Sol ..\..\OI\codeforces\xxx.cpp -Check check -N 200
+powershell -ExecutionPolicy Bypass -File .\stress.ps1 -Sol ..\..\OI\codeforces\xxx.cpp -Check checker -N 200
 ```
 
-接口固定：`check.exe <输入文件> <输出文件>`，合法 `exit 0`，非法 `exit 1` 并打印原因。
+接口固定：`checker.exe <输入文件> <输出文件>`，合法 `exit 0`，非法 `exit 1` 并打印原因。
 
 checker 要查的四件事，写的时候逐条过：
 

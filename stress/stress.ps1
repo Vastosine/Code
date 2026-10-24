@@ -5,7 +5,7 @@
 #   .\stress.ps1 -Sol main            # extension .cpp is added automatically
 #   .\stress.ps1 -Sol a.cpp -Brute b -Gen gen -N 500   # override the shared pair
 #   .\stress.ps1 -Sol a.cpp -Keep -N 20                # keep every case's in/out
-#   .\stress.ps1 -Sol a.cpp -Check check -N 200        # constructive problems
+#   .\stress.ps1 -Sol a.cpp -Check checker -N 200      # constructive problems
 #
 # Checker mode (-Check): the answer has many valid forms, so comparing against
 # a brute force is wrong. The checker is called as
@@ -83,7 +83,7 @@ function Die([string]$msg) {
 if ($N -lt 1) { Die '-N must be >= 1' }
 
 # "-Sol a" is accepted as a shorthand for "a.cpp", and a bare name is also
-# looked up in this script's folder, so "-Check check" works from any cwd.
+# looked up in this script's folder, so "-Check checker" works from any cwd.
 function Add-CppExt([string]$p) {
     if (Test-Path -LiteralPath $p) { return $p }
     $cands = @()
