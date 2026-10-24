@@ -58,9 +58,11 @@ function Move-Cph($From, $To) {
     if ((Test-Path $probTo) -and -not (Test-Path $probFrom)) { return 'cph ok' }
     if (-not (Test-Path $probFrom)) { return 'cph MISSING' }
 
-    $json = Get-Content $probFrom -Raw | ConvertFrom-Json
+    $json = [IO.File]::ReadAllText($probFrom, [Text.Encoding]::UTF8) | ConvertFrom-Json
     $json.srcPath = Get-CphPath $To
-    $json | ConvertTo-Json -Depth 20 -Compress | Set-Content $probTo -Encoding utf8 -NoNewline
+    # cph parses its state with JSON.parse: UTF-8 without BOM
+    [IO.File]::WriteAllText($probTo, ($json | ConvertTo-Json -Depth 20 -Compress),
+        (New-Object System.Text.UTF8Encoding($false)))
     if ($probFrom -ne $probTo) { Remove-Item $probFrom -Force }
     return 'cph moved'
 }
