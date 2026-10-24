@@ -6,6 +6,7 @@
 > 归档：AC 的题按第一次 AC 的日期收进 `OI/codeforces/old/<年>/<月>/<日>/`（`plan/organize.ps1`，连带修好 `.cph` 元数据）。
 > 比赛：题面文件放在 `OI/contests/CF/<contestId>/`，同一场所有文件一起创建，`// Time` 即比赛开始时间，
 > 所以每题的真实用时看 `elapsed.ps1` 输出的 `delta`（与上一题 AC 的差值），`+N min` 是开赛后的第 N 分钟。
+> 归档时机：每天 `end` 时跑一次 `organize.ps1 -Apply` 把当天 AC 的题挪进 `old/`；若当天忘了，次日开工先补。
 
 ## 周指标
 
