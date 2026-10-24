@@ -1,7 +1,6 @@
 // Problem : Edge Addeleting https://m1.codeforces.com/contest/2277/problem/C
 // Time    : 2026-10-24 19:05:14
 #include <iostream>
-#include <set>
 #include <vector>
 #include <algorithm>
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef pair<int, int> pii;
@@ -13,59 +12,34 @@ template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin()
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 
 int n, m;
-vector<vi> e, dis;
-vi vis, dep, ans;
+vector<vi> e;
+vi dis;
 
-void dfs(int u = 1, int d = 0) {
-    dep[u] = d;
+void dfs(int u, int d = 1) {
+    dis[u] = d;
     for (int v : e[u]) {
-        if (v == 1 || dep[v]) continue;
-        dfs(v, d + 1);
-        int y = dis[v][0] + 1;
-        if (y > dis[u][0]) dis[u][1] = dis[u][0], dis[u][0] = y;
-        else if (y > dis[u][1]) dis[u][1] = y;
-    }
-}
-
-// int max2(int x, int y, int z) {
-//     return x + y + z - min({x, y, z});
-// }
-
-void dfs2(int u, int fd = 0) {
-    ans[u] = max({dis[u][0], dis[u][1], fd});
-    for (int v : e[u]) {
-        if (dep[v] == dep[u] + 1) {
-            dfs2(v, 1 + max(fd, dis[u][dis[u][0] == dis[v][0] + 1]));
-        }
+        if (!dis[v] && v > 1) dfs(v, d + 1);
     }
 }
 
 auto solve() {
     cin >> n >> m;
-    assign(n + 1, e, dep, ans);
-    dis.assign(n + 1, vi(2));
+    assign(n + 1, e, dis);
     for (int i = 1; i < n; i++) {
         int u, v;
         cin >> u >> v;
         e[u].push_back(v);
         e[v].push_back(u);
     }
-    set<int> s(e[1].begin(), e[1].end());
+    dfs(n);
+    int ans = 0;
+    for (int u : e[1]) ans = max(ans, dis[u]);
     while (m--) {
         int x;
         cin >> x;
-        s.insert(x);
+        ans = max(ans, dis[x]);
     }
-    dfs();
-    for (int u : e[1]) {
-        dfs2(u);
-    }
-    // cout << ans << "\n";
-    int ret = 0;
-    for (int i : s) {
-        ret = max(ans[i], ret);
-    }
-    return ret + 1;
+    return ans;
 }
 
 signed main() {
