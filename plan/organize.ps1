@@ -23,7 +23,6 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $statusPath = Join-Path $PSScriptRoot 'cache\status.json'
-$cphDir = Join-Path $Root '.cph'
 $oldDir = Join-Path $Root 'old'
 $unacceptDir = Join-Path $Root 'unaccept'
 
@@ -49,21 +48,33 @@ function Get-CphPath([string]$Path) {
     $Path.Substring(0, 1).ToLower() + $Path.Substring(1)
 }
 
+# cph keeps one state file per source file, next to it:
+#   <dir>\.cph\.<name>_<md5(path)>.prob   (UTF-8, no BOM - it uses JSON.parse)
+function Get-ProbPath([string]$File) {
+    Join-Path (Join-Path (Split-Path $File -Parent) '.cph') `
+              ('.{0}_{1}.prob' -f (Split-Path $File -Leaf), (Get-PathHash (Get-CphPath $File)))
+}
+
 function Move-Cph($From, $To) {
-    if (-not (Test-Path $cphDir)) { return 'no .cph dir' }
-    $leaf = Split-Path $From -Leaf
-    $probFrom = Join-Path $cphDir ('.{0}_{1}.prob' -f $leaf, (Get-PathHash (Get-CphPath $From)))
-    $probTo = Join-Path $cphDir ('.{0}_{1}.prob' -f $leaf, (Get-PathHash (Get-CphPath $To)))
+    $probFrom = Get-ProbPath $From
+    $probTo = Get-ProbPath $To
 
     if ((Test-Path $probTo) -and -not (Test-Path $probFrom)) { return 'cph ok' }
     if (-not (Test-Path $probFrom)) { return 'cph MISSING' }
 
     $json = [IO.File]::ReadAllText($probFrom, [Text.Encoding]::UTF8) | ConvertFrom-Json
     $json.srcPath = Get-CphPath $To
+    $cphDir = Split-Path $probTo -Parent
+    if (-not (Test-Path $cphDir)) { New-Item -ItemType Directory -Force -Path $cphDir | Out-Null }
     # cph parses its state with JSON.parse: UTF-8 without BOM
     [IO.File]::WriteAllText($probTo, ($json | ConvertTo-Json -Depth 20 -Compress),
         (New-Object System.Text.UTF8Encoding($false)))
-    if ($probFrom -ne $probTo) { Remove-Item $probFrom -Force }
+    if ($probFrom -ne $probTo) {
+        Remove-Item $probFrom -Force
+        # drop a .cph folder that just became empty
+        $fromDir = Split-Path $probFrom -Parent
+        if ((Get-ChildItem $fromDir -Force | Measure-Object).Count -eq 0) { Remove-Item $fromDir -Force }
+    }
     return 'cph moved'
 }
 
