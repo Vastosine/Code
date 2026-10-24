@@ -8,3 +8,5 @@ OI/luogu/make-problem/
 .gitignore
 stress/
 plan/cache/
+
+stress_out/

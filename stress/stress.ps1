@@ -11,11 +11,13 @@
 #   brute.cpp  reads the test case from stdin, prints the answer to stdout
 #   sol.cpp    same interface as brute.cpp, this is the program under test
 #
-# Each source gets its own build folder (stress_out\build\<hash of path>), so
-# switching -Sol never reuses a binary compiled from a different file.
-# On a mismatch the input, the sol output and the brute output are all saved
-# as stress_out\fail_<case>_<seed>.{in,out,brute.out}, and the first differing
-# token is printed.
+# Everything lands in <repo root>\stress_out (D:\code\stress_out):
+#   sol_<hash>.exe / brute_<hash>.exe / gen_<hash>.exe   per-source binaries,
+#       so switching -Sol can never reuse a binary built from another file
+#   in.txt / sol.out / brute.out                          scratch files
+#   fail_<case>_<seed>.{in,out,brute.out}                 a mismatch
+#   keep\<case>_<seed>\{in,sol,brute}.txt                 with -Keep
+#   logs\<timestamp>_<sol>.log + last.log                  full transcript
 #
 # gen.cpp and brute.cpp default to the folder where this script lives
 # (D:\code\stress), so the sol file can be anywhere. -Sol / -Brute / -Gen
@@ -42,20 +44,41 @@ $ErrorActionPreference = 'Stop'
 if (-not $Brute) { $Brute = Join-Path $PSScriptRoot 'brute.cpp' }
 if (-not $Gen) { $Gen = Join-Path $PSScriptRoot 'gen.cpp' }
 
-function Die([string]$msg) {
-    Write-Host "[stress] $msg" -ForegroundColor Red
-    exit 2
+# output goes to <repo root>\stress_out, found by walking up to .git
+$repoRoot = $PSScriptRoot
+while ($repoRoot -and -not (Test-Path -LiteralPath (Join-Path $repoRoot '.git'))) {
+    $parent = Split-Path $repoRoot -Parent
+    if (-not $parent -or $parent -eq $repoRoot) { $repoRoot = $PSScriptRoot; break }
+    $repoRoot = $parent
 }
-
-if ($N -lt 1) { Die '-N must be >= 1' }
-
-# Output (compiled exe, in.txt, fail_*.in) goes into D:\code\stress\stress_out
-# by default, so it does not litter the problem folder. Override with -OutDir.
-if (-not $OutDir) { $OutDir = Join-Path $PSScriptRoot 'stress_out' }
+if (-not $OutDir) { $OutDir = Join-Path $repoRoot 'stress_out' }
 if (-not (Test-Path -LiteralPath $OutDir)) {
     New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
 }
 $OutDir = (Resolve-Path -LiteralPath $OutDir).Path
+
+# ---------------------------------------------------------------- logging
+$logDir = Join-Path $OutDir 'logs'
+if (-not (Test-Path -LiteralPath $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
+$solTag = if ($Sol) { [IO.Path]::GetFileNameWithoutExtension($Sol) } else { 'sol' }
+$LogPath = Join-Path $logDir ('{0}_{1}.log' -f (Get-Date -Format 'yyyyMMdd_HHmmss'), $solTag)
+$LastPath = Join-Path $OutDir 'last.log'
+Set-Content -LiteralPath $LastPath -Value '' -Encoding UTF8
+
+function Write-Log([string]$text, [string]$color = '') {
+    if ($color) { Write-Host $text -ForegroundColor $color } else { Write-Host $text }
+    $line = $text -replace '\r', ''
+    Add-Content -LiteralPath $LogPath -Value $line -Encoding UTF8
+    Add-Content -LiteralPath $LastPath -Value $line -Encoding UTF8
+}
+
+function Die([string]$msg) {
+    Write-Log "[stress] $msg" 'Red'
+    Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
+    exit 2
+}
+
+if ($N -lt 1) { Die '-N must be >= 1' }
 
 # "-Sol a" is accepted as a shorthand for "a.cpp".
 function Add-CppExt([string]$p) {
@@ -81,11 +104,10 @@ $CXX = 'clang++'
 if (-not (Get-Command $CXX -ErrorAction SilentlyContinue)) { $CXX = 'g++' }
 if (-not (Get-Command $CXX -ErrorAction SilentlyContinue)) { Die 'no C++ compiler found (clang++ / g++)' }
 
-# Each source file gets its OWN build folder, keyed by its full path.
+# each source gets its own binary name: sol_<hash12>.exe, brute_<hash>.exe, ...
 # A single shared sol.exe would be silently reused when you switch -Sol to a
-# different file whose timestamp is older than the last build (the exe looks
-# "newer than the source" so the rebuild is skipped and you benchmark the
-# wrong binary). Keying by path makes that impossible.
+# different file whose timestamp is older than the last build, and you would
+# be testing the wrong program.
 function Get-SourceKey([string]$src) {
     $sha = [System.Security.Cryptography.SHA1]::Create()
     try { $bytes = $sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($src.ToLower())) }
@@ -94,29 +116,24 @@ function Get-SourceKey([string]$src) {
 }
 
 function Build([string]$src, [string]$tag) {
-    $dir = Join-Path $OutDir ('build\' + (Get-SourceKey $src))
-    if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $exe = Join-Path $dir ($tag + '.exe')
+    $exe = Join-Path $OutDir ('{0}_{1}.exe' -f $tag, (Get-SourceKey $src))
     if ((Test-Path -LiteralPath $exe) -and
         ((Get-Item -LiteralPath $exe).LastWriteTime -ge (Get-Item -LiteralPath $src).LastWriteTime)) {
         return $exe
     }
-    Write-Host ("[stress] building {0} ..." -f (Split-Path $src -Leaf)) -ForegroundColor DarkGray
+    Write-Log ("[stress] building {0} ..." -f (Split-Path $src -Leaf)) 'DarkGray'
     $sw = [Diagnostics.Stopwatch]::StartNew()
     & $CXX -std=c++20 -O2 $src -o $exe
     $code = $LASTEXITCODE
     $sw.Stop()
     if ($code -ne 0) { Die ("compile failed: {0}" -f $src) }
-    Write-Host ("[stress] built in {0:N1}s" -f $sw.Elapsed.TotalSeconds) -ForegroundColor DarkGray
+    Write-Log ("[stress] built {0} in {1:N1}s" -f (Split-Path $exe -Leaf), $sw.Elapsed.TotalSeconds) 'DarkGray'
     return $exe
 }
 
 $SolExe = Build $SolSrc 'sol'
 $BruteExe = Build $BruteSrc 'brute'
 $GenExe = Build $GenSrc 'gen'
-Write-Host ("[stress] sol   = {0}" -f $SolSrc) -ForegroundColor DarkGray
-Write-Host ("[stress] brute = {0}" -f $BruteSrc) -ForegroundColor DarkGray
-Write-Host ("[stress] gen   = {0}" -f $GenSrc) -ForegroundColor DarkGray
 
 $InFile = Join-Path $OutDir 'in.txt'
 $SolOut = Join-Path $OutDir 'sol.out'
@@ -176,13 +193,16 @@ function ByteEqual([string]$a, [string]$b) {
 function Show-Head([string]$path, [int]$lines) {
     if (-not (Test-Path -LiteralPath $path)) { return }
     $c = @(Get-Content -LiteralPath $path -TotalCount $lines)
-    if ($c.Count -gt 0) { $c | ForEach-Object { Write-Host ('    ' + $_) -ForegroundColor DarkYellow } }
+    foreach ($l in $c) { Write-Log ('    ' + $l) 'DarkYellow' }
 }
 
 if ($Seed -gt 0) { $base = $Seed } else { $base = Get-Random -Minimum 1 -Maximum 2000000000 }
 
-Write-Host ("[stress] sol={0}  brute={1}  gen={2}" -f (Split-Path $SolSrc -Leaf), (Split-Path $BruteSrc -Leaf), (Split-Path $GenSrc -Leaf)) -ForegroundColor Cyan
-Write-Host ("[stress] cases={0}  timeout={1}ms  base-seed={2}  mode={3}" -f $N, $TimeoutMs, $base, $(if ($Strict) { 'byte' } else { 'token' })) -ForegroundColor Cyan
+Write-Log ("[stress] sol   = {0}" -f $SolSrc) 'Cyan'
+Write-Log ("[stress] brute = {0}" -f $BruteSrc) 'Cyan'
+Write-Log ("[stress] gen   = {0}" -f $GenSrc) 'Cyan'
+Write-Log ("[stress] out   = {0}" -f $OutDir) 'DarkGray'
+Write-Log ("[stress] cases={0}  timeout={1}ms  base-seed={2}  mode={3}" -f $N, $TimeoutMs, $base, $(if ($Strict) { 'byte' } else { 'token' })) 'Cyan'
 
 $total = [Diagnostics.Stopwatch]::StartNew()
 $lastTick = 0
@@ -192,12 +212,14 @@ for ($i = 1; $i -le $N; $i++) {
 
     $r = Invoke-Program $GenExe $NullIn $InFile $GenErr 20000 ([string]$seed)
     if ($r -ne 'OK') {
-        Write-Host ("[stress] generator failed ({0}) on seed {1}" -f $r, $seed) -ForegroundColor Red
+        Write-Log ("[stress] generator failed ({0}) on seed {1}" -f $r, $seed) 'Red'
         Show-Head $GenErr 10
+        Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
         exit 1
     }
     if ((Get-Item -LiteralPath $InFile).Length -eq 0) {
-        Write-Host ("[stress] generator produced empty output on seed {0}" -f $seed) -ForegroundColor Red
+        Write-Log ("[stress] generator produced empty output on seed {0}" -f $seed) 'Red'
+        Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
         exit 1
     }
 
@@ -205,18 +227,20 @@ for ($i = 1; $i -le $N; $i++) {
     if ($solResult -ne 'OK') {
         $bad = Join-Path $OutDir ("fail_{0}_{1}.in" -f $i, $seed)
         Copy-Item -LiteralPath $InFile -Destination $bad -Force
-        Write-Host ""
-        Write-Host ("[stress] case #{0} (seed {1}): solution {2}" -f $i, $seed, $solResult) -ForegroundColor Red
-        Write-Host ("[stress] input saved to {0}" -f $bad) -ForegroundColor Red
+        Write-Log ""
+        Write-Log ("[stress] case #{0} (seed {1}): solution {2}" -f $i, $seed, $solResult) 'Red'
+        Write-Log ("[stress] input saved to {0}" -f $bad) 'Red'
         Show-Head $SolErr 8
-        Write-Host ("[stress] reproduce: .\stress.ps1 -Seed {0} -N 1" -f $seed) -ForegroundColor Yellow
+        Write-Log ("[stress] reproduce: .\stress.ps1 -Seed {0} -N 1" -f $seed) 'Yellow'
+        Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
         exit 1
     }
 
     $bruteResult = Invoke-Program $BruteExe $InFile $BruteOut $BruteErr ($TimeoutMs * 3)
     if ($bruteResult -ne 'OK') {
-        Write-Host ("[stress] case #{0}: brute {1} - brute is too slow or buggy, raise -TimeoutMs" -f $i, $bruteResult) -ForegroundColor Red
+        Write-Log ("[stress] case #{0}: brute {1} - brute is too slow or buggy, raise -TimeoutMs" -f $i, $bruteResult) 'Red'
         Show-Head $BruteErr 8
+        Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
         exit 1
     }
 
@@ -243,20 +267,21 @@ for ($i = 1; $i -le $N; $i++) {
         $pos = 0
         while ($pos -lt $tokA.Count -and $pos -lt $tokB.Count -and $tokA[$pos] -ceq $tokB[$pos]) { $pos++ }
 
-        Write-Host ""
-        Write-Host ("[stress] WRONG ANSWER on case #{0} (seed {1})" -f $i, $seed) -ForegroundColor Red
-        Write-Host ("  first different token: #{0} (1-based {1})" -f $pos, ($pos + 1)) -ForegroundColor Yellow
+        Write-Log ""
+        Write-Log ("[stress] WRONG ANSWER on case #{0} (seed {1})" -f $i, $seed) 'Red'
+        Write-Log ("  first different token: #{0} (1-based {1})" -f $pos, ($pos + 1)) 'Yellow'
         $from = [Math]::Max(0, $pos - 4)
         $to = $pos + 5
         $segA = for ($k = $from; $k -lt [Math]::Min($to, $tokA.Count); $k++) { $tokA[$k] }
         $segB = for ($k = $from; $k -lt [Math]::Min($to, $tokB.Count); $k++) { $tokB[$k] }
-        Write-Host ("  sol  : {0}" -f (@($segA) -join ' ')) -ForegroundColor Yellow
-        Write-Host ("  brute: {0}" -f (@($segB) -join ' ')) -ForegroundColor Yellow
-        Write-Host ("  tokens: sol={0}  brute={1}" -f $tokA.Count, $tokB.Count) -ForegroundColor DarkGray
-        Write-Host ("  input  : {0}" -f $badIn) -ForegroundColor Red
-        Write-Host ("  sol out: {0}" -f $badOut) -ForegroundColor Red
-        Write-Host ("  brute  : {0}" -f $badBr) -ForegroundColor Red
-        Write-Host ("  reproduce: .\stress.ps1 -Seed {0} -N 1" -f $seed) -ForegroundColor Yellow
+        Write-Log ("  sol  : {0}" -f (@($segA) -join ' ')) 'Yellow'
+        Write-Log ("  brute: {0}" -f (@($segB) -join ' ')) 'Yellow'
+        Write-Log ("  tokens: sol={0}  brute={1}" -f $tokA.Count, $tokB.Count) 'DarkGray'
+        Write-Log ("  input  : {0}" -f $badIn) 'Red'
+        Write-Log ("  sol out: {0}" -f $badOut) 'Red'
+        Write-Log ("  brute  : {0}" -f $badBr) 'Red'
+        Write-Log ("  reproduce: .\stress.ps1 -Seed {0} -N 1" -f $seed) 'Yellow'
+        Write-Log ("  log: {0}" -f $LogPath) 'DarkGray'
         exit 1
     }
 
@@ -279,6 +304,8 @@ for ($i = 1; $i -le $N; $i++) {
 }
 
 $total.Stop()
-Write-Host ""
-Write-Host ("[stress] all {0} cases passed in {1:N1}s" -f $N, $total.Elapsed.TotalSeconds) -ForegroundColor Green
+Write-Log ""
+Write-Log ("[stress] all {0} cases passed in {1:N1}s" -f $N, $total.Elapsed.TotalSeconds) 'Green'
+Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
+Write-Log ("[stress] last: {0}" -f $LastPath) 'DarkGray'
 exit 0
