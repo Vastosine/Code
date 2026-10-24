@@ -33,46 +33,46 @@ vector<ll> ans;
 auto solve() {
     int n;
     cin >> n;
-    for (int i = 0; i < n; i++) cout << ans[i] << "\n";
+    for (int i = 1; i <= n; i++) cout << (ll) primes[i] * primes[i - 1] << " ";
     cout << "\n";
 }
 
-bool check(int n) {
-    set<ll> s;
-    for (int i = 1; i < n; i++) {
-        ll g = gcd(ans[i], ans[i - 1]);
-        if (s.find(g) == s.end()) s.insert(g);
-        else return cerr << i << " ", false;
-    }
-    return true;
-}
+// bool check(int n) {
+//     set<ll> s;
+//     for (int i = 1; i < n; i++) {
+//         ll g = gcd(ans[i], ans[i - 1]);
+//         if (s.find(g) == s.end()) s.insert(g);
+//         else return cerr << i << " ", false;
+//     }
+//     return true;
+// }
 
 // 4, 8, ..., 2^n, 2^n, 2 * 3, 2 * 3^2, ..., 2 * 3^m, 3 * 5, ...
-void init(int n) {
-    ll q = 2;
-    ll maxx = (ll) 1e18;
-    set<ll> s;
-    ans.push_back(1);
-    for (int t = 2; t < (int) INF; t++) {
-        for (ll x = q * t, tr = 0; x < maxx / t && tr < 3; x *= t, tr++) {
-            ll g = gcd(x, ans.back());
-            if (s.find(g) != s.end()) continue;
-            ans.push_back(x);
-            s.insert(g);
-            if ((int) ans.size() > n) return;
-            q = t;
-            tr--;
-        }
-    }
-}
+// void init(int n) {
+//     ll q = 2;
+//     ll maxx = (ll) 1e18;
+//     set<ll> s;
+//     ans.push_back(1);
+//     for (int t = 2; t < (int) INF; t++) {
+//         for (ll x = q * t, tr = 0; x < maxx / t && tr < 3; x *= t, tr++) {
+//             ll g = gcd(x, ans.back());
+//             if (s.find(g) != s.end()) continue;
+//             ans.push_back(x);
+//             s.insert(g);
+//             if ((int) ans.size() > n) return;
+//             q = t;
+//             tr--;
+//         }
+//     }
+// }
 
 signed main() {
     ios::sync_with_stdio(false); cin.tie(0), cout.tie(0);
     int c = 1;
     cin >> c;
-    init(10005);
+    // init(10005);
     // while (c--) cout << solve() << "\n";
-    cerr << check(10000) << "\n";
+    // cerr << check(10000) << "\n";
     while (c--) solve();
     // cerr << clock() / 1000.0;
     // const string OUT[2] = {"NO", "YES"}; while (c--) cout << OUT[solve()] << "\n";
