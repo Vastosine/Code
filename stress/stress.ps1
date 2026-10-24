@@ -11,13 +11,13 @@
 #   brute.cpp  reads the test case from stdin, prints the answer to stdout
 #   sol.cpp    same interface as brute.cpp, this is the program under test
 #
-# Everything lands in <repo root>\stress_out (D:\code\stress_out):
+# Everything lands in stress\stress_out (D:\code\stress\stress_out):
 #   sol_<hash>.exe / brute_<hash>.exe / gen_<hash>.exe   per-source binaries,
 #       so switching -Sol can never reuse a binary built from another file
 #   in.txt / sol.out / brute.out                          scratch files
 #   fail_<case>_<seed>.{in,out,brute.out}                 a mismatch
 #   keep\<case>_<seed>\{in,sol,brute}.txt                 with -Keep
-#   logs\<timestamp>_<sol>.log + last.log                  full transcript
+#   logs\<timestamp>_<sol>.log + latest.log                 full transcript
 #
 # gen.cpp and brute.cpp default to the folder where this script lives
 # (D:\code\stress), so the sol file can be anywhere. -Sol / -Brute / -Gen
@@ -44,14 +44,8 @@ $ErrorActionPreference = 'Stop'
 if (-not $Brute) { $Brute = Join-Path $PSScriptRoot 'brute.cpp' }
 if (-not $Gen) { $Gen = Join-Path $PSScriptRoot 'gen.cpp' }
 
-# output goes to <repo root>\stress_out, found by walking up to .git
-$repoRoot = $PSScriptRoot
-while ($repoRoot -and -not (Test-Path -LiteralPath (Join-Path $repoRoot '.git'))) {
-    $parent = Split-Path $repoRoot -Parent
-    if (-not $parent -or $parent -eq $repoRoot) { $repoRoot = $PSScriptRoot; break }
-    $repoRoot = $parent
-}
-if (-not $OutDir) { $OutDir = Join-Path $repoRoot 'stress_out' }
+# output goes to <script folder>\stress_out = D:\code\stress\stress_out
+if (-not $OutDir) { $OutDir = Join-Path $PSScriptRoot 'stress_out' }
 if (-not (Test-Path -LiteralPath $OutDir)) {
     New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
 }
@@ -62,14 +56,14 @@ $logDir = Join-Path $OutDir 'logs'
 if (-not (Test-Path -LiteralPath $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
 $solTag = if ($Sol) { [IO.Path]::GetFileNameWithoutExtension($Sol) } else { 'sol' }
 $LogPath = Join-Path $logDir ('{0}_{1}.log' -f (Get-Date -Format 'yyyyMMdd_HHmmss'), $solTag)
-$LastPath = Join-Path $OutDir 'last.log'
-Set-Content -LiteralPath $LastPath -Value '' -Encoding UTF8
+$LatestPath = Join-Path $OutDir 'latest.log'
+Set-Content -LiteralPath $LatestPath -Value '' -Encoding UTF8
 
 function Write-Log([string]$text, [string]$color = '') {
     if ($color) { Write-Host $text -ForegroundColor $color } else { Write-Host $text }
     $line = $text -replace '\r', ''
     Add-Content -LiteralPath $LogPath -Value $line -Encoding UTF8
-    Add-Content -LiteralPath $LastPath -Value $line -Encoding UTF8
+    Add-Content -LiteralPath $LatestPath -Value $line -Encoding UTF8
 }
 
 function Die([string]$msg) {
@@ -141,8 +135,8 @@ $BruteOut = Join-Path $OutDir 'brute.out'
 $SolErr = Join-Path $OutDir 'sol.err'
 $BruteErr = Join-Path $OutDir 'brute.err'
 $GenErr = Join-Path $OutDir 'gen.err'
-$NullIn = Join-Path $OutDir 'nul.in'
-Set-Content -LiteralPath $NullIn -Value '' -Encoding ASCII
+$EmptyIn = Join-Path $OutDir 'empty.in'
+Set-Content -LiteralPath $EmptyIn -Value '' -Encoding ASCII
 
 function Invoke-Program([string]$exe, [string]$stdin, [string]$stdout, [string]$stderr, [int]$limitMs, [string]$argLine = '') {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -210,7 +204,7 @@ $lastTick = 0
 for ($i = 1; $i -le $N; $i++) {
     $seed = $base + $i - 1
 
-    $r = Invoke-Program $GenExe $NullIn $InFile $GenErr 20000 ([string]$seed)
+    $r = Invoke-Program $GenExe $EmptyIn $InFile $GenErr 20000 ([string]$seed)
     if ($r -ne 'OK') {
         Write-Log ("[stress] generator failed ({0}) on seed {1}" -f $r, $seed) 'Red'
         Show-Head $GenErr 10
@@ -307,5 +301,5 @@ $total.Stop()
 Write-Log ""
 Write-Log ("[stress] all {0} cases passed in {1:N1}s" -f $N, $total.Elapsed.TotalSeconds) 'Green'
 Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
-Write-Log ("[stress] last: {0}" -f $LastPath) 'DarkGray'
+Write-Log ("[stress] latest: {0}" -f $LatestPath) 'DarkGray'
 exit 0
