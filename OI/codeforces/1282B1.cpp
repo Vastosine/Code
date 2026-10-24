@@ -17,8 +17,8 @@ auto solve() {
     vi a(n + 1);
     for (int i = 1; i <= n; i++) cin >> a[i];
     sort(a.begin() + 1, a.end());
-    vi f(n + 1);
-    int ans = 0;
+    vector<ll> f(n + 1);
+    ll ans = 0;
     for (int i = 1; i <= n; i++) {
         if (i < k) f[i] = f[i - 1] + a[i];
         else f[i] = min(f[i - 1], f[i - k]) + a[i];
