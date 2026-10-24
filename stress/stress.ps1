@@ -82,12 +82,19 @@ function Die([string]$msg) {
 
 if ($N -lt 1) { Die '-N must be >= 1' }
 
-# "-Sol a" is accepted as a shorthand for "a.cpp".
+# "-Sol a" is accepted as a shorthand for "a.cpp", and a bare name is also
+# looked up in this script's folder, so "-Check check" works from any cwd.
 function Add-CppExt([string]$p) {
-    if ((Test-Path -LiteralPath $p) -or [IO.Path]::HasExtension($p)) { return $p }
-    $q = $p + '.cpp'
-    if (Test-Path -LiteralPath $q) { return $q }
-    return $p
+    if (Test-Path -LiteralPath $p) { return $p }
+    $cands = @()
+    if ([IO.Path]::HasExtension($p)) { $cands += $p }
+    else { $cands += ($p + '.cpp'); $cands += $p }
+    foreach ($c in $cands) {
+        if (Test-Path -LiteralPath $c) { return $c }
+        $r = Join-Path $PSScriptRoot $c
+        if (Test-Path -LiteralPath $r) { return $r }
+    }
+    return $cands[0]
 }
 $Sol = Add-CppExt $Sol
 if (-not $Check) { $Brute = Add-CppExt $Brute }

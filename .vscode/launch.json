@@ -63,6 +63,7 @@
             // launch.json 只能启动“可调试程序”，这里用 cmd.exe 包一层来跑对拍脚本。
             // 调试控制台会吞掉子进程的换行（输出挤成一行），所以改用独立控制台窗口；
             // stress_run.cmd 跑完会 pause，窗口不会一闪而过。
+            // 答案唯一时用这个：当前文件和 brute.cpp 逐 token 对比。
             "name": "对拍（stress，独立窗口）",
             "type": "cppdbg",
             "request": "launch",
@@ -72,6 +73,39 @@
                 "D:\\code\\stress\\stress_run.cmd",
                 "-Sol",
                 "${file}",
+                "-N",
+                "200"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            // 构造题 / 多解题专用：答案不唯一，不能和暴力逐 token 比，
+            // 改用自己写的判断器 D:\code\stress\check.cpp
+            // （接口 check.exe <输入> <输出>，合法 exit 0；模板见 stress\templates\check_construct.cpp）。
+            // 判断器不存在时脚本会报 "check not found"，先把模板拷成 check.cpp 再改。
+            "name": "对拍（构造题 checker，独立窗口）",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:\\Windows\\System32\\cmd.exe",
+            "args": [
+                "/c",
+                "D:\\code\\stress\\stress_run.cmd",
+                "-Sol",
+                "${file}",
+                "-Check",
+                "check",
                 "-N",
                 "200"
             ],
