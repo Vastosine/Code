@@ -21,6 +21,28 @@ powershell -ExecutionPolicy Bypass -File .\stress.ps1 -Sol ..\..\OI\codeforces\x
 | `brute_partition.cpp` | 要把元素**分成若干组** | `n ≤ 9`（Bell(9) = 21147） | 受限增长串 DFS |
 | `brute_grid.cpp` | 棋盘 / 连通块 / 走格子 | 连通块 `n·m ≤ 1e6`；枚举路径 `n·m ≤ 25` | 四方向 DFS + 回溯 |
 
+## 构造题 / 多解题：别用暴力，用 checker
+
+「输出任意一个满足条件的序列」这类题，两个正确答案可以完全不同，**暴力对比必然误报**。这时写一个 checker（评测里的 special judge）：
+
+```powershell
+Copy-Item .\templates\check_construct.cpp .\check.cpp
+# 改标了 ---- EDIT 的两处：读输入、验证答案
+powershell -ExecutionPolicy Bypass -File .\stress.ps1 -Sol ..\..\OI\codeforces\xxx.cpp -Check check -N 200
+```
+
+接口固定：`check.exe <输入文件> <输出文件>`，合法 `exit 0`，非法 `exit 1` 并打印原因。
+
+checker 要查的四件事，写的时候逐条过：
+
+1. **token 数对不对** —— 多输出一个数、少输出一个数，是构造题最常见的 WA；
+2. **每个值在范围内** —— 比如 `1 ≤ a_i ≤ 1e18`；
+3. **结构合法** —— n 个数、是排列、下标从 1 开始、图连通；
+4. **全局条件成立** —— 这题真正的约束（相邻 gcd 两两不同、字典序最小、和为 X）。
+
+第 4 条别忘了用 `set` 去重检验，只查前三条等于没查。
+
+
 ## 三条规矩
 
 1. **暴力必须和正解思路无关。** 如果暴力里也用到了“排序后取前缀”这个假设，它验不出任何东西。

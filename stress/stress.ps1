@@ -5,6 +5,13 @@
 #   .\stress.ps1 -Sol main            # extension .cpp is added automatically
 #   .\stress.ps1 -Sol a.cpp -Brute b -Gen gen -N 500   # override the shared pair
 #   .\stress.ps1 -Sol a.cpp -Keep -N 20                # keep every case's in/out
+#   .\stress.ps1 -Sol a.cpp -Check check -N 200        # constructive problems
+#
+# Checker mode (-Check): the answer has many valid forms, so comparing against
+# a brute force is wrong. The checker is called as
+#     check.exe <input-file> <output-file>
+# and must exit 0 when the produced answer is valid, non-zero otherwise
+# (printing the reason on stdout or stderr). No brute force is needed.
 #
 # Convention:
 #   gen.cpp    reads one integer seed from argv[1], prints a test case to stdout
@@ -30,6 +37,7 @@ param(
     [string]$Sol = 'sol.cpp',
     [string]$Brute = '',
     [string]$Gen = '',
+    [string]$Check = '',
     [int]$N = 200,
     [int]$Seed = 0,
     [int]$TimeoutMs = 2000,
@@ -82,17 +90,21 @@ function Add-CppExt([string]$p) {
     return $p
 }
 $Sol = Add-CppExt $Sol
-$Brute = Add-CppExt $Brute
+if (-not $Check) { $Brute = Add-CppExt $Brute }
 $Gen = Add-CppExt $Gen
+if ($Check) { $Check = Add-CppExt $Check }
 
-foreach ($pair in @(@($Sol, 'sol'), @($Brute, 'brute'), @($Gen, 'gen'))) {
+$need = @(@($Sol, 'sol'), @($Gen, 'gen'))
+if ($Check) { $need += , @($Check, 'check') } else { $need += , @($Brute, 'brute') }
+foreach ($pair in $need) {
     if (-not (Test-Path -LiteralPath $pair[0])) {
         Die ("{0} not found: {1}" -f $pair[1], $pair[0])
     }
 }
 $SolSrc = (Resolve-Path -LiteralPath $Sol).Path
-$BruteSrc = (Resolve-Path -LiteralPath $Brute).Path
 $GenSrc = (Resolve-Path -LiteralPath $Gen).Path
+$BruteSrc = if ($Check) { $null } else { (Resolve-Path -LiteralPath $Brute).Path }
+$CheckSrc = if ($Check) { (Resolve-Path -LiteralPath $Check).Path } else { $null }
 
 $CXX = 'clang++'
 if (-not (Get-Command $CXX -ErrorAction SilentlyContinue)) { $CXX = 'g++' }
@@ -126,8 +138,9 @@ function Build([string]$src, [string]$tag) {
 }
 
 $SolExe = Build $SolSrc 'sol'
-$BruteExe = Build $BruteSrc 'brute'
 $GenExe = Build $GenSrc 'gen'
+$BruteExe = if ($BruteSrc) { Build $BruteSrc 'brute' } else { $null }
+$CheckExe = if ($CheckSrc) { Build $CheckSrc 'check' } else { $null }
 
 $InFile = Join-Path $OutDir 'in.txt'
 $SolOut = Join-Path $OutDir 'sol.out'
@@ -135,6 +148,8 @@ $BruteOut = Join-Path $OutDir 'brute.out'
 $SolErr = Join-Path $OutDir 'sol.err'
 $BruteErr = Join-Path $OutDir 'brute.err'
 $GenErr = Join-Path $OutDir 'gen.err'
+$CheckOut = Join-Path $OutDir 'check.out'
+$CheckErr = Join-Path $OutDir 'check.err'
 $EmptyIn = Join-Path $OutDir 'empty.in'
 Set-Content -LiteralPath $EmptyIn -Value '' -Encoding ASCII
 
@@ -193,10 +208,12 @@ function Show-Head([string]$path, [int]$lines) {
 if ($Seed -gt 0) { $base = $Seed } else { $base = Get-Random -Minimum 1 -Maximum 2000000000 }
 
 Write-Log ("[stress] sol   = {0}" -f $SolSrc) 'Cyan'
-Write-Log ("[stress] brute = {0}" -f $BruteSrc) 'Cyan'
+if ($Check) { Write-Log ("[stress] check = {0}" -f $CheckSrc) 'Cyan' }
+else { Write-Log ("[stress] brute = {0}" -f $BruteSrc) 'Cyan' }
 Write-Log ("[stress] gen   = {0}" -f $GenSrc) 'Cyan'
 Write-Log ("[stress] out   = {0}" -f $OutDir) 'DarkGray'
-Write-Log ("[stress] cases={0}  timeout={1}ms  base-seed={2}  mode={3}" -f $N, $TimeoutMs, $base, $(if ($Strict) { 'byte' } else { 'token' })) 'Cyan'
+$mode = if ($Check) { 'check' } elseif ($Strict) { 'byte' } else { 'token' }
+Write-Log ("[stress] cases={0}  timeout={1}ms  base-seed={2}  mode={3}" -f $N, $TimeoutMs, $base, $mode) 'Cyan'
 
 $total = [Diagnostics.Stopwatch]::StartNew()
 $lastTick = 0
@@ -228,6 +245,44 @@ for ($i = 1; $i -le $N; $i++) {
         Write-Log ("[stress] reproduce: .\stress.ps1 -Seed {0} -N 1" -f $seed) 'Yellow'
         Write-Log ("[stress] log: {0}" -f $LogPath) 'DarkGray'
         exit 1
+    }
+
+    if ($Check) {
+        # checker mode: the answer has many valid forms, so validate it instead
+        # of comparing with a brute force.  check.exe <input> <output>
+        $checkResult = Invoke-Program $CheckExe $EmptyIn $CheckOut $CheckErr 20000 `
+            ('"{0}" "{1}"' -f $InFile, $SolOut)
+        if ($checkResult -ne 'OK') {
+            $badIn = Join-Path $OutDir ("fail_{0}_{1}.in" -f $i, $seed)
+            $badOut = Join-Path $OutDir ("fail_{0}_{1}.out" -f $i, $seed)
+            Copy-Item -LiteralPath $InFile -Destination $badIn -Force
+            Copy-Item -LiteralPath $SolOut -Destination $badOut -Force
+            Write-Log ""
+            Write-Log ("[stress] INVALID ANSWER on case #{0} (seed {1})" -f $i, $seed) 'Red'
+            $msg = @(Get-Content -LiteralPath $CheckOut -TotalCount 6)
+            $msg += @(Get-Content -LiteralPath $CheckErr -TotalCount 6)
+            foreach ($m in $msg) { Write-Log ("  checker: {0}" -f $m) 'Yellow' }
+            Write-Log ("  input  : {0}" -f $badIn) 'Red'
+            Write-Log ("  output : {0}" -f $badOut) 'Red'
+            Write-Log ("  reproduce: .\stress.ps1 -Seed {0} -N 1" -f $seed) 'Yellow'
+            Write-Log ("  log: {0}" -f $LogPath) 'DarkGray'
+            exit 1
+        }
+        if ($Keep) {
+            $kd = Join-Path $OutDir ('keep\' + ("{0}_{1}" -f $i, $seed))
+            New-Item -ItemType Directory -Path $kd -Force | Out-Null
+            Copy-Item -LiteralPath $InFile -Destination (Join-Path $kd 'in.txt') -Force
+            Copy-Item -LiteralPath $SolOut -Destination (Join-Path $kd 'sol.txt') -Force
+        }
+        if ($N -ge 20) {
+            $tick = [int](10.0 * $i / $N)
+            if ($tick -ne $lastTick) {
+                $lastTick = $tick
+                Write-Host ("  {0,3}%" -f ($tick * 10)) -NoNewline
+                Write-Host ("  ({0}/{1})" -f $i, $N) -ForegroundColor DarkGray
+            }
+        }
+        continue
     }
 
     $bruteResult = Invoke-Program $BruteExe $InFile $BruteOut $BruteErr ($TimeoutMs * 3)
