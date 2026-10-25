@@ -86,9 +86,20 @@
   - `G[k] = S(2^k-1)` 的闭式已推出（`2G[k-1] + k(2^{k-1}-cnt) + S(2^{k-1}+1-cnt) - 1 + cnt*k + cnt(cnt-1)/2`，其中 `S(m) = G[k-1] - [(cnt-2)(k-1) + (cnt-3)(cnt-2)/2]`），前提断言 `cnt-2 <= p[k-1]`；
   - 教训：卡住的原因是「用小表（T=4，16 个元素）去修正第 k 层顶部」，索引为负直接段错误（0xC0000005）。顶部区段只能递归回上一层，不能查小表。
   - 下次策略：40 分钟硬上限。先写 `pref(n)` 的暴力版（`for` 累加），再逐层替换成闭式，每换一层对一次。
-- **2277 C 重写**：25 分钟内从零写一遍。
+- **2277 C 重写**：✅ 10-25 完成，4 min。
 - **checker.cpp**：还差空行检测（改 getline）和 `No solution` 分支。
-- W2 剩余 7 题。
+- **W2 剩余 5 题**（10-26 起）：
+  - [1759E The Humanoid](https://codeforces.com/problemset/problem/1759/E) 1500
+  - [2275E Repentance Is Already on the Way](https://codeforces.com/problemset/problem/2275/E) 1500
+  - [763A Timofey and a tree](https://codeforces.com/problemset/problem/763/A) 1600
+  - [1455D Sequence and Swaps](https://codeforces.com/problemset/problem/1455/D) 1600
+  - [1946C Tree Cutting](https://codeforces.com/problemset/problem/1946/C) 1600
+
+## 10-25 小结
+
+- 上午 D2 两小时后放弃（唯一低于预期的一段），下午起连收 4 题：2277C 复习 4 min、2114E 24 min、550C 18 min、1253C 7 min，晚上三题全部一次过。
+- 当天的偏差只有一个：550C 用后缀 DP 解决 `n ≤ 100` 的问题，多花约 8 分钟。**先看数据范围选技术档位。**
+- 一次「AC 了但不知道为什么对」的自查（2277C 的 `dis=0`）通过了，理由是结构性的，不是数据侥幸。
 
 ---
 
