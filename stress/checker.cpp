@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
             string input = nextToken("a line");
             if (!i && input == "No solution") {
                 if (n < l * k || n > r * k) return 0;
-                return 1;
+                fail("said No solution but a split exists");
             }
             if (input.empty()) fail("find empty line");
             if (input.length() < l || input.length() > r) fail("length error");
