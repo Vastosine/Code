@@ -37,34 +37,16 @@ auto solve() {
         e[v].push_back(u);
     }
     for (int i = 1; i <= n; i++) cin >> c[i];
-    set<int> p;
     for (int u = 1; u <= n; u++) {
         for (int v : e[u]) {
             if (c[v] != c[u]) {
-                p.insert(u);
-                break;
+                if (check(u, u)) return u;
+                vis.assign(n + 1, 0);
+                return check(v, v) ? v : -1;
             }
         }
     }
-    vi may;
-    for (int u : p) {
-        int cnt = 0;
-        for (int v : e[u]) {
-            cnt += p.find(v) != p.end();
-        }
-        if (cnt > 1) may.push_back(u);
-    }
-    if (p.empty()) return 1;
-    if (may.empty()) {
-        for (int u : p) {
-            if (check(u, u)) return u;
-            vis.assign(n + 1, 0);
-        }
-        return -1;
-    }
-    if (may.size() > 1) return -1;
-    if (check(may[0], may[0])) return may[0];
-    else return -1;
+    return 1;
 }
 
 signed main() {
