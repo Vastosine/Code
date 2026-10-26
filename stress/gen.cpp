@@ -10,19 +10,18 @@ ll rnd(ll l, ll r) {          // [l, r], both inclusive
 }
 
 void Main() {
-    int k = rnd(1, 200), l = rnd(1, 200), r = rnd(l, 200);
-    cout << k << " " << l << " " << r << "\n";
-    for (int i = 0; i < k; i++) {
-        int p = rnd(l, r);
-        while (p--) cout << (char) rnd('a', 'z');
+    int n = 20;
+    cout << n << " " << rnd(1, 100) << "\n";
+    for (int i = 0; i < n; i++) {
+        cout << rnd(1, 100) << " ";
     }
 }
 
 int main(int argc, char **argv) {
     if (argc < 2) { fprintf(stderr, "usage: gen <seed>\n"); return 1; }
     rng.seed(strtoull(argv[1], nullptr, 10));
-    int c = 1;
-    // cout << c << "\n";
+    int c = 20;
+    cout << c << "\n";
     while (c--) Main();
     return 0;
 }
