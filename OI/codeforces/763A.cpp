@@ -55,7 +55,13 @@ auto solve() {
         if (cnt > 1) may.push_back(u);
     }
     if (p.empty()) return 1;
-    if (may.empty()) return *p.begin();
+    if (may.empty()) {
+        for (int u : p) {
+            if (check(u, u)) return u;
+            vis.assign(n + 1, 0);
+        }
+        return -1;
+    }
     if (may.size() > 1) return -1;
     if (check(may[0], may[0])) return may[0];
     else return -1;
