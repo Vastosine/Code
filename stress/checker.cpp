@@ -92,7 +92,8 @@ int main(int argc, char **argv) {
         for (int i = 0; i < k; i++) {
             string input = nextToken("a line");
             if (!i && input == "No solution") {
-                return 0;
+                if (n < l * k || n > r * k) return 0;
+                return 1;
             }
             if (input.empty()) fail("find empty line");
             if (input.length() < l || input.length() > r) fail("length error");
