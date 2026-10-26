@@ -42,6 +42,33 @@ checker 要查的四件事，写的时候逐条过：
 
 第 4 条别忘了用 `set` 去重检验，只查前三条等于没查。
 
+### 特别提醒：「无解」分支不能直接放行
+
+题目允许「无解时输出 `No solution`」时，checker **不能**看到这四个字就 `return 0` —— 否则解答只要永远打印 `No solution` 就能通过一切测试。checker 必须自己判可行性：
+
+```cpp
+if (firstLine == "No solution") {
+    if (feasible(k, l, r, n)) fail("said No solution but a split exists");
+    return 0;   // 确实无解，接受
+}
+```
+
+44E 的可行性判据是 `k*l <= n && n <= k*r`。
+
+### 用正确解对拍，验证不了 checker 的拒绝能力
+
+拿一个 AC 的解去跑对拍，checker 永远只走「接受」那条路径。它的**拒绝**能力必须用手工构造的错误输出单独验证，至少四个用例：
+
+| 用例 | 期望 |
+|---|---|
+| 正确答案 | `exit 0` |
+| 少一行 / 多一行 | `exit 1` |
+| 某一段长度越界（`r+1`） | `exit 1` |
+| 在有解的数据上报 `No solution` | `exit 1` |
+
+只接受、不拒绝的 checker 比没有更危险：它给你一个假的绿灯。
+
+
 
 ## 三条规矩
 
