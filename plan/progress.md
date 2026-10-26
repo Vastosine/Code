@@ -13,7 +13,7 @@
 | 周 | 题数 | 一次通过率 | 平均提交 | RE 次数 | 备注 |
 |---|---|---|---|---|---|
 | W1 | 12 / 12 | 67%（8/12） | 1.42 | 0 | 完成 |
-| W2 | 9 / 10 | 80%（8/10） | 1.20 | 0 | 含题单外的 1282B2（题单只有 B1）；题单实际 8/10，剩 2275E、1946C；763A 属"AC 但错" |
+| W2 | 9 / 10 | 81.8%（9/11） | 1.18 | 0 | 题单 9/10（缺 2275E）；另做题单外 1282B2；763A 初版 AC 但错，已修正 |
 
 目标：一次通过率 ≥ 60%，平均提交 ≤ 2.2，RE = 0。
 
@@ -66,6 +66,7 @@
 | 10-26 | 1759E The Humanoid | 23 min | 2 | AC | 先 WA 在 test 1：药水 `{2,2,3}` 只枚举了 2 种排列（漏 `(2,2,3)`）。反例 `1 / 4 1 / 3 1 3 17` → 输出 3，正确 4——最后一只 17 必须靠放在末位的 ×3。改 `k < 3` 后 1 次过 |
 | 10-26 | 763A Timofey and a tree | 49 min | 1 | AC（**初版是错的**） | 用时 64 min 减 15 min 休息。初版 AC 是数据弱：`may.empty()` 分支直接返回 `*p.begin()` 而不验证，两条互不相邻的坏边会误报 YES。反例见下。修完共 4 次提交：15:19 错解 AC → 15:26 WA → 15:29 补验证 AC → 15:38 换 O(n) 版 AC（125 ms / 400 KB） |
 | 10-26 | 1455D Sequence and Swaps | 41 min | 2 | AC | 先 WA 在 test 3。最终写法：`b[i]` 为后缀最小，`a[i] > b[i]` 说明这个位置必须被换出去；此时若 `x > b[i]` 无解；`c` 数「大于 x 且与上一个不同」的值，去重是为了避免把相等的数重复交换。**550 组随机对拍（BFS 状态暴力）全过** |
+| 10-26 | 1946C Tree Cutting | 22 min | 1 | AC | 二分答案 + 树形贪心。用原始子树大小剪枝：`siz[u] < x` 整块不可能切出 x、`siz[u] == x` 直接整块成一块，否则累加子树残留、满 x 就切。判据 `cnt > k`。**300 组穷举对拍（枚举全部切边组合）全过** |
 
 > **763A 反例**（提交的代码输出 `YES 1`，正确答案 `NO`）：
 > ```
@@ -75,6 +76,16 @@
 > ```
 > 两条坏边 `(1,2)`、`(5,6)` 互不相邻，删任何一个顶点都只能修好其中一条。
 > 正解套路：**任取一条坏边 `(u,v)`，答案只可能是 `u` 或 `v`**，两个各 `check` 一次，O(n)，不需要任何启发式。
+
+### W2 小结
+
+- 完成：题单 **9 / 10**（缺 2275E），另做题单外 1282B2，共 10 题；另加 2277C 复习、2277D2 补题
+- 一次通过率 **81.8%**（9/11），W1 是 67%；平均提交 **1.18**，W1 是 1.42；RE 0
+- 最费时：2277D2 补题（今天 72 min，另加 10-25 的 2h）、763A 49 min、1455D 41 min
+- 最快：1253C 7 min、44E 15 min
+- 三种错法各出现一次：**枚举不全**（1759E 漏了一种药水顺序）、**取模与溢出位置**（2277D2 的 `m*k`）、**把启发式当算法**（763A 的 `may.empty()` 分支）
+- 「AC 了但不知道为什么对」的自查做了两次：2277C 通过（理由结构性成立）、763A 失败（真的是错的）——**这个自查是有效的，失败那次省下了以后的所有重蹈**
+- W3 要改的一件事：写下一个 `if` 后先问「这一步为什么一定对？能举出反例吗」，答不出来就去构造反例或对拍
 
 
 ---
@@ -96,13 +107,24 @@
 
 - **2277 D2**：✅ 10-26 完成（见比赛记录）。最终没有 G 的闭式——用记忆化的 `S(n)` 取代。
 - **2277 C 重写**：✅ 10-25 完成，4 min。
-- **checker.cpp**：还差空行检测（改 getline）和 `No solution` 分支。
-- **W2 剩余 5 题**（10-26 起）：
-  - [1759E The Humanoid](https://codeforces.com/problemset/problem/1759/E) 1500
-  - [2275E Repentance Is Already on the Way](https://codeforces.com/problemset/problem/2275/E) 1500
-  - [763A Timofey and a tree](https://codeforces.com/problemset/problem/763/A) 1600
-  - [1455D Sequence and Swaps](https://codeforces.com/problemset/problem/1455/D) 1600
-  - [1946C Tree Cutting](https://codeforces.com/problemset/problem/1946/C) 1600
+- **checker.cpp**：✅ 10-26 完成（`getline` 行读取、`No solution` 先验可行性），五个用例全过。
+- **W2**：✅ 完成 9/10，缺 [2275E](https://codeforces.com/problemset/problem/2275/E)，顺延到 W3 补。
+- **今晚 22:35**：Round 1130 (Div. 2) #2272，135 分钟，22:05 会收到提醒。
+
+## W3 题单（DP 进阶 1500–1700）
+
+| # | 题目 | 难度 | 标签 |
+|---|---|---|---|
+| 1 | [10B Cinema Cashier](https://codeforces.com/problemset/problem/10/B) | 1500 | dp, implementation |
+| 2 | [982C Cut 'em all!](https://codeforces.com/problemset/problem/982/C) | 1500 | dfs, dp, graphs |
+| 3 | [1673C Palindrome Basis](https://codeforces.com/problemset/problem/1673/C) | 1500 | brute force, dp, math |
+| 4 | [165C Another Problem on Strings](https://codeforces.com/problemset/problem/165/C) | 1600 | binary search, dp |
+| 5 | [913C Party Lemonade](https://codeforces.com/problemset/problem/913/C) | 1600 | bitmasks, dp, greedy |
+| 6 | [1703G Good Key, Bad Key](https://codeforces.com/problemset/problem/1703/G) | 1600 | bitmasks, brute force, dp |
+| 7 | [2193F Pizza Delivery](https://codeforces.com/problemset/problem/2193/F) | 1600 | dp, greedy |
+| 8 | [467C George and Job](https://codeforces.com/problemset/problem/467/C) | 1700 | dp, implementation |
+| 9 | [1335E1 Three Blocks Palindrome](https://codeforces.com/problemset/problem/1335/E1) | 1700 | binary search, brute force |
+| 10 | [1779D Boris and His Amazing Haircut](https://codeforces.com/problemset/problem/1779/D) | 1700 | constructive, data structures |
 
 ## 10-25 小结
 

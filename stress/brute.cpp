@@ -1,16 +1,12 @@
-// Brute force template: PARTITION / GROUPING (DFS + backtracking)
+// Brute force template: SUBSETS / SUBMASKS
 //
-// Use when the answer is "split the elements into groups" and the group
-// structure matters:
-//   - buy items in groups of exactly k (pay the max of the group)
-//   - split people into teams
-//   - matching / pairing problems
+// Use when you must decide WHICH elements to take (2^n masks).
+// n <= 20 is the practical limit for 2^n, and 2^n * n ~ 2e7 for n = 20.
 //
-// n <= 9 or so: the number of set partitions is Bell(9) = 21147, Bell(10) = 115975.
-//
-// Here each element either joins an existing group or opens a new one
-// ("restricted growth string": this visits every partition exactly once,
-// no duplicates -- do NOT permute inside a group afterwards).
+// Two patterns are below:
+//   (A) enumerate every subset                 -> "pick any set"
+//   (B) enumerate every submask of every mask  -> "split a set into two parts"
+//                                             -> "pick a group inside a group"
 //
 // Copy this file to ..\brute.cpp and edit the marked places.
 #include <iostream>
@@ -22,63 +18,50 @@ template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i 
 template<typename T> ostream &operator<<(ostream &out, const vector<T> &x) { for (const T &i : x) out << i << " "; return out; }
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 
-int n, groupSize;              // groupSize = k in "groups of exactly k"
-vi a;
-vector<vi> groups;
-ll ans = NEG;
-int k;
-
-// ---- EDIT: cost of one finished group --------------------------------
-ll groupCost(const vi &g) {
-    if ((int) g.size() == k) return *max_element(g.begin(), g.end());  // pay the max
-    if ((int) g.size() == 1) return g[0];                                      // single item
-    return INF;                                                                // forbidden size
-}
-
-ll totalCost() {
-    ll s = 0;
-    for (auto &g : groups) s += groupCost(g);
-    return s;
-}
-
-ll size(const vector<vi> &g) {
-    ll s = 0;
-    for (auto &i : g) s += i.size() * ((int) i.size() == k || i.size() == 1);
-    return s;
-}
-
 auto solve() {
-    int p;
-    cin >> n >> p >> k;     // ---- EDIT: read n, k the way the problem gives them
-    groupSize = n;
-    a.assign(n, 0);
+    int n, x;
+    cin >> n >> x;
+    vi a(n);
     cin >> a;
 
-    ans = NEG;
-    groups.clear();
-    auto dfs = [&](auto &&self, int i) -> void {
-        if (i == (int) a.size()) {
-            // ---- EDIT: accept / reject the finished partition ----------
-            // 要最小花费就把下面的 max 改成 min
-            ll c = totalCost();
-            if (c <= p) {
-                ll s = size(groups);
-                ans = max(ans, s);
+    // ---------------- (A) every subset -------------------------------
+    ll ans = n + 1;
+    for (int mask = 0; mask < (1 << n); mask++) {
+        int cnt = 0;
+        vi A = a;
+        int X = x, check = true;
+        for (int i = 0; i < n; i++) {
+            if (mask >> i & 1) {
+                if (X >= A[i]) {
+                    check = 0;
+                    break;
+                }
+                swap(X, A[i]);
+                cnt++;
+                
             }
-            return;
+            if (i && A[i] < A[i - 1]) {
+                check = 0;
+                break;
+            }
         }
-        for (int g = 0; g < (int) groups.size(); g++) {
-            groups[g].push_back(a[i]);
-            self(self, i + 1);
-            groups[g].pop_back();
-        }
-        groups.push_back({a[i]});
-        self(self, i + 1);
-        groups.pop_back();
-        self(self, i + 1);
-    };
-    dfs(dfs, 0);
-    return ans;
+        // ---- EDIT: accept / reject this subset -------------------------
+        if (check) 
+            ans = min(ans, (ll) cnt);
+    }
+    // -----------------------------------------------------------------
+
+    // ---------------- (B) every submask of every mask ----------------
+    // for (int mask = 0; mask < (1 << n); mask++) {
+    //     for (int sub = mask; ; sub = (sub - 1) & mask) {
+    //         int rest = mask ^ sub;          // the other group
+    //         // EDIT: score the split (mask -> sub + rest)
+    //         if (sub == 0) break;            // (sub - 1) & mask on 0 loops forever
+    //     }
+    // }
+    // -----------------------------------------------------------------
+
+    return ans == n + 1 ? -1 : ans;
 }
 
 signed main() {
