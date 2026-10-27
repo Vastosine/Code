@@ -136,11 +136,11 @@
 
 ## 下次开工
 
-- **2277 D2**：✅ 10-26 完成（见比赛记录）。最终没有 G 的闭式——用记忆化的 `S(n)` 取代。
-- **2277 C 重写**：✅ 10-25 完成，4 min。
-- **checker.cpp**：✅ 10-26 完成（`getline` 行读取、`No solution` 先验可行性），五个用例全过。
-- **W2**：✅ 完成 9/10，缺 [2275E](https://codeforces.com/problemset/problem/2275/E)，顺延到 W3 补。
-- **今晚 22:35**：Round 1130 (Div. 2) #2272，135 分钟，22:05 会收到提醒。
+- **W4 开题**（10-28）：见下方 W4 题单，第一题 [1051D Bicolorings](https://codeforces.com/problemset/problem/1051/D)。
+- **2272E 重写**：现版本 AC 但用了哨兵 `1e6`、讲不清每一行；排在 W4 的空隙里。
+- **找教练问三件事**：本赛季还有没有队伍名额、大一下淘汰看什么、暑假多校怎么选人（见 `plan/calendar.md`）。
+- **10-31 22:35**：CF Div. 3，按 W4 节奏打完补题。
+- 已完成的旧项：2277 D2 ✅ 10-26、2277 C 重写 ✅ 10-25、checker.cpp ✅ 10-26。
 
 ## W3 题单（DP 进阶 1500–1700）
 
@@ -156,6 +156,39 @@
 | 8 | [467C George and Job](https://codeforces.com/problemset/problem/467/C) | 1700 | dp, implementation |
 | 9 | [1335E1 Three Blocks Palindrome](https://codeforces.com/problemset/problem/1335/E1) | 1700 | binary search, brute force |
 | 10 | [1779D Boris and His Amazing Haircut](https://codeforces.com/problemset/problem/1779/D) | 1700 | constructive, data structures |
+
+## W4–W12 路线图（2026-10-28 ~ 12-29）
+
+已入队（高中竞赛经历），短板自评：**DP 进阶 / 数学 / 图论**。按短板排，每周 8 题专题 + 2 题混合（含比赛补题），单题预算 25 分钟，每周 CF 至少一场。
+
+| 周 | 日期 | 专题 | 难度 |
+|---|---|---|---|
+| W4 | 10-28 ~ 11-03 | 状压 / 位运算 DP | 1700–1800 |
+| W5 | 11-04 ~ 11-10 | 数论 | 1600–1800 |
+| W6 | 11-11 ~ 11-17 | 数位 DP + 组合计数 | 1600–1800 |
+| W7 | 11-18 ~ 11-24 | 树形 DP / 换根 | 1700–1800 |
+| W8 | 11-25 ~ 12-01 | 图论 I：最短路 | 1600–1700 |
+| W9 | 12-02 ~ 12-08 | 图论 II：并查集 / 连通性 / 二分图 | 1600–1900 |
+| W10 | 12-09 ~ 12-15 | 网络流 / 二分匹配入门 | 1800–2000 |
+| W11 | 12-16 ~ 12-22 | 综合模拟周（限时套题 ×2） | — |
+| W12 | 12-23 ~ 12-29 | 复盘：错题重写 + 期末前收尾 | — |
+
+## W4 题单（状压 / 位运算 DP 1700–1800）
+
+| # | 题目 | 难度 | 标签 |
+|---|---|---|---|
+| 1 | [1051D Bicolorings](https://codeforces.com/problemset/problem/1051/D) | 1700 | bitmasks, dp |
+| 2 | [1571E Fix the String](https://codeforces.com/problemset/problem/1571/E) | 1700 | bitmasks, dp |
+| 3 | [1340B Nastya and Scoreboard](https://codeforces.com/problemset/problem/1340/B) | 1700 | bitmasks, dp |
+| 4 | [1829H Don't Blame Me](https://codeforces.com/problemset/problem/1829/H) | 1700 | bitmasks, dp |
+| 5 | [1557C Moamen and XOR](https://codeforces.com/problemset/problem/1557/C) | 1700 | bitmasks, combinatorics |
+| 6 | [1879D Sum of XOR Functions](https://codeforces.com/problemset/problem/1879/D) | 1700 | bitmasks, dp, math |
+| 7 | [1635D Infinite Set](https://codeforces.com/problemset/problem/1635/D) | 1800 | bitmasks, dp, math |
+| 8 | [1491D Zookeeper and The Infinite Zoo](https://codeforces.com/problemset/problem/1491/D) | 1800 | bitmasks, greedy |
+| 9 | [1552D Array Differentiation](https://codeforces.com/problemset/problem/1552/D) | 1800 | bitmasks, brute force |
+| 10 | [1862F Magic Will Save the World](https://codeforces.com/problemset/problem/1862/F) | 1800 | bitmasks, dp |
+
+> 前 4 题是纯状压转移（状态怎么定义、怎么枚举子集），5–6 是按位贡献/组合计数，7–10 是把「集合 / 二进制表示」当状态用的变体。**写之前先说出状态数为什么在 1e6 以内**，说不出就换题。
 
 ## 10-26 / 10-27 小结
 
