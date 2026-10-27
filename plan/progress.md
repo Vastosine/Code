@@ -7,6 +7,7 @@
 > 比赛：题面文件放在 `OI/contests/CF/<contestId>/`，同一场所有文件一起创建，`// Time` 即比赛开始时间，
 > 所以每题的真实用时看 `elapsed.ps1` 输出的 `delta`（与上一题 AC 的差值），`+N min` 是开赛后的第 N 分钟。
 > 归档时机：每天 `end` 时跑一次 `organize.ps1 -Apply` 把当天 AC 的题挪进 `old/`；若当天忘了，次日开工先补。
+> 赛历（杭电入队窗口、各级赛事时间）：见 `plan/calendar.md`，`start` 时对一次倒计时。
 
 ## 周指标
 
