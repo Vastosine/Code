@@ -21,19 +21,19 @@ auto solve() {
         if (i >= m) s.push_back(a[i] - a[i - m]);
     }
     int N = n - m + 1;
-    vector<vector<ll>> f(N, vector<ll>(k + 1, 0));
+    vector<vector<ll>> f(N, vector<ll>(2, 0));
     for (int i = 0; i < N; i++) {
         f[i][1] = s[i];
     }
     for (int r = 2; r <= k; r++) {
-        ll ans = 0;
+        ll ans = NEG;
         for (int i = m; i < N; i++) {
-            f[i][r] = (ans = max(ans, f[i - m][r - 1])) + s[i];
+            f[i][r & 1] = (ans = max(ans, f[i - m][(r - 1) & 1])) + s[i];
         }
     }
     ll ans = 0;
     for (int i = 0; i < N; i++) {
-        ans = max(ans, f[i].back());
+        ans = max(ans, f[i][k & 1]);
     }
     return ans;
 }
