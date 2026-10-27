@@ -1,4 +1,4 @@
-// generator for 2272E stress tests -- short strings, at least one R each.
+﻿// generator for 2272E stress tests -- short strings, at least one R each.
 //   usage: gen2272e.exe <seed>
 #include <bits/stdc++.h>
 using namespace std;
@@ -21,8 +21,9 @@ int main(int argc, char **argv) {
     int t = (int)rnd(1, 3);
     cout << t << "\n";
     while (t--) {
-        int n = (int)rnd(1, 5), m = (int)rnd(1, 5);
+        int n = (int)rnd(1, 7), m = (int)rnd(1, 7);
         cout << n << " " << m << "\n" << mk(n) << "\n" << mk(m) << "\n";
     }
     return 0;
 }
+
