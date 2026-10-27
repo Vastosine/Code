@@ -12,8 +12,7 @@ template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 
-vector<ll> is, lst;
-vector<vector<ll>> f;
+vector<ll> is, lst, f;
 const int M = 1e9 + 7;
 
 void init(int n) {
@@ -27,11 +26,11 @@ void init(int n) {
         if (is[i]) lst.push_back(i);
     }
     int m = lst.size();
-    f.assign(n, vector<ll>(m));
-    f[0].assign(m, 1);
-    for (int i = 1; i < n; i++) {
-        for (int j = 1; j < m; j++) {
-            f[i][j] = ((lst[j] <= i ? f[i - lst[j]][j] : 0) + f[i][j - 1]) % M;
+    f.assign(n, 0);
+    f[0] = 1;
+    for (int j = 1; j < m; j++) {
+        for (int i = 1; i < n; i++) {
+            if (lst[j] <= i) f[i] = (f[i] + f[i - lst[j]]) % M;
             // for (int k = 0; k <= j; k++) {
             //     f[i][j] += f[i - lst[j]][k];
             // }
@@ -42,7 +41,7 @@ void init(int n) {
 auto solve() {
     int n;
     cin >> n;
-    return f[n].back();
+    return f[n];
 }
 
 signed main() {
