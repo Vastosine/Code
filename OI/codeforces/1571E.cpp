@@ -16,7 +16,7 @@ auto solve() {
     cin >> n;
     string s, t;
     cin >> s >> t;
-    vector<vi> f(n, vi(8, n + 1));
+    vector<vi> f(2, vi(8, n + 1));
     if (s[0] == ')') f[0][0] = 0, f[0][1] = 1;
     else f[0][0] = 1, f[0][1] = 0;
     for (int i = 0; i < n - 1; i++) {
@@ -24,11 +24,12 @@ auto solve() {
             for (int k = 0; k < 2; k++) {
                 int nxt = (j << 1) + k;
                 if (i > 1 && t[i - 2] == '1' && nxt != 0b1010 && nxt != 0b1100) continue;
-                f[i + 1][nxt % 8] = min(f[i + 1][nxt % 8], f[i][j] + ((s[i + 1] == '(') != k));
+                f[(i + 1) % 2][nxt % 8] = min(f[(i + 1) % 2][nxt % 8], f[i % 2][j] + ((s[i + 1] == '(') != k));
             }
         }
+        for (int j = 0; j < 8; j++) f[i % 2][j] = n + 1;
     }
-    int ans = *min_element(f.back().begin(), f.back().end());
+    int ans = *min_element(f[(n - 1) % 2].begin(), f[(n - 1) % 2].end());
     return ans == n + 1 ? -1 : ans;
 }
 
