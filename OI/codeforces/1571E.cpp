@@ -16,17 +16,20 @@ auto solve() {
     cin >> n;
     string s, t;
     cin >> s >> t;
-    int ans = 0;
-    for (int i = 0; i + 3 < n; i++) {
-        if (t[i] == '0') continue;
-        if (s[i] == ')') ans++, s[i] = '(';
-        if (s[i + 3] == '(') ans++, s[i + 3] = ')';
-        if (s[i + 1] == s[i + 2]) ans++, s[i + 1] = ')', s[i + 2] = '(';
-        if (i && t[i - 1] == '1') return -1;
-        if (i > 2 && t[i - 3] == '1') return -1;
-        if (i > 1 && t[i - 2] == '1' && s[i - 1] == '(') ans++, s[i - 1] = ')'; 
+    vector<vi> f(n, vi(8, n + 1));
+    if (s[0] == ')') f[0][0] = 0, f[0][1] = 1;
+    else f[0][0] = 1, f[0][1] = 0;
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < 8; j++) {
+            for (int k = 0; k < 2; k++) {
+                int nxt = (j << 1) + k;
+                if (i > 1 && t[i - 2] == '1' && nxt != 0b1010 && nxt != 0b1100) continue;
+                f[i + 1][nxt % 8] = min(f[i + 1][nxt % 8], f[i][j] + ((s[i + 1] == '(') != k));
+            }
+        }
     }
-    return ans;
+    int ans = *min_element(f.back().begin(), f.back().end());
+    return ans == n + 1 ? -1 : ans;
 }
 
 signed main() {
