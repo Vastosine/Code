@@ -18,19 +18,20 @@ auto solve() {
     cin >> n >> k;
     vector<ll> a(n);
     cin >> a;
-    vector<vector<ll>> f(n + 1, vector<ll>(64));
+    vector<vector<ll>> f(2, vector<ll>(64));
     ll ans = 0;
     for (int i = 0; i < n; i++) {
-        f[i + 1][a[i]]++;
+        for (int j = 0; j < 64; j++) f[(i + 1) % 2][j] = 0;
+        f[(i + 1) % 2][a[i]]++;
         for (int j = 0; j < 64; j++) {
-            if (f[i][j]) {
-                (f[i + 1][j & a[i]] += f[i][j]) %= M;
-                (f[i + 1][j] += f[i][j]) %= M;
+            if (f[i % 2][j]) {
+                (f[(i + 1) % 2][j & a[i]] += f[i % 2][j]) %= M;
+                (f[(i + 1) % 2][j] += f[i % 2][j]) %= M;
             }
         }
     }
     for (int j = 0; j < 64; j++) {
-        if (__builtin_popcount(j) == k) (ans += f[n][j]) %= M;
+        if (__builtin_popcount(j) == k) (ans += f[n % 2][j]) %= M;
     }
     return ans;
 }
