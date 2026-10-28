@@ -11,10 +11,6 @@ template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
 
-int popcnt(int x) {
-    return __builtin_popcount(x);
-}
-
 // 1110111", "0010010", "1011101", "1011011", "0111010", "1101011", "1101111", "1010010", "1111111", "1111011
 const vi T = {
     0b1110111,
@@ -29,10 +25,6 @@ const vi T = {
     0b1111011
 };
 
-void Max(string &x, string y) {
-    x = max(x, y);
-}
-
 int steps(int from, int to) {
     int ans = 0;
     for (int t = 0; t < 7; t++) {
@@ -46,8 +38,7 @@ int steps(int from, int to) {
 auto solve() {
     int n, k;
     cin >> n >> k;
-    vi a(n), need(n + 1, 7), mx(n + 1, 0);
-    need[n] = 0;
+    vi a(n);
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
@@ -77,28 +68,6 @@ auto solve() {
         }
     }
     return ans;
-    // vector<vector<string>> f(2, vector<string>(k + 1, "-"));
-    // f[0][0] = "";
-    // for (int i = 0; i < n; i++) {
-    //     for (auto &j : f[(i + 1) % 2]) j = "-";
-    //     for (int j = 0; j <= k; j++) {
-    //         if (f[i % 2][j] == "-") continue;
-    //         for (int p = 0; p < 10; p++) {
-    //             int x = T[p];
-    //             int nxt = j, can = 1;
-    //             for (int pos = 0; pos < 7; pos++) {
-    //                 int q = 1 << pos;
-    //                 if ((x & q) < (a[i] & q)) {
-    //                     can = 0;
-    //                     break;
-    //                 }
-    //                 if ((x & q) > (a[i] & q)) nxt++;
-    //             }
-    //             if (can && nxt <= k) Max(f[(i + 1) % 2][nxt], f[i % 2][j] + (char)(p + '0'));
-    //         }
-    //     }
-    // }
-    // return f[n % 2][k] == "-" ? "-1" : f[n % 2][k];
 }
 
 signed main() {
