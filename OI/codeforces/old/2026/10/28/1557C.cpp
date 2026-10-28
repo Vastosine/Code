@@ -20,14 +20,14 @@ ll pow(ll x, ll n) {
 auto solve() {
     ll n, k;
     cin >> n >> k;
-    ll a, b, c;
-    c = (pow(2, n - 1) - (n & 1) + M) % M;
-    a = !(n & 1);
-    b = (pow(2, n) - a - c + M * 2) % M;
+    ll equal, greater, c;
+    equal = !(n & 1);
+    greater = (pow(2, n - 1) + (n & 1 ? 1 : -1)) % M;
     vector<ll> f(k + 1);
     f[0] = 1;
-    for (int i = 1; i <= k; i++) {
-        f[i] = (f[i - 1] * b + a * pow(2, n * (i - 1))) % M;
+    ll x = pow(2, n);
+    for (ll i = 1, cur = 1; i <= k; i++, (cur *= x) %= M) {
+        f[i] = (f[i - 1] * greater + equal * cur) % M;
     }
     return f[k];
 }
