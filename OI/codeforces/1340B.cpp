@@ -27,7 +27,7 @@ const int T[] = {
 int need(int fr, int to) {
     int ans = 0;
     for (int k = 1; k < (1 << 7); k <<= 1) {
-        if ((fr & k) > (to & k)) return -1;
+        if ((fr & k) > (to & k)) return 2005;
         if ((fr & k) < (to & k)) ans++;
     }
     return ans;
@@ -50,9 +50,7 @@ auto solve() {
         for (int j = 0; j <= k; j++) {
             if (!can[i][j]) continue;
             for (int x : T) {
-                int nxt = need(a[i - 1], x);
-                if (nxt == -1) continue;
-                nxt += j;
+                int nxt = need(a[i - 1], x) + j;
                 if (nxt <= k) can[i - 1][nxt] = 1;
             }
         }
@@ -62,11 +60,10 @@ auto solve() {
     for (int i = 0; i < n; i++) {
         for (int j = 9; ~j; j--) {
             int x = T[j];
-            int nxt = need(a[i], x);
-            if (nxt == -1) continue;
-            if (nxt <= k && can[i + 1][k - nxt]) {
+            int nxt = k - need(a[i], x);
+            if (nxt >= 0 && can[i + 1][nxt]) {
                 ans.push_back(j + '0');
-                k -= nxt;
+                k = nxt;
                 break;
             }
         }
