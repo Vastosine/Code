@@ -4,23 +4,27 @@
 #include <vector>
 #include <algorithm>
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef pair<int, int> pii;
-[[maybe_unused]] const ll INF = (1LL << 60) | (1LL << 30); [[maybe_unused]] const ll NEG = (3LL << 62) | (3LL << 30);
-template<typename T> istream &operator>>(istream &in, vector<T> &x) { for (T &i : x) in >> i; return in; }
-template<typename T> ostream &operator<<(ostream &out, const vector<T> &x) { for (const T &i : x) out << i << " "; return out; }
+[[maybe_unused]] const ll INF = 1ll << 60, NEG = -INF;
+template<typename T> istream &operator>>(istream &in, vector<T> &a) { for (T &x : a) in >> x; return in; }
+template<typename T> ostream &operator<<(ostream &out, const vector<T> &a) { for (const T &x : a) out << x << " "; return out; }
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
-template<typename... Args> void assign(int n, vector<Args>&... args) { (..., args.assign(n, {})); }
+template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
+void init() {}
 
-auto solve() {
-    return 0LL;
+auto Main(int C = 0) {
+    return 0;
 }
 
-signed main() {
-    ios::sync_with_stdio(false); cin.tie(0), cout.tie(0);
-    int c = 1;
-    cin >> c;
-    while (c--) cout << solve() << "\n";
-    // while (c--) solve();
-    // const string OUT[2] = {"NO", "YES"}; while (c--) cout << OUT[solve()] << "\n";
+int main() {
+    ios::sync_with_stdio(0), cin.tie(0), cout.tie(0);
+    const string OUT[2] = {"NO", "YES"}; init(); int C = 1;
+    cin >> C;
+    for (int c = 0; c < C; c++) {
+        auto ans = Main(c);
+        cout << ans << "\n";
+        // cout << OUT[ans] << "\n";
+        // ans.empty() ? cout << OUT[0] << "\n" : cout << OUT[1] << "\n" << ans << "\n";
+    }
     return 0;
 }
