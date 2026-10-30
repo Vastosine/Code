@@ -12,7 +12,7 @@ template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin()
 template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
 void init() {}
 
-auto Main(int C = 0) {
+auto Main([[maybe_unused]] int C = 0) {
     return 0;
 }
 
