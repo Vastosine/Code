@@ -22,7 +22,7 @@ auto Main([[maybe_unused]] int C = 0) {
     for (int i = 0, j = 0; i < 31; i++) {
         if (!b[i]) continue;
         while (j < 31 && !a[j]) j++;
-        if (!a[j] || j > i) return false;
+        if (j >= 31 || !a[j] || j > i) return false;
         j++;
     }
     return true;
