@@ -24,13 +24,19 @@ struct Matric {
     using vec = vector<ll>;
     vector<vec> a;
     int n;
-    Matric(bool zero = true, int n = 64) : n(n) {
+    Matric(int n = 64) : n(n) {
         a.assign(n, vec(n));
-        if (zero) return;
-        for (int i = 0; i < n; i++) a[i][i] = 1;
     }
 
-    vec operator[](int x) const { return a[x]; }
+    static Matric identity(int n = 64) {
+        Matric ans(n);
+        for (int i = 0; i < n; i++) {
+            ans[i][i] = 1;
+        }
+        return ans;
+    }
+
+    const vec &operator[](int x) const { return a[x]; }
     vec &operator[](int x) { return a[x]; }
     
     Matric operator*(const Matric &b) const {
@@ -106,7 +112,7 @@ auto Main([[maybe_unused]] int C = 0) {
         // }
     }
     auto f = [&](int n) {
-        Matric ans(0);
+        Matric ans = Matric::identity();
         for (int k = 0; k < 20; k++) {
             int x = 1 << k;
             if (x > n) break;
