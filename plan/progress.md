@@ -174,11 +174,13 @@
 
 ## 下次开工
 
-- **W4 开题**（10-28）：见下方 W4 题单，第一题 [1051D Bicolorings](https://codeforces.com/problemset/problem/1051/D)。
-- **2272E 重写**：现版本 AC 但用了哨兵 `1e6`、讲不清每一行；排在 W4 的空隙里。
+- **W5 开题**（10-31）：见下方 W5 题单，第一题 [1228C Primes and Multiplication](https://codeforces.com/problemset/problem/1228/C)。
+- **旧项：2272E 重写**（现版本 AC 但用了哨兵 `1e6`、讲不清每一行）；**W2 漏掉的 [2275E](https://codeforces.com/problemset/problem/2275/E)** 补掉。都排在 W5 的空隙里。
 - **找教练问三件事**：本赛季还有没有队伍名额、大一下淘汰看什么、暑假多校怎么选人（见 `plan/calendar.md`）。
-- **10-31 22:35**：CF Div. 3，按 W4 节奏打完补题。
-- 已完成的旧项：2277 D2 ✅ 10-26、2277 C 重写 ✅ 10-25、checker.cpp ✅ 10-26。
+- **本周比赛**：10-31 22:35 **#2278 Div. 3**（135 min）、11-04 22:35 #2283 Edu Div. 2、11-05 19:00 ICPC Online Challenge 2、11-06 22:35 #2284 Div. 2、11-07 22:35 #2280 Div. 2。
+- **11-01（周日）模板盲打**：线段树 lazy + 快速幂 / 逆元 / exgcd——正好是本周专题的核心工具，**不看书从零打**。
+- **蓝桥杯报名截止 2026-12-18**，别忘。
+- 已完成的旧项：2277 D2 ✅ 10-26、2277 C 重写 ✅ 10-25、checker.cpp ✅ 10-26、W4 收官 ✅ 10-30。
 
 ## W3 题单（DP 进阶 1500–1700）
 
@@ -336,13 +338,37 @@
 - **1862F 的教训**：算法不变，只换容器就快 26 倍（2239 ms → 84 ms）。`set` 只用了「去重」这一个功能，却付了红黑树的代价。**`n × 状态数 ≥ 10⁷` 时，容器常数决定生死。**
 - **新增方法论**：`// Time` = 开始读本题（比「收到题目」的时刻准）；`wr` = 读完想完开始写；总用时一律 `// Time` → 首次 AC。
 
+## W5 · 数论（2026-10-31 ~ 11-10）
+
+计划：题单 10 题（1700–1800 起，视前 5 题表现决定是否升到 1900）+ 2 题混合（2278 补题）+ 周日模板盲打（线段树 lazy、快速幂 / 逆元 / exgcd）
+
+**难度为什么不直接上 1800–2000**：路线图原定 W5 是 1800–2000，但「跳级规则」的前提（W4 前四题全部 15 分钟内一次过）没有触发——W4 实际一次通过率 40%。数论对你是**新工具集**（分解 / 筛 / gcd 结构 / 同余 / 整除分块），新工具在 1700 的题上就已经比熟练专题在 1800 的题难。所以 W5 前半段 1700，**若第 1–5 题都在 30 分钟内且 ≤1 次提交，第 6–10 题直接换成 1900**。
+
+## W5 题单（数论 1700–1800）
+
+| # | 题目 | 难度 | 覆盖 |
+|---|---|---|---|
+| 1 | [1228C Primes and Multiplication](https://codeforces.com/problemset/problem/1228/C) | 1700 | 质因数分解 + 指数累加 |
+| 2 | [1485C Floor and Mod](https://codeforces.com/problemset/problem/1485/C) | 1700 | 整除分块 / 枚举商 |
+| 3 | [1512G Short Task](https://codeforces.com/problemset/problem/1512/G) | 1700 | 约数和 σ(n) 的筛法 |
+| 4 | [1770C Koxia and Number Theory](https://codeforces.com/problemset/problem/1770/C) | 1700 | 同余 + 抽屉原理 |
+| 5 | [1114C Trailing Loves](https://codeforces.com/problemset/problem/1114/C) | 1700 | Legendre 公式（阶乘里 p 的指数） |
+| 6 | [1706D1 Chopping Carrots (Easy)](https://codeforces.com/problemset/problem/1706/D1) | 1700 | 商枚举 + 值域转置 |
+| 7 | [687B Remainders Game](https://codeforces.com/problemset/problem/687/B) | 1800 | CRT 有解 ⟺ lcm 整除 |
+| 8 | [1477A Nezzar and Board](https://codeforces.com/problemset/problem/1477/A) | 1800 | gcd 生成子群 |
+| 9 | [1034A Enlarge GCD](https://codeforces.com/problemset/problem/1034/A) | 1800 | 全局 gcd + 质因子计数 |
+| 10 | [1548B Integers Have Friends](https://codeforces.com/problemset/problem/1548/B) | 1800 | 差分 + gcd + 双指针 |
+
+> 四根柱子各 2–3 题：**分解/筛** = 1、3、5；**整除分块** = 2、6；**同余/CRT** = 4、7；**gcd 结构** = 8、9、10。备选：[402D Upgrading Array](https://codeforces.com/problemset/problem/402/D)（质因子加权 + 前缀贪心）。
+> 这一单的目标**不是学会数论**，而是把四件事变成条件反射：① 分解只到 √n；② 见到「数的个数 / 值域」先想筛；③ 见到 `Σ floor(n/i)` 先想分块；④ 见到「能凑出哪些数」先想 gcd 生成的子群。**每道题动手前先答这四条里哪一条是入口。**
+
 ## W4–W12 路线图（2026-10-28 ~ 12-29）
 短板自评：**DP 进阶 / 数学 / 图论**；实测上限 ≥2200、临场产出 1566。每周 8 题专题 + 2 题混合（含比赛补题），**周二/周五各一次 25 分钟计时单题**，每周 CF 至少一场，**每两周一次 2 小时 5 题模拟**。题单每周开工前给。
 
 | 周 | 日期 | 专题 | 难度 |
 |---|---|---|---|
-| W4 | 10-28 ~ 11-03 | 状压 / 位运算 DP | 1700–1900 |
-| W5 | 11-04 ~ 11-10 | 数论：CRT / 整除分块 / 积性函数 | 1800–2000 |
+| W4 | 10-28 ~ 11-03 | ✅ 状压 / 位运算 DP（**10-30 收官 10/10**） | 1700–1900 |
+| W5 | **10-31** ~ 11-10 | 数论：CRT / 整除分块 / 积性函数 | 1700–1800 起，前 5 题干净则升 1900 |
 | W6 | 11-11 ~ 11-17 | 数位 DP + 组合计数 | 1800–2000 |
 | W7 | 11-18 ~ 11-24 | 树形 DP / 换根 | 1800–2000 |
 | W8 | 11-25 ~ 12-01 | 图论 I：最短路 + 分层图 / 差分约束 | 1800–2000 |
