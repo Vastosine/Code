@@ -15,33 +15,9 @@ template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin()
 template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
 void init() {}
 int c, n, m, d, q;
-vector<vector<pair<ll, ll>>> e, cost;
+vector<vector<pair<ll, ll>>> cost;
 vector<ll> W;
-vector<vector<ll>> dir, dis;
-
-void addEdge(int u, int v, ll w) {
-    e[u].push_back({v, w});
-    e[v].push_back({u, w});
-}
-
-vector<ll> Dij(int U) {
-    vector<ll> di(n + 1, INF), vis(n + 1);
-    di[U] = 0;
-    priority_queue<pair<ll, ll>> q;
-    q.push({0, U});
-    while (!q.empty()) {
-        auto [_, u] = q.top();
-        q.pop();
-        if (vis[u]) continue;
-        vis[u] = 1;
-        for (auto &[v, w] : e[u]) {
-            if (vis[v]) continue;
-            di[v] = min(di[v], di[u] + w);
-            q.push({-di[v], v});
-        }
-    }
-    return di;
-}
+vector<vector<ll>> dis;
 
 ll read() {
     char ch;
@@ -60,9 +36,7 @@ auto Main([[maybe_unused]] int C = 0) {
     m = read();
     d = read();
     q = read();
-    // cin >> c >> n >> m >> d >> q;
-    assign(n + 1, e, dis);
-    dir.assign(n + 1, vector<ll>(n + 1, INF));
+    dis.assign(n + 1, vector<ll>(n + 1, INF));
     assign(m + 1, W, cost);
     for (int i = 1; i <= m; i++) W[i] = read();
     for (int i = 1; i <= n; i++) {
@@ -73,24 +47,24 @@ auto Main([[maybe_unused]] int C = 0) {
             cost[x].push_back({i, w});
         }
     }
-    // int mx = 0;
     for (int i = 1; i <= m; i++) {
         // mx = max(mx, (int)cost[i].size());
         for (auto &[u, x] : cost[i]) {
             for (auto &[v, y] : cost[i]) {
-                if (u != v) dir[u][v] = dir[v][u] = min(dir[u][v], x + y);
+                if (u != v) dis[u][v] = dis[v][u] = min(dis[u][v], x + y);
             }
         }
     }
     for (int u = 1; u <= n; u++) {
-        for (int v = 1; v <= n; v++) {
-            if (dir[u][v] < INF) addEdge(u, v, dir[u][v]);
-        }
+        dis[u][u] = 0;
     }
-    // cout << mx;
-    for (int u = 1; u <= n; u++) {
-        dis[u] = Dij(u);
-        // cout << dis[u] << "\n";
+    for (int k = 1; k <= n; k++) {
+        for (int u = 1; u <= n; u++) {
+            if (dis[u][k] == INF) continue;
+            for (int v = 1; v <= n; v++) {
+                dis[u][v] = min(dis[u][v], dis[u][k] + dis[k][v]);
+            }
+        }
     }
     while (q--) {
         int x, y;
