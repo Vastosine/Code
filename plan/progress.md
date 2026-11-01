@@ -572,6 +572,20 @@
 
 > 同一天的教训：1512G 一开始就被「预处理会超时」否掉了，但那个判断没量化。实测约数筛 1280 ms / TL 2000 ms——**数量级上他猜对了，可结论应该是「换更便宜的筛法」，不是「放弃预处理」**。同一想法两种实现差 **9.3 倍**（1280 → 137 ms），两种实现的 σ 在 1e7 个值上逐一对拍完全一致。
 
+## 仓库与推送（2026-11-01 改动，之后不用再动）
+
+- **remote 已从 HTTPS 改为 SSH**：`git@github.com:Vastosine/Code.git`
+- **22 端口在本机被墙**（`ssh: connect to host github.com port 22: Connection refused`），解决办法是 `~/.ssh/config` 里把 `github.com` 指向 **`ssh.github.com:443`**：
+  ```
+  Host github.com
+      HostName ssh.github.com
+      Port 443
+      User git
+      IdentityFile ~/.ssh/id_ed25519
+  ```
+- **旧方案的坑**：HTTPS + GCM 里存的凭据属于 **`vastosine-agent`** 账号，对 `Vastosine/Code` 无写权限 → 推 `403`。三条凭据已从 Windows 凭据管理器删除。
+- **现在 `git push origin main` 直接可用**，不再依赖 token（不会过期）。
+
 ## 教练侧工具纪律（2026-11-01，四次翻车之后）
 
 我（教练）在对拍/验证上一共犯过 4 次错，全部是**工具或参照写错**，没有一次是被验代码的问题：
