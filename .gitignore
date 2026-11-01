@@ -10,3 +10,7 @@ stress/
 plan/cache/
 ..cpp
 session_log/
+# 本地测试数据与临时抓取（2026-11-01）
+OI/luogu/data/
+plan/*.json
+plan/*cookies*
