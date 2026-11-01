@@ -17,6 +17,7 @@
 | W2 | 9 / 10 | 81.8%（9/11） | 1.18 | 0 | 题单 9/10（缺 2275E）；另做题单外 1282B2；763A 初版 AC 但错，已修正 |
 | W3 | 10 / 10 | 70%（7/10） | 1.40 | 0 | 完成（10-26 ~ 10-27），全部在 25 分钟内 |
 | W4 | 10 / 10 | 40%（4/10） | 2.11 | 0 | 完成（10-28 ~ 10-30）。难度升到 1700–1800；1340B 82 min/6 次是最大单点损失；最后两天 5 题里 2 题一次过 |
+| W5 | **10 / 10** | **40%（4/10）** | **2.1** | 1 | 完成（10-31 ~ 11-01，**提前 9 天**）。数论：分解/筛/整除分块/同余/gcd 结构。1512G 73 min 止损失败 → 隔夜重写 23 min/1 次；1034A 52 min/4 次（漏除 gcd）→ 重写 8 min/1 次。**两次靠停手重写救回**。模板：线性筛 + 线段树 lazy + qpow + 逆元 + exgcd 全清。**11-01 晚 #2278 AK 7/7，rank 16（rated），+214 → 1780 Expert** |
 
 目标：一次通过率 ≥ 60%，平均提交 ≤ 2.2，RE = 0。
 
@@ -120,7 +121,7 @@
 | 10-24 | Round 1129 (Div. 2) #2277 | A B C D1（4 题，0 WA） | 185 min | A +7、B +16、C +69、D1 +93；D2 最后 42 分钟未过 |
 | 10-26 | Round 1130 (Div. 2) #2272 | A B D（3 题，已解 0 WA） | 125 min | A +11、B +20、D +94；C +44 处 1 次 WA 后放弃，E 最后两次 WA 未过。rank 1341 / 2185 分 |
 | 10-29 | 洛谷 · ICPC 2019 南昌重现赛（3 人队） | **5 题** | 776 min | L +43、C +55、I +194、E +212、G +230（+2 WA）；A 交 7 次未过 |
-| 10-31 | Round 1131 (Div. 3) #2278 | **A B C D E F G —— 7/7 AK，最终 rank 7 / 8472**（全体只有 16 人 7 题） | 403 min | A +13（2 WA）、B +22、C +37（1 WA）、D +48、E +61、F +85、G +112 |
+| 10-31 | Round 1131 (Div. 3) #2278 | **A B C D E F G —— 7/7 AK，rank 16（rated）/ 8472**（全体只有 16 人 7 题） | 403 min | A +13（2 WA）、B +22、C +37（1 WA）、D +48、E +61、F +85、G +112。**rating 1566 → 1780（+214，Expert）** |
 
 > **10-29 复盘（ICPC 2019 南昌站重现赛）**
 >
@@ -178,7 +179,7 @@
 - **W5 开题**（10-31）：见下方 W5 题单，第一题 [1228C Primes and Multiplication](https://codeforces.com/problemset/problem/1228/C)。
 - **11-01 上午第一件事**：**不看 10-31 的代码，重写 [1512G](https://codeforces.com/problemset/problem/1512/G)**，用线性筛算 σ 的积性函数版（目标 ≤ 25 min / ≤ 2 提交）。昨天的 1340B 就是这样从 82 min → 25 min 的。
 - **W5 剩余 4 题**：#7 [687B Remainders Game](https://codeforces.com/problemset/problem/687/B)、#8 [1477A Nezzar and Board](https://codeforces.com/problemset/problem/1477/A)、#9 [1034A Enlarge GCD](https://codeforces.com/problemset/problem/1034/A)、#10 [1548B Integers Have Friends](https://codeforces.com/problemset/problem/1548/B)。
-- **11-01 查 #2278 的 rating**：赛后 12 小时 hack 结束（约 11-01 13:00）后才出分。**若一次冲过 1600，Div. 3 就不再对你有 rating 了。**
+- **11-01 查 #2278 的 rating**：已出 —— **1566 → 1780（+214，Expert）**，rank 16（rated）。**1780 > 1600，Div. 3 从此不再对你 rated**，主场转为 Div. 2。下一个门槛是 1900（Candidate Master）。
 - **旧项：2272E 重写**（现版本 AC 但用了哨兵 `1e6`、讲不清每一行）；**W2 漏掉的 [2275E](https://codeforces.com/problemset/problem/2275/E)** 补掉。都排在 W5 的空隙里。
 - **找教练问三件事**：本赛季还有没有队伍名额、大一下淘汰看什么、暑假多校怎么选人（见 `plan/calendar.md`）。
 - **本周比赛**：10-31 22:35 **#2278 Div. 3**（135 min）、11-04 22:35 #2283 Edu Div. 2、11-05 19:00 ICPC Online Challenge 2、11-06 22:35 #2284 Div. 2、11-07 22:35 #2280 Div. 2。
