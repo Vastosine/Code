@@ -1,0 +1,1 @@
+{"status":"FAILED","comment":"contestId: Non-gym contest standings for non-admin users are available only via anonymous GET requests with no extra parameters: https://codeforces.com/api/contest.standings?contestId\u003d\u003cid\u003e"}
