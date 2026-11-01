@@ -6,7 +6,7 @@ using namespace std;
 const int M = 1e9 + 7;
 
 ll qpow(ll x, ll n) {
-    x %= M;
+    x = (x % M + M) % M;
     return n ? qpow(x * x % M, n / 2) * (n & 1 ? x : 1) % M : 1;
 }
 
