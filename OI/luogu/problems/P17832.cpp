@@ -2,7 +2,6 @@
 // Time    : 2026-11-01 19:57:13
 #include <cstdio>
 #include <iostream>
-#include <queue>
 #include <utility>
 #include <vector>
 #include <algorithm>
@@ -31,19 +30,21 @@ ll read() {
 }
 
 auto Main([[maybe_unused]] int C = 0) {
-    c = read();
-    n = read();
-    m = read();
-    d = read();
-    q = read();
+    // c = read();
+    // n = read();
+    // m = read();
+    // d = read();
+    // q = read();
+    cin >> c >> n >> m >> d >> q;
     dis.assign(n + 1, vector<ll>(n + 1, INF));
     assign(m + 1, W, cost);
-    for (int i = 1; i <= m; i++) W[i] = read();
+    for (int i = 1; i <= m; i++) cin >> W[i];
     for (int i = 1; i <= n; i++) {
-        int k = read();
+        int k;
+        cin >> k;
         for (int j = 0; j < k; j++) {
-            ll x = read(), w = read();
-            // cin >> x >> w;
+            ll x, w;
+            cin >> x >> w;
             cost[x].push_back({i, w});
         }
     }
@@ -68,8 +69,7 @@ auto Main([[maybe_unused]] int C = 0) {
     }
     while (q--) {
         int x, y;
-        x = read();
-        y = read();
+        cin >> x >> y;
         ll ans = INF;
         for (auto &[u, w1] : cost[x]) {
             for (auto &[v, w2] : cost[y]) {
