@@ -22,6 +22,7 @@ auto Main([[maybe_unused]] int C = 0) {
     for (int i = 1; i < n; i++) {
         g = gcd(g, a[i] - a[0]);
     }
+    if (!g) return a[0] == k;
     return (k - a[0]) % g == 0;
 }
 
