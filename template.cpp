@@ -3,8 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#define cautor const auto &
-#define autor auto &
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef pair<int, int> pii;
 [[maybe_unused]] const ll INF = 1ll << 60, NEG = -INF;
 template<typename T> istream &operator>>(istream &in, vector<T> &a) { for (T &x : a) in >> x; return in; }
