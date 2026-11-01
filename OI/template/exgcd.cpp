@@ -1,5 +1,4 @@
 #include <cassert>
-#include <iostream>
 #include <cmath>
 
 using namespace std;
@@ -15,11 +14,19 @@ ll exgcd(ll a, ll b, ll &x, ll &y) {
     return g;
 }
 
+ll exgcdN(ll a, ll b, ll &x, ll &y) {
+    ll g = exgcd(a, b, x, y);
+    if (g < 0) {
+        g = -g, x = -x, y = -y;
+    }
+    return g;
+}
+
 int main() {
     for (ll a = -50; a <= 50; a++) {
         for (ll b = -50; b <= 50; b++) {
             if (!a && !b) continue;
-            ll x, y, g = exgcd(a, b, x, y);
+            ll x, y, g = exgcdN(a, b, x, y);
             assert(a * x + b * y == g);
             assert(g > 0);
         }
