@@ -14,3 +14,6 @@ session_log/
 OI/luogu/data/
 plan/*.json
 plan/*cookies*
+
+# 个人材料临时解压（2026-11-02）
+tmp/
