@@ -15,8 +15,7 @@
 
 | 会话 | 负责 | 维护的文件 | 频率 |
 |---|---|---|---|
-| **主会话** | 竞赛训练 + 保研 + 英语调度 + 全局安排 | `plan/progress.md`、`plan/baoyan.md`、`plan/calendar.md`、`OI/**` | 每天 |
-| （可选）课业会话 | 绩点 / 期末 | `plan/courses.md` | 按需 |
+| **主会话** | 竞赛训练 + 保研 + 课业交付 + 英语调度 + 全局安排 | `plan/progress.md`、`plan/baoyan.md`、`plan/calendar.md`、`plan/courses.md`、`OI/**` | 每天 |
 
 **英语不再单独开会话（2026-11-03 定）。** 原设计是「英语会话维护 `plan/english.md`，主会话只读快照」，但 `plan/english.md` **从未建立**，快照桥是空的 —— 两个会话真正的共享面是 `D:\study\English\CET4` 里的计划、打卡表、每日任务，主会话直接读这些文件比读一份转写快照更短，也不会出现「快照说 A、原文件说 B」。
 
@@ -39,8 +38,8 @@
 | `calendar.md` | 赛历、入队窗口、截止日期 |
 | `profile.md` | 学习者画像 —— **每次 `start` 先读** |
 | `problemsetting.md` | 出题流程模板（建模 → std → 验证链 → 数据 → 题面自检） |
+| `courses.md` | 课业与绩点：**有硬截止日期的课程交付物**（当前：德法实践作业）；日常作业仍在 `progress.md` |
 | ~~`english.md`~~ | 未建立，也不需要（见上「上下文隔离」）：英语真相源在 `D:\study\English\CET4` |
-| ~~`courses.md`~~ | 未建立；课业目前只有 `progress.md` 的「下次开工」一栏在管 |
 | `organize.ps1` / `cph_fix.ps1` / `elapsed.ps1` / `template_check.ps1` | 归档与计时工具 |
 
 ## 硬规则
