@@ -17,3 +17,9 @@ plan/*cookies*
 
 # 个人材料临时解压（2026-11-02）
 tmp/
+
+# 抓取临时文件（2026-11-02）
+plan/*.html
+plan/*.json
+plan/*.txt
+plan/*.json
