@@ -21,14 +21,34 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $statusPath = Join-Path $PSScriptRoot 'cache\status.json'
+$cacheDir = Split-Path $statusPath -Parent
+if (-not (Test-Path $cacheDir)) { New-Item -ItemType Directory -Force -Path $cacheDir | Out-Null }
 
+function Test-StatusFile([string]$Path) {
+    if (-not (Test-Path $Path)) { return $false }
+    try { return ((Get-Content $Path -Raw | ConvertFrom-Json).status -eq 'OK') } catch { return $false }
+}
+
+# 2026-11-03 fix: curl -m 90 once truncated the response at 1913 bytes and left a
+# half-written cache file behind. Now: download to .tmp, validate the JSON, then
+# move into place; retry 3x. A partial file can never become the cache.
 function Update-Status {
-    $fresh = (Test-Path $statusPath) -and ((Get-Date) - (Get-Item $statusPath).LastWriteTime).TotalMinutes -lt 10
-    if ($fresh) { return }
-    curl.exe -s -m 90 -o $statusPath 'https://codeforces.com/api/user.status?handle=yuxinhao&from=1&count=10000' | Out-Null
-    if (((Get-Content $statusPath -Raw | ConvertFrom-Json).status) -ne 'OK') {
-        throw "failed to refresh $statusPath"
+    if ((Test-Path $statusPath) -and
+        ((Get-Date) - (Get-Item $statusPath).LastWriteTime).TotalMinutes -lt 10 -and
+        (Test-StatusFile $statusPath)) { return }
+    $tmp = "$statusPath.tmp"
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        if (Test-Path $tmp) { Remove-Item $tmp -Force }
+        curl.exe -s -m 300 -o $tmp 'https://codeforces.com/api/user.status?handle=yuxinhao&from=1&count=10000' | Out-Null
+        if ((Test-StatusFile $tmp) -and (Get-Item $tmp).Length -gt 10000) {
+            Move-Item $tmp $statusPath -Force
+            return
+        }
+        if (Test-Path $tmp) { Remove-Item $tmp -Force }
+        Write-Host "  status download attempt $attempt failed (truncated or invalid), retrying..."
+        Start-Sleep -Seconds 3
     }
+    throw "failed to refresh $statusPath after 3 attempts"
 }
 
 function Get-Info([string]$Path) {

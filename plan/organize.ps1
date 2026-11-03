@@ -26,13 +26,30 @@ $statusPath = Join-Path $PSScriptRoot 'cache\status.json'
 $oldDir = Join-Path $Root 'old'
 $unacceptDir = Join-Path $Root 'unaccept'
 
+function Test-StatusFile([string]$Path) {
+    if (-not (Test-Path $Path)) { return $false }
+    try { return ((Get-Content $Path -Raw | ConvertFrom-Json).status -eq 'OK') } catch { return $false }
+}
+
+# 2026-11-03 fix (same as elapsed.ps1): a single curl -m 90 was truncated mid-download
+# and left a half-written cache behind. Download to .tmp, validate, then move into place.
 function Update-Status {
-    $fresh = (Test-Path $statusPath) -and ((Get-Date) - (Get-Item $statusPath).LastWriteTime).TotalMinutes -lt 10
-    if ($fresh) { return }
-    curl.exe -s -m 90 -o $statusPath 'https://codeforces.com/api/user.status?handle=yuxinhao&from=1&count=10000' | Out-Null
-    if (((Get-Content $statusPath -Raw | ConvertFrom-Json).status) -ne 'OK') {
-        throw "failed to refresh $statusPath"
+    if ((Test-Path $statusPath) -and
+        ((Get-Date) - (Get-Item $statusPath).LastWriteTime).TotalMinutes -lt 10 -and
+        (Test-StatusFile $statusPath)) { return }
+    $tmp = "$statusPath.tmp"
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        if (Test-Path $tmp) { Remove-Item $tmp -Force }
+        curl.exe -s -m 300 -o $tmp 'https://codeforces.com/api/user.status?handle=yuxinhao&from=1&count=10000' | Out-Null
+        if ((Test-StatusFile $tmp) -and (Get-Item $tmp).Length -gt 10000) {
+            Move-Item $tmp $statusPath -Force
+            return
+        }
+        if (Test-Path $tmp) { Remove-Item $tmp -Force }
+        Write-Host "  status download attempt $attempt failed (truncated or invalid), retrying..."
+        Start-Sleep -Seconds 3
     }
+    throw "failed to refresh $statusPath after 3 attempts"
 }
 
 function Get-PathHash([string]$Path) {

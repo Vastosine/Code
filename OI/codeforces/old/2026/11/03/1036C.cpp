@@ -1,5 +1,5 @@
 // Problem : C. Classy Numbers https://codeforces.com/problemset/problem/1036/C
-// Time    : 2026-11-02 06:35:02
+// Time    : 2026-11-03 07:41:29
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -11,54 +11,50 @@ template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
 
-
 ll CC(ll n, ll m) {
     if (m < 0 || m > n) return 0;
     ll ans = 1;
-    for (ll i = 0; i < m; i++) {
+    for (int i = 0; i < m; i++) {
         ans = ans * (n - i) / (i + 1);
     }
     return ans;
 }
 
-ll pow(ll x, ll n) {
-    ll ans = 1;
-    while (n--) ans *= x;
-    return ans;
+ll qpow(ll x, ll n) {
+    return n ? qpow(x * x, n / 2) * (n & 1 ? x : 1) : 1;
 }
 
 vector<vector<ll>> F;
-ll f(int k, int x, int d = 1) {
-    if (d > 1) return (d - 1) * f(k, x - 1) + f(k, x);
-    if (F[k][x]) return F[k][x];
-    return F[k][x] = x ? CC(k, x) * pow(9, x) + f(k, x - 1) : 1; 
+void init() {
+    F.assign(19, vector<ll>(4));
+    vector<ll> x(4);
+    for (int i = 0; i <= 18; i++) {
+        F[i][0] = CC(i, 0);
+        for (int j = 1; j <= 3; j++) {
+            F[i][j] = F[i][j - 1] + CC(i, j) * qpow(9, j);
+        }
+    }
 }
 
-ll g(ll x) {
-    ll st = 0, y = 1;
-    while (y <= x / 10) y *= 10, st++;
-    ll ans = 0, t = 3;
-    while (~st) {
-        bool k = 0;
-        if ((k = y <= x) && t > 0) {
-            ans += f(st, t, x / y);
-            x -= y * (x / y);
+ll f(ll x) {
+    ll k = 0, y = 1, ans = 0, t = 3;
+    while (y <= x / 10) y *= 10, k++;
+    while (~k) {
+        if (t && y <= x) {
+            ans += F[k][t] + (x / y - 1) * (k ? F[k][t - 1] : 1);
+            t--;
+            x -= x / y * y;
         }
-        t -= k;
-        st--;
+        k--;
         y /= 10;
     }
     return ans + 1;
 }
 
-void init() {
-    F.assign(19, vector<ll>(4));
-}
-
 auto Main([[maybe_unused]] int C = 0) {
     ll l, r;
     cin >> l >> r;
-    return g(r) - g(l - 1);
+    return f(r) - f(l - 1);
 }
 
 int main() {
@@ -73,5 +69,3 @@ int main() {
     }
     return 0;
 }
-
-// CHECK 上限       -> OK
