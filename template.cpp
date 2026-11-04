@@ -28,3 +28,12 @@ int main() {
     }
     return 0;
 }
+
+/**
+
+ *  CHECK Type int * int, int to ll, negative index : 
+ *  CHECK Vector Size :  
+ *  CHECK Multiple Test Clear : 
+ *  CHECK Restriction : 
+
+ */
