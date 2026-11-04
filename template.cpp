@@ -31,9 +31,9 @@ int main() {
 
 /**
 
- *  CHECK Type int * int, int to ll, negative index : 
- *  CHECK Vector Size : 
- *  CHECK Multiple Test Clear : 
- *  CHECK Restriction : 
+ *  CHECK Type int * int, int to ll, negative index  : 
+ *  CHECK Vector Size                                : 
+ *  CHECK Multiple Test Clear                        : 
+ *  CHECK Restriction Value remain, border, negative : 
 
  */
