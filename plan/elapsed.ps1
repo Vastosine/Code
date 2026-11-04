@@ -108,18 +108,25 @@ foreach ($g in $groups) {
         $ac = Get-Ac $i
         if (-not $ac) { "{0,-10} no AC yet" -f $i.Name; continue }
         $subs = Get-Subs $i
-        $subsBefore = @($subs | Where-Object { $_.creationTimeSeconds -lt $ac.creationTimeSeconds }).Count
+        # "failed before AC" must be counted from THIS file's start time, not from the
+        # whole history: a blind rewrite next day is a new session and the previous
+        # day's WA must not be charged to it. (2026-11-04 fix)
+        $startOffset = [DateTimeOffset]::new($i.Start, [TimeSpan]::FromHours(8))
+        $startUnix = $startOffset.ToUnixTimeSeconds()
+        $subsBefore = @($subs | Where-Object {
+                $_.creationTimeSeconds -ge $startUnix -and $_.creationTimeSeconds -lt $ac.creationTimeSeconds
+            }).Count
         $end = [DateTimeOffset]::FromUnixTimeSeconds($ac.creationTimeSeconds).ToOffset([TimeSpan]::FromHours(8)).DateTime
         $since = [math]::Round(($end - $i.Start).TotalMinutes)
 
         if (-not $i.Contest) {
-            "{0,-10} start {1:HH:mm:ss}  AC {2:HH:mm:ss}  elapsed {3,4} min  subs {4}" -f `
-                $i.Name, $i.Start, $end, $since, $subsBefore
+            "{0,-10} start {1:HH:mm:ss}  AC {2:HH:mm:ss}  elapsed {3,4} min  failBefore {4}  total {5}" -f `
+                $i.Name, $i.Start, $end, $since, $subsBefore, ($subsBefore + 1)
         }
         else {
             $delta = if ($prev) { [math]::Round(($end - $prev).TotalMinutes) } else { $since }
-            "{0,-10} contest {1:HH:mm:ss}  AC {2:HH:mm:ss}  +{3,4} min  delta {4,4} min  subs {5}" -f `
-                $i.Name, $i.Start, $end, $since, $delta, $subsBefore
+            "{0,-10} contest {1:HH:mm:ss}  AC {2:HH:mm:ss}  +{3,4} min  delta {4,4} min  failBefore {5}  total {6}" -f `
+                $i.Name, $i.Start, $end, $since, $delta, $subsBefore, ($subsBefore + 1)
             $prev = $end
         }
     }
