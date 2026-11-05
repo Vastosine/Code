@@ -21,7 +21,7 @@ int main() {
     const string OUT[2] = {"NO", "YES"}; init(); int C = 1;
     cin >> C;
     for (int c = 0; c < C; c++) {
-        auto ans = Main(c);
+        [[maybe_unused]] auto ans = Main(c);
         cout << ans << "\n";
         // cout << OUT[ans] << "\n";
         // ans.empty() ? cout << OUT[0] << "\n" : cout << OUT[1] << "\n" << ans << "\n";
