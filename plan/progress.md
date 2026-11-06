@@ -903,7 +903,7 @@ $$6+14+34+70+113=237\ \Rightarrow\ \text{penalty 244 全部来自 AC 时刻，�
 - 没有 `wr` 的题按文件头 `// Time` 估（那只是「开始写」的时刻，不含思考）。
 - 比赛中不发 `wr`（有提交时间戳），但赛后复盘时用来标每题「想 / 写」的比例。
 
-**2026-11-06 追加：`com` 之后必须 git 提交一次，一题一个 commit**（本人要求）。commit message 写：题号 + 难度/标签 + 提交次数 + 总用时/限时 + 一句话错因。
+**2026-11-06 追加：`com` 之后必须 commit **并 push**，一题一个 commit**（本人要求）。commit message 写：题号 + 难度/标签 + 提交次数 + 总用时/限时 + 一句话错因。**只 commit 不 push 等于没存**（remote: `git@github.com:Vastosine/Code.git`）。
 
 ---
 
