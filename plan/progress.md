@@ -912,6 +912,8 @@ $$6+14+34+70+113=237\ \Rightarrow\ \text{penalty 244 全部来自 AC 时刻，�
 | **比赛（rated contest）** | `OI/contests/CF/<比赛号>/<比赛号><题号>.cpp` | `OI/contests/CF/2283/2283A.cpp` |
 | **练习（补题/archive）** | `OI/codeforces/old/<年>/<月>/<日>/<题号>.cpp`，**日期 = 实际做这题的日期** | `OI/codeforces/old/2026/11/06/2275E.cpp` |
 
+**每个日期文件夹自带一个 `.cph/`**，里面是 CPH 的测试数据：`.cph/.<题号>.cpp_<hash>.prob`。**搬 .cpp 时必须把对应的 `.prob` 一起搬到那个日期的 `.cph/` 里**（`.cph/` 在 `.gitignore` 里，所以它不会出现在 `git status`，要单独 `Move-Item`）。11-07 我只搬了 .cpp，被本人提醒后补搬。
+
 **不许建平铺目录**（`OI/codeforces/` 根下不放 .cpp）。11-07 我犯了两次：先把 6 个练习文件放进 `OI/contests/CF/<id>/`（那是比赛的位置），又差点放进平铺目录；最终按上表搬到 `old/2026/11/06` 和 `old/2026/11/07`（commit `74a5626` 之后的修正）。
 
 ---
