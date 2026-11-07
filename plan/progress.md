@@ -905,7 +905,14 @@ $$6+14+34+70+113=237\ \Rightarrow\ \text{penalty 244 全部来自 AC 时刻，�
 
 **2026-11-06 追加：`com` 之后必须 commit **并 push**，一题一个 commit**（本人要求）。commit message 写：题号 + 难度/标签 + 提交次数 + 总用时/限时 + 一句话错因。**只 commit 不 push 等于没存**（remote: `git@github.com:Vastosine/Code.git`）。
 
-**2026-11-07 追加：代码文件一律放 `OI/contests/CF/<比赛号>/<比赛号><题号>.cpp`**（本人约定；`2283/2278/2272` 等 15 个目录都是这个结构）。**不许再建平铺目录** `OI/codeforces/` —— 11-07 我让他建的 6 个文件全摊在平铺目录里，已用 `git mv` 归位（commit `74a5626`）。
+**2026-11-07 追加（第二次修正）：代码文件按「比赛还是练习」分两类放，别混：**
+
+| 类型 | 路径 | 例子 |
+|---|---|---|
+| **比赛（rated contest）** | `OI/contests/CF/<比赛号>/<比赛号><题号>.cpp` | `OI/contests/CF/2283/2283A.cpp` |
+| **练习（补题/archive）** | `OI/codeforces/old/<年>/<月>/<日>/<题号>.cpp`，**日期 = 实际做这题的日期** | `OI/codeforces/old/2026/11/06/2275E.cpp` |
+
+**不许建平铺目录**（`OI/codeforces/` 根下不放 .cpp）。11-07 我犯了两次：先把 6 个练习文件放进 `OI/contests/CF/<id>/`（那是比赛的位置），又差点放进平铺目录；最终按上表搬到 `old/2026/11/06` 和 `old/2026/11/07`（commit `74a5626` 之后的修正）。
 
 ---
 
