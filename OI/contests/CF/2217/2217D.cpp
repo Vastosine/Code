@@ -45,7 +45,7 @@ auto Main([[maybe_unused]] int C = 0) {
         if (!i) {
             if (d[1]) vis[1] = 1;
             else ans += 2;
-        } else if (i == n - 1) {
+        } else if (i == m - 1) {
             if (d[i - 1]) vis[i - 1] = 1;
             else ans += 2;
         } else if (!vis[i - 1] && !vis[i + 1]) {
