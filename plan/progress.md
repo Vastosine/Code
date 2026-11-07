@@ -905,14 +905,19 @@ $$6+14+34+70+113=237\ \Rightarrow\ \text{penalty 244 全部来自 AC 时刻，�
 
 **2026-11-06 追加：`com` 之后必须 commit **并 push**，一题一个 commit**（本人要求）。commit message 写：题号 + 难度/标签 + 提交次数 + 总用时/限时 + 一句话错因。**只 commit 不 push 等于没存**（remote: `git@github.com:Vastosine/Code.git`）。
 
-**2026-11-07 追加（第二次修正）：代码文件按「比赛还是练习」分两类放，别混：**
+**2026-11-07 追加（第三次修正，本人 19:40 确认）：代码文件按三类放。**
 
 | 类型 | 路径 | 例子 |
 |---|---|---|
 | **比赛（rated contest）** | `OI/contests/CF/<比赛号>/<比赛号><题号>.cpp` | `OI/contests/CF/2283/2283A.cpp` |
-| **练习（补题/archive）** | `OI/codeforces/old/<年>/<月>/<日>/<题号>.cpp`，**日期 = 实际做这题的日期** | `OI/codeforces/old/2026/11/06/2275E.cpp` |
+| **练习（当前在做的）** | `OI/codeforces/<题号>.cpp` —— **平铺，不建日期目录** | `OI/codeforces/2275E.cpp` |
+| **练习（归档后）** | `OI/codeforces/old/<年>/<月>/<日>/<题号>.cpp`（日期 = 当时做的日期） | `OI/codeforces/old/2026/11/04/2203D.cpp` |
 
-**每个日期文件夹自带一个 `.cph/`**，里面是 CPH 的测试数据：`.cph/.<题号>.cpp_<hash>.prob`。**搬 .cpp 时必须把对应的 `.prob` 一起搬到那个日期的 `.cph/` 里**（`.cph/` 在 `.gitignore` 里，所以它不会出现在 `git status`，要单独 `Move-Item`）。11-07 我只搬了 .cpp，被本人提醒后补搬。
+**`old/` 是归档目录，不是"当场就进"。** 当前在做的题留在 `OI/codeforces/` 平铺，过一段时间才归档。
+
+**`.cph/` 跟着代码走**：平铺时在 `OI/codeforces/.cph/`，归档后在该日期的 `old/<年>/<月>/<日>/.cph/`。因为 `.cph/` 在 `.gitignore` 里，`git status` 看不见，搬的时候要单独 `Move-Item`。
+
+**11-07 我在这一条上错了三次**：先放进 `OI/contests/CF/<id>/`（那是比赛的位置），再搬进 `old/<日期>/`（那是归档位置），最后才回到平铺。**根因：只看到一个例子（`old/2026/11/04/`）就把它当成了"当前文件的规矩"，没问"这是归档还是当场"。**
 
 **不许建平铺目录**（`OI/codeforces/` 根下不放 .cpp）。11-07 我犯了两次：先把 6 个练习文件放进 `OI/contests/CF/<id>/`（那是比赛的位置），又差点放进平铺目录；最终按上表搬到 `old/2026/11/06` 和 `old/2026/11/07`（commit `74a5626` 之后的修正）。
 
