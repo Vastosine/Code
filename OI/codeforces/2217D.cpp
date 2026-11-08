@@ -1,6 +1,5 @@
 // Problem : D. Flip the Bit (Hard Version) https://codeforces.com/problemset/problem/2217/D
-// Time    : 2026-11-07 18:37:08
-// DIFF vs B: k = 1 -> k >= 1
+// Time    : 2026-11-08 08:30:03
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -19,47 +18,21 @@ void init() {}
 auto Main([[maybe_unused]] int C = 0) {
     int n, k;
     cin >> n >> k;
-    vi a(n), b(n);
-    cin >> a;
-    int tr;
-    while (k--) {
-        int x;
-        cin >> x;
-        b[x - 1] = 1;
-        tr = a[x - 1];
-    }
-    vi c, d;
-    for (int l = 0, r = 0; l < n; l = r = r + 1) {
-        int t = b[l];
-        while (r < n - 1 && a[r + 1] == a[r]) {
-            r++;
-            t |= b[r];
+    vi a(n + 2), b(k + 2);
+    for (int i = 1; i <= n; i++) cin >> a[i];
+    for (int i = 1; i <= k; i++) cin >> b[i];
+    b[0] = 0, b[k + 1] = n + 1;
+    a[0] = a[n + 1] = a[b[1]];
+    int s = 0, x = 0;
+    for (int i = 0; i <= k; i++) {
+        int y = 0;
+        for (int j = b[i]; j < b[i + 1]; j++) {
+            y += a[j] != a[j + 1];
         }
-        c.push_back(a[l]);
-        d.push_back(t);
+        s += y;
+        x = max(x, y);
     }
-    int ans = 0, m = (int) d.size();
-    vi vis(m);
-    for (int i = 0; i < m; i++) {
-        if (c[i] == tr) continue;
-        if (!i) {
-            if (d[1]) vis[1] = 1;
-            else ans += 2;
-        } else if (i == m - 1) {
-            if (d[i - 1]) vis[i - 1] = 1;
-            else ans += 2;
-        } else if (!vis[i - 1] && !vis[i + 1]) {
-            if (d[i + 1]) vis[i + 1] = 1;
-            else ans += 2;
-        }
-    }
-    for (int i = 0, t = 0; i < m; i++) {
-        if (vis[i]) {
-            ans += 1 + !t;
-            t++;
-        } else t = 0;
-    }
-    return ans;
+    return max(s / 2, x);
 }
 
 int main() {
@@ -77,10 +50,10 @@ int main() {
 
 /**
 
- *  CHECK Type int * int, int to ll, negative index  : 
- *  CHECK Vector Size                                : 
- *  CHECK Multiple Test Clear                        : 
- *  CHECK Restriction Value remain, border, negative : 
- *  CHECK Output Format                              : 
+ *  CHECK Type int * int, int to ll, negative index  : 1
+ *  CHECK Vector Size                                : 1
+ *  CHECK Multiple Test Clear                        : 1
+ *  CHECK Restriction Value remain, border, negative : 1
+ *  CHECK Output Format                              : 1
 
  */
