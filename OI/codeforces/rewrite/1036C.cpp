@@ -18,7 +18,7 @@ void init() {}
 
 // State: f[n][k][tight] (from high to low) : n digits, k non-zero, is tight
 // Transfer: f[i + 1][j + !!dig][t && dig == c] += f[i][j][t]
-// Complexity: 18 * 4 * 2 * 9
+// Complexity: 19 * 4 * 2 * 9
 // Border: f[0][0][1] = 1
 
 ll solve(string s) {
