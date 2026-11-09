@@ -1641,6 +1641,55 @@ for (int x = 0; x <= (t ? c : 9); x++)
 
 难度曲线：1800 → 2300。**最高 AC 从 2000 抬到 2300，且是 1 次过。**
 
+# T7 · 树上问题（11-09 ~ 11-14，11-15 比赛日）
+
+**为什么是树**：T1–T6 覆盖了实现/二分、DP 基础、DP 进阶、状压、数论、数位 DP + 组合 —— **树几乎是空白**（只有 763A、1946C、982C 这类 1300–1500 的 DFS 计数）。而 Div.2 的 C/D 有大量题落在「子树 → 区间」「两点路径 → LCA」「子树信息合并」这三种操作上。这是当前最大的结构性缺口。
+
+**本阶段指标**：一次通过率 ≥ **60%**（T6 是 50%），稳定拿 2100、冲 2200。提交制不变（一次提交制）。
+
+## 四根柱子（考点）
+
+| 柱子 | 一句话 | 典型操作 |
+|---|---|---|
+| **换根 DP** | 先算一个根，再把答案「搬」到相邻结点 | 两遍 DFS；第二遍用 `f[v] = g(f[u], 子树 v)` |
+| **树上差分** | 路径修改 → 两次点差分 + 一次 LCA | `del[u]++, del[v]++, del[lca]-=2`（边）|
+| **DFS 序** | 子树 → 一段连续区间，树上问题变序列问题 | 记录 `tin/tout`，子树 = `[tin, tin+size)` |
+| **LCA** | 两点路径 = `u→lca→v`，路径长度 = `dep[u]+dep[v]-2dep[lca]` | 倍增跳表 |
+
+## T7 题单（1800 → 2100，8 题）
+
+| # | 题目 | 难度 | 考点 | 状态 |
+|---|---|---|---|---|
+| 1 | [1324F Maximum White Subtree](https://codeforces.com/problemset/problem/1324/F) | 1800 | 换根 DP 入门 | 待做 |
+| 2 | [1083A The Fair Nut and the Best Path](https://codeforces.com/problemset/problem/1083/A) | 1800 | 树形 DP：最大权路径 | 待做 |
+| 3 | [191C Fools and Roads](https://codeforces.com/problemset/problem/191/C) | 1900 | 树上差分（边）+ LCA | 待做 |
+| 4 | [1702G1 Passable Paths (easy version)](https://codeforces.com/problemset/problem/1702/G1) | 1900 | LCA 判定「点集是否共路」 | 待做 |
+| 5 | [1076E Vasya and a Tree](https://codeforces.com/problemset/problem/1076/E) | 1900 | DFS 序 + 深度维差分 | 待做 |
+| 6 | [877E Danil and a Part-time Job](https://codeforces.com/problemset/problem/877/E) | 2000 | DFS 序 + 线段树 lazy（接 T5 模板） | 待做 |
+| 7 | [519E A and B and Lecture Rooms](https://codeforces.com/problemset/problem/519/E) | 2100 | LCA + 子树计数 | 待做 |
+| 8 | [1187E Tree Painting](https://codeforces.com/problemset/problem/1187/E) | 2100 | 换根 DP 进阶 | 待做 |
+
+**难度阶梯是刻意的**：1800、1800、1900、1900、1900、2000、2100、2100。前三题只用到「两遍 DFS」和「一次 LCA」，第 5 题开始才引入 DFS 序。
+
+## T7 模板盲打（独立于题单，不占题数）
+
+| 模板 | 状态 |
+|---|---|
+| **倍增 LCA** | ☐ 题单 3/4 会覆盖，但要单独盲打一遍（20 行以内，5 min 内） |
+| **树链剖分** | ☐ **9-29 靠临时复习才写出来，不算会**。必须盲打验证：`dfs1/dfs2` + `path` 查询，对着随机树跑暴力比对 |
+
+树链剖分排在 11-13 前后 —— 它是 LCA 的加强版，等 LCA 熟了再上。
+
+## 比赛
+
+| 日期 | 场次 | 备注 |
+|---|---|---|
+| **11-15（周日）22:35** | #2285 Div. 2 | 提醒已挂（22:05）|
+| **11-21（周六）22:35** | #2288 Div. 2 | 本月最后一场 Div. 2，提醒已挂 |
+
+T7 的 8 题要在 11-14 之前收掉大半，11-15 当天不加新题。
+
+
 
 
 
