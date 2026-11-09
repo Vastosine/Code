@@ -55,7 +55,7 @@ function Test-Bom([string]$Path) {
 }
 
 function Test-Frozen([string]$Path) {
-    $Path -like '*\old\*' -or $Path -like '*\unaccept\*'
+    $Path -like '*\old\*' -or $Path -like '*\unaccept\*' -or $Path -like '*\sealed\*'
 }
 
 # index every entry under every .cph dir, by source file name
