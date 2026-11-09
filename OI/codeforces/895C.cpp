@@ -83,7 +83,7 @@ auto Main([[maybe_unused]] int C = 0) {
     ll ans = f[i % 2][0];
     vi p;
     for (; i < n; i++) {
-        if (a[i] != a[i - 1]) p.push_back(0);
+        if (!i || a[i] != a[i - 1]) p.push_back(0);
         p.back()++;
     }
     for (int x : p) {
