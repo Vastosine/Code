@@ -21,7 +21,7 @@ void init() {}
 auto Main([[maybe_unused]] int C = 0) {
     int n;
     cin >> n;
-    const int D = 20;
+    const int D = __lg(n) + 1;
     vector<vi> e, fa(n + 1, vi(D + 1));
     vi dep, o(1, 1);
     assign(n + 1, e, dep);
