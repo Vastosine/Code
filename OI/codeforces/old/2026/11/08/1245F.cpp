@@ -48,8 +48,7 @@ vi transfer(int x) {
 
 // State: f[n][p][q]: n digits, p for a whether tight, q for b;
 // Transfer: f[i + 1][p && x == A[i]][q && (x >> 1) == B[i]] += f[i][p][q];
-//           x can be 0; 1 if A[i]; 2 if B[i]
-//           mask = A[i] + B[i] * 2, x = mask; ; x = (x - 1) & mask
+//           x in [0, 2]
 // Complexity: 30 * 2 * 2 * 3
 // Border: f[0][1][1] = 1;
 // Calculate: S(A, B) = sum of f[n]

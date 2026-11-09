@@ -9,6 +9,16 @@
 #   This script finds an entry by file NAME (searching every .cph under -Root),
 #   rewrites "srcPath", re-hashes it and puts it in the right folder.
 #
+# 2026-11-09 fix: the by-NAME index assumes basenames are unique under -Root.
+#   They stopped being unique once rewrite\ mirror-solved archived problems
+#   (old\2026\11\01\914C.cpp and rewrite\914C.cpp, 1340B.cpp on 10-28/10-29),
+#   so every run saw the twin as an "extra" entry, deleted it, and the next run
+#   deleted the other one back -- non-convergent ping-pong that would quietly
+#   strip sample tests from one of the two files.
+#   old\ and unaccept\ are now frozen: excluded from both the index and the
+#   scan.  organize.ps1 already carries the metadata along when it archives
+#   (Move-Cph), so there is nothing here for this script to repair.
+#
 # Usage:
 #   .\cph_fix.ps1                                         # dry run, OI\codeforces
 #   .\cph_fix.ps1 -Apply
@@ -44,9 +54,14 @@ function Test-Bom([string]$Path) {
     $b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF
 }
 
+function Test-Frozen([string]$Path) {
+    $Path -like '*\old\*' -or $Path -like '*\unaccept\*'
+}
+
 # index every entry under every .cph dir, by source file name
 $index = @{}
-foreach ($dir in (Get-ChildItem $Root -Recurse -Directory -Filter '.cph')) {
+foreach ($dir in (Get-ChildItem $Root -Recurse -Directory -Filter '.cph' |
+                  Where-Object { -not (Test-Frozen $_.FullName) })) {
     foreach ($f in (Get-ChildItem $dir.FullName -File -Filter *.prob)) {
         if ($f.Name -notmatch '^\.(.+)_([0-9a-f]{32})\.prob$') { continue }
         $leaf = $Matches[1]
@@ -65,7 +80,8 @@ foreach ($dir in (Get-ChildItem $Root -Recurse -Directory -Filter '.cph')) {
 $changed = 0
 $orphans = @()
 $seen = @{}
-foreach ($cpp in (Get-ChildItem $Root -Recurse -File -Filter *.cpp | Where-Object { $_.FullName -notlike '*\.cph\*' })) {
+foreach ($cpp in (Get-ChildItem $Root -Recurse -File -Filter *.cpp |
+                  Where-Object { $_.FullName -notlike '*\.cph\*' -and -not (Test-Frozen $_.FullName) })) {
     $seen[$cpp.Name] = $true
     if (-not $index.ContainsKey($cpp.Name)) { $orphans += $cpp.FullName; continue }
 
