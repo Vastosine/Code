@@ -1665,7 +1665,7 @@ for (int x = 0; x <= (t ? c : 9); x++)
 | 3 | [191C Fools and Roads](https://codeforces.com/problemset/problem/191/C) | 1900 | 树上差分（边）+ LCA | ✅ **28.1 min / 1 次**（`wr` 拦下边编号） |
 | 4 | [1702G1 Passable Paths (easy version)](https://codeforces.com/problemset/problem/1702/G1) | 1900 | LCA 判定「点集是否共路」 | ✅ **29.8 min / 1 次**（`wr` 三轮，前两个模型都错）。**顺手交了 G2（2100）也 1 次过** |
 | 5 | [1076E Vasya and a Tree](https://codeforces.com/problemset/problem/1076/E) | 1900 | DFS 序 + 深度维差分 | ✅ **43.5 min / 1 次**（含 20 min「没思路」；`wr` 拦下差一错误） |
-| 6 | [877E Danil and a Part-time Job](https://codeforces.com/problemset/problem/877/E) | 2000 | DFS 序 + 线段树 lazy（接 T5 模板） | 待做 |
+| 6 | [877E Danil and a Part-time Job](https://codeforces.com/problemset/problem/877/E) | 2000 | DFS 序 + 线段树 lazy（接 T5 模板） | ✅ **25.7 min / 1 次** |
 | 7 | [519E A and B and Lecture Rooms](https://codeforces.com/problemset/problem/519/E) | 2100 | LCA + 子树计数 | 待做 |
 | 8 | [1187E Tree Painting](https://codeforces.com/problemset/problem/1187/E) | 2100 | 换根 DP 进阶 | 待做 |
 
@@ -2081,6 +2081,83 @@ if (d + dep[u] + 1 <= n) delta[d + dep[u] + 1] -= x;
 **附**：模型注释里 Transfer 行写的是 `delta[dep[u] + d[i] + 1] -= x[i]`（无条件），`if (... <= n)` 的守卫写在 **Border 行**（`delta[x] no operation when x > maxdep`）。**位置分开了，但都在 —— 这条不算注释漂移。**
 
 > 教练侧记一笔：我在这一条上误判了一次（只看 Transfer 行就下了「注释和代码脱节」的结论）。**核对他人的注释要读完整块，别只读第一行。**
+
+## 877E 一次过 —— T7 第 6 题（DFS 序 + 线段树 lazy）
+
+| 时间 | 难度 | 用时 | 提交 | 结果 |
+|---|---|---|---|---|
+| 20:06:57 → 20:32:36 | 2000 | **25.7 min** | **1** | **AC（296 ms / 12.0 MB，57 tests）** |
+
+T7 前六题**全部 1 次过**。这是全阶段最综合的一题，两个易错点（DFS 序、lazy）都没踩。
+
+### 模型一次就对
+
+- 懒标 `0/1` = 翻转次数的奇偶，`sum = (r - l + 1) - sum`
+- 区间 `[dfn[u], dfn[u] + siz[u] - 1]`
+- `siz` 用 `p_i < i` 逆序累加，**不进 DFS**
+- `dfn` 只求「进入」时刻 → **手写栈就够，不需要事件栈**
+
+### 一个真会炸的东西：宏名 `num`
+
+他写的线段树用了这些宏：
+
+```cpp
+#define num (r - l + 1)
+#define lm  (mid - l + 1)
+#define rm  (r - mid)
+```
+
+**`num` 是 libstdc++ 里真实存在的标识符。** `<ratio>` 第 282 行有 `typedef ratio<num, den> type;`。
+
+我的验证程序只要在 `<bits/stdc++.h>` 之后 include 他的文件，就编译不过：
+
+```
+877E.cpp:24:16: error: expected ')' before '-' token
+   24 | #define num (r - l + 1)
+ratio:282:29: error: template argument 1 is invalid
+  282 |       typedef ratio<num, den> type;
+```
+
+他现在能过，是因为他只 include 了 `<iostream> <vector> <algorithm>`，没有把 `<ratio>` 拉进来。**一旦模板换成 `bits/stdc++.h`（很多人这么干），整个文件直接崩，而且报错在标准库里，看不出是自己写的宏。**
+
+修法：`num` → `LEN`（或任何带前缀的名字）。`ls` / `rs` / `mid` 也都很危险，同样建议加前缀。
+
+> 我的验证程序最后是把 `<bits/stdc++.h>` 挪到**他的宏定义之前**才编译过的 —— 也就是说，**这个坑是我在他代码之外撞上的，他自己撞不到**。但它确实存在。
+
+### 独立验证
+
+`stress/877E_check.cpp`：
+
+| 验收 | 规模 | 结果 |
+|---|---|---|
+| 随机树 $n \le 9$，混合 `pow`/`get` | **3,600 组** | **0 不一致** |
+| 含 $n = 1$ | ✅ | 0 |
+
+`stress/877E_big.cpp` —— 满规模，两种形状都有精确对照：
+
+| 形状 | 规模 | 对照 | 结果 |
+|---|---|---|---|
+| **菊花**（中心 1）| $n=2\times10^5$，$q=2\times10^5$（99,960 个 `get`）| $O(1)$：`get 1` 查全局亮灯数、`get v` 查单点 | **0 错**，115 ms |
+| **链** | $n=2\times10^5$，$q=400$ | $O(n)$：`subtree(v) = [v, n]` 直接扫 | **0 错**，43 ms |
+
+### 三问
+
+**Q1 形状：标准。** DFS 序把子树变成区间 → 区间翻转 + 区间求和 → 懒标线段树。三层各自独立、各自正确。
+
+**Q2 能更简单：`#define` 可以整个换掉。**
+
+那 10 个宏（`ls/rs/mid/Ls/Rs/num/lm/rm/pushdown/update`）让 `operate` 只有 6 行，但代价是：`num` 撞库、`pushdown` 是一条逗号表达式、出错时看不出是哪一步。换成 `static` 小函数或用 `struct` 成员函数，代码会长 10 行，但**报错能定位到行，而且不会污染后续头文件**。
+
+**Q3 最脆的一行：**
+
+```cpp
+#define pushdown if (b[k]) a[ls] = lm - a[ls], a[rs] = rm - a[rs], b[ls] ^= 1, b[rs] ^= 1, b[k] = 0
+```
+
+一行干了五件事，而且是**逗号表达式**不是语句块 —— 如果哪天需要在这里面加一个 `if`，或者需要在 `pushdown` 之后跟一个 `else`，行为会诡异地变。
+
+其次：`for (int i = n; i; i--) siz[fa[i]] += siz[i];` 在 $i=1$ 时把 `siz[1]` 加到了 `siz[0]`。无害（0 号位不用），但脏。
+
 
 
 
