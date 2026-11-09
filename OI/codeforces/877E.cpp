@@ -21,10 +21,7 @@ struct SegTree {
 #define mid ((l + r) >> 1)
 #define Ls ls, l, mid
 #define Rs rs, mid + 1, r
-#define num (r - l + 1)
-#define lm (mid - l + 1)
-#define rm (r - mid)
-#define pushdown if (b[k]) a[ls] = lm - a[ls], a[rs] = rm - a[rs], b[ls] ^= 1, b[rs] ^= 1, b[k] = 0
+#define pushdown if (b[k]) a[ls] = (mid - l + 1) - a[ls], a[rs] = (r - mid) - a[rs], b[ls] ^= 1, b[rs] ^= 1, b[k] = 0
 #define update a[k] = a[ls] + a[rs]
     vi a, b;
     int n;
@@ -42,7 +39,7 @@ struct SegTree {
 
     void operate(int k, int l, int r, int L, int R) {
         if (l > R || L > r) return ;
-        if (l >= L && r <= R) return a[k] = num - a[k], b[k] ^= 1, void();
+        if (l >= L && r <= R) return a[k] = (r - l + 1) - a[k], b[k] ^= 1, void();
         pushdown;
         operate(Ls, L, R);
         operate(Rs, L, R);
