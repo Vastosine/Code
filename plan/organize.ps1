@@ -111,6 +111,7 @@ $files = Get-ChildItem $Root -Recurse -File -Filter *.cpp | Where-Object {
     $_.FullName -notlike "*$([IO.Path]::DirectorySeparatorChar).cph$([IO.Path]::DirectorySeparatorChar)*" -and
     $_.FullName -notlike "*$([IO.Path]::DirectorySeparatorChar)unaccept$([IO.Path]::DirectorySeparatorChar)*" -and
     $_.FullName -notlike "*$([IO.Path]::DirectorySeparatorChar)rewrite$([IO.Path]::DirectorySeparatorChar)*" -and
+    $_.FullName -notlike "*$([IO.Path]::DirectorySeparatorChar)sealed$([IO.Path]::DirectorySeparatorChar)*" -and
     $_.FullName -notlike '*\stress_out\*' -and
     $_.FullName -notmatch '\\old\\\d{4}\\\d{2}\\\d{2}\\'
 }
