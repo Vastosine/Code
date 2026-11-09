@@ -1660,7 +1660,7 @@ for (int x = 0; x <= (t ? c : 9); x++)
 
 | # | 题目 | 难度 | 考点 | 状态 |
 |---|---|---|---|---|
-| 1 | [1324F Maximum White Subtree](https://codeforces.com/problemset/problem/1324/F) | 1800 | 换根 DP 入门 | 待做 |
+| 1 | [1324F Maximum White Subtree](https://codeforces.com/problemset/problem/1324/F) | 1800 | 换根 DP 入门 | ✅ **24.9 min / 1 次**（`wr` 拦下 n=2 反例） |
 | 2 | [1083A The Fair Nut and the Best Path](https://codeforces.com/problemset/problem/1083/A) | 1800 | 树形 DP：最大权路径 | 待做 |
 | 3 | [191C Fools and Roads](https://codeforces.com/problemset/problem/191/C) | 1900 | 树上差分（边）+ LCA | 待做 |
 | 4 | [1702G1 Passable Paths (easy version)](https://codeforces.com/problemset/problem/1702/G1) | 1900 | LCA 判定「点集是否共路」 | 待做 |
@@ -1688,6 +1688,84 @@ for (int x = 0; x <= (t ? c : 9); x++)
 | **11-21（周六）22:35** | #2288 Div. 2 | 本月最后一场 Div. 2，提醒已挂 |
 
 T7 的 8 题要在 11-14 之前收掉大半，11-15 当天不加新题。
+
+## 1324F 一次过 —— T7 第 1 题
+
+| 时间 | 难度 | 用时 | 提交 | 结果 |
+|---|---|---|---|---|
+| 12:41:29 → 13:06:24 | 1800 | **24.9 min** | **1** | **AC（296 ms / 11.9 MB，56 tests）** |
+
+### `wr` 拦下了一个反例：n = 2
+
+他的第一版模型是：
+
+```
+ans[u] = f[u] + max(0, father's stream)
+stream to son[x] = father's stream + f[u] - f[son[x]]
+```
+
+**`f[u]` 里加进去的是 `max(f[v], 0)`，减出来的却是 `f[v]`。加的和减的不是同一个数。**
+
+最小反例就是一个二点树：
+
+```
+n = 2, a = 1 0, 边 1-2      ->  答案 `1 0`（点 2 只有 {-1} 和 {0}）
+
+他的：f[2] = -1, f[1] = 1, stream[2] = 0 + 1 - (-1) = 2
+      ans[2] = -1 + 2 = 1                    <- 错
+改后：stream[2] = ans[1] - max(0, f[2]) = 1 - 0 = 1
+      ans[2] = -1 + 1 = 0                    <- 对
+```
+
+改法顺带**删掉了一个变量**：`ans[u]` 算出来之后，`stream[x] = ans[u] - max(0, f[x])`，不再需要传 `father's stream`。**变量少一个，「加进去的」和「减出来的」就不容易再对不上。**
+
+这是 T7 的第 1 题，也是「四问 -> `wr` -> 改模型 -> 写码」第一次在 25 分钟内走完并且一次 AC。
+
+### 独立验证
+
+`stress/1324F_check.cpp`：直接枚举**所有子集**，判连通、判是否含 v，取最大和。
+
+| 验收 | 规模 | 结果 |
+|---|---|---|
+| 随机树 $n = 2..9$ | 5,600 组 | **0 不一致** |
+| 链 / 星 两种形状 × 全部 $2^n$ 染色（$n \le 6$） | 248 组 | 0 |
+| $n = 1$（黑白各一） | 2 组 | 0 |
+| 合计 | **5,850 组** | **0** |
+
+### 三问
+
+**Q1 形状：标准。** 两遍 DFS：`f[u] = a[u] + Σ max(f[v],0)`（子树内必含 u），`g[u] = f[u] + max(0, stream)`。第二次的 `stream[x] = g[u] - max(0, f[x])` 就是「把 x 的那份从 u 里抠掉」。
+
+**Q2 能更简单：两个数组可以删，递归应该换成迭代。**
+
+`vis` 和 `vis2` 都是多余的 —— 树上只需「别回父节点」，一个 `par` 参数就够。
+
+更重要的是下面这条。
+
+**Q3 最脆的地方不是某一行，是递归。**
+
+```
+本地 2e5 深链，默认栈（1 MB）：exit = 0xC00000FD  (STACK_OVERFLOW)，2.8 s 后崩
+加 "-Wl,--stack=268435456" 编译：exit = 0，0.16 s
+```
+
+CF 上它过了（栈 256 MB），但**本地根本跑不了最大规模** —— 而「自测必须包含最大规模」正是今天上午刚立的规矩。这条规矩现在被递归挡住了：本地一跑就崩，很容易误判成算法错。
+
+**处理**：
+1. 本地编译统一加 `-Wl,--stack=268435456`（一行，永久有效）；
+2. 更好的是**树的 DFS 一律写成迭代**：
+
+```cpp
+// 一次 BFS 求出父节点和访问序；第一遍逆序遍历，第二遍正序遍历
+vi order; order.reserve(n); order.push_back(1);
+for (size_t i = 0; i < order.size(); i++)
+    for (int v : e[order[i]]) if (v != par[order[i]]) par[v] = order[i], order.push_back(v);
+for (int i = n - 1; i >= 0; i--) { /* f，子树已经算完 */ }
+for (int i = 0; i < n; i++)      { /* g，父节点已经算完 */ }
+```
+
+不依赖栈、比递归快，而且**第 5/6 题（DFS 序、子树区间）本来就必须拿到 `order`** —— 是同一套东西。
+
 
 
 
