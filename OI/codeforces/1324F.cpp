@@ -12,39 +12,41 @@ template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
 vector<vi> e;
-vi a, f, g, vis, vis2;
+// vi a, f, g, vis, vis2;
+vi a, f, g, fa;
 void addEdge(int u, int v) { e[u].push_back(v); e[v].push_back(u); }
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
 // State: f[u]: 1 as root, u subtree's max value
 // Transfer: f[u] = a[i] + sum{ max(f[v], 0) }, v in son[u], a[i] = 1 -> white -1 -> black
-int dfs1(int u = 1) {
-    vis[u] = 1;
-    f[u] = a[u];
-    for (int v : e[u]) {
-        if (!vis[v]) {
-            f[u] += max(dfs1(v), 0);
-        }
-    }
-    return f[u];
-}
+// int dfs1(int u = 1) {
+//     vis[u] = 1;
+//     f[u] = a[u];
+//     for (int v : e[u]) {
+//         if (!vis[v]) {
+//             f[u] += max(dfs1(v), 0);
+//         }
+//     }
+//     return f[u];
+// }
 
 // Calculate: ans[u] = f[u] + max(0, father's stream), stream to son[x] = ans[u] - max(0, f[son[x]])
 // Complexity: 2e5 * 2
-void dfs2(int u = 1, int stream = 0) {
-    vis2[u] = 1;
-    g[u] = f[u] + max(0, stream);
-    for (int v : e[u]) {
-        if (!vis2[v]) {
-            dfs2(v, g[u] - max(0, f[v]));
-        }
-    }
-}
+// void dfs2(int u = 1, int stream = 0) {
+//     vis2[u] = 1;
+//     g[u] = f[u] + max(0, stream);
+//     for (int v : e[u]) {
+//         if (!vis2[v]) {
+//             dfs2(v, g[u] - max(0, f[v]));
+//         }
+//     }
+// }
 auto Main([[maybe_unused]] int C = 0) {
     int n;
     cin >> n;
-    assign(n + 1, e, a, f, g, vis, vis2);
+    // assign(n + 1, e, a, f, g, vis, vis2);
+    assign(n + 1, e, a, f, g, fa);
     for (int i = 1; i <= n; i++) {
         cin >> a[i];
         a[i] = a[i] * 2 - 1;
@@ -54,8 +56,28 @@ auto Main([[maybe_unused]] int C = 0) {
         cin >> u >> v;
         addEdge(u, v);
     }
-    dfs1();
-    dfs2();
+    // dfs1();
+    // dfs2();
+    vi order(1, 1);
+    order.reserve(n);
+    fa[1] = 1;
+    for (int i = 0; i < (int)order.size(); i++) {
+        int u = order[i];
+        for (int v : e[u]) {
+            if (!fa[v]) fa[v] = u, order.push_back(v);
+        }
+    }
+    for (int i = n - 1; ~i; i--) {
+        int u = order[i];
+        f[u] = a[u];
+        for (int v : e[u]) {
+            if (fa[v] == u) f[u] += max(0, f[v]);
+        }
+    }
+    for (int u : order) {
+        int stream = u == 1 ? 0 : g[fa[u]] - max(0, f[u]);
+        g[u] = f[u] + max(stream, 0);
+    }
     for (int i = 1; i <= n; i++) cout << g[i] << " ";
     return 0;
 }
