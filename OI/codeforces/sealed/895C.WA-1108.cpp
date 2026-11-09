@@ -31,7 +31,7 @@ void init() {
     }
 }
 
-int f(int x) {
+int g(int x) {
     int y = 0;
     for (int i = (int) primes.size() - 1; ~i; i--) {
         y *= 2;
@@ -58,7 +58,7 @@ auto Main([[maybe_unused]] int C = 0) {
     cin >> n;
     vi a(n);
     cin >> a;
-    for (int &i : a) i = f(i);
+    for (int &i : a) i = g(i);
     Sort(a);
     vector<vector<ll>> f(2, vector<ll>(K));
     f[0][0] = 1;
