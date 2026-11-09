@@ -522,7 +522,7 @@
 | 6 | [401D Roman and Numbers](https://codeforces.com/problemset/problem/401/D) | 2000 | 状压 + 数位 | ✅ **32.4 min / 1 次** |
 | 7 | [1426F Number of Subsequences](https://codeforces.com/problemset/problem/1426/F) | 2000 | 组合计数 | ✅ **26.0 min / 1 次** |
 | 8 | [895C Square Subsets](https://codeforces.com/problemset/problem/895/C) | 2000 | 状压 + 组合 | ❌ **11-08 WA test 12，封盘**；待盲打重做 |
-| 9 | [628D Magic Numbers](https://codeforces.com/problemset/problem/628/D) | 2200 | 数位 DP 进阶 | ❌ **11-08 WA test 13，封盘**；待盲打重做（模板已定：数字枚举 + `tight` 入状态） |
+| 9 | [628D Magic Numbers](https://codeforces.com/problemset/problem/628/D) | 2200 | 数位 DP 进阶 | ❌ **11-08 WA test 13，封盘**；待盲打重做 |
 | 10 | [1245F Daniel and Spring Cleaning](https://codeforces.com/problemset/problem/1245/F) | **2300** | 数位 DP 挑战 | ✅ **80.4 min / 1 次**（选做题，**当前最高难度 AC**） |
 
 > **题单外**：[2217D Flip the Bit (Hard Version)](https://codeforces.com/problemset/problem/2217/D) · **1900** · 11-08 **1 次过 AC**（93 ms / 0 KB）
@@ -1457,3 +1457,27 @@ CHECK 管实现层（`int` 窄化、越界、多测、输出格式），今天�
 
 
 
+
+---
+
+# 封盘诊断（教练侧 · 盲打之前不要读这一节）
+
+> 放在文件最末尾，就是为了「不想看的时候不会撞见」。想自己推的话，现在就停。
+
+## 895C（11-08 WA test 12）
+
+他自己**当场给出了正确诊断**，写进了文件头：大质数分组后，组内要的是 $\sum_{j \text{ even}} \binom{k}{j} = 2^{k-1}$，而代码的尾循环给的是 $2^{\lfloor k/2 \rfloor}$。**诊断对、修法没实施。**
+
+今天盲打时注意这一点：他把「偶数次」的计数当成了「两两配对」的计数 —— 这两个数只在 $k \le 1$ 时相等。
+
+## 628D（11-08 WA test 13）
+
+结构性问题，不是细节：**沿前缀手工走位 + `pre` + `pow10`**，而不是把 `tight` 做成状态。附带三处：`< d` 应为 `!= d`；`check(r)` 应为 `check(l)`。
+
+我做过验证：33/331,200 组答案 + 79,920 组 $F$ 值全过，**但我当时没读算法** —— 长度 ≤ 3 的不一致率 48.6%，数据只是没走到。这是「对拍过了 ≠ 对」的第二次实例（第一次是 763A：AC 但错）。
+
+## 两次封盘的共同点
+
+都不是「算错了」，是**「约束的编码方式选错」**。数位 DP 里 `tight` 必须进状态，不能靠控制流「沿着走」。
+
+今天盲打时，写码前先回答一句：**「我的上界约束，是编码成了状态，还是编码成了 `if`？」**
