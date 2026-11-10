@@ -2400,6 +2400,55 @@ ll query(int u, int v) {                       // 127 行
 
 **共同点是：三者都只能靠对拍抓出来。** 手推小样例时它们经常恰好不出错（`top[1]=0` 在只有一条重链的树上能跑通；`siz` 写反在 $n=2$ 时也对）。
 
+# T8 · 图论（11-10 ~ 11-14，11-15 比赛日）
+
+**为什么现在做图论**：T7 补上了树，而 Div.2 的 C/D 里「图」的出现频率仅次于树 —— 最短路、拓扑、连通性、二分图这四类几乎每场都至少出一道。而且他的模板表里 T8 正是「堆优化 Dijkstra + 拓扑排序」，**都还没盲打过**。
+
+**本阶段指标**：一次通过率 ≥ 60%，稳定 1900、冲 2100。提交制不变。
+
+## 四根柱子（考点）
+
+| 柱子 | 一句话 | 关键陷阱 |
+|---|---|---|
+| **最短路** | 边权非负 → Dijkstra 堆优化；边权 0/1 → 0-1 BFS（双端队列）| 0-1 BFS 里**出队才标记**，不能入队就标记 |
+| **拓扑排序** | 入度为 0 入队；出队顺序即拓扑序 | **判环**：出队个数 < n 就是有环 |
+| **连通性** | DSU 合并；SCC 用 Tarjan 缩点 | Tarjan 的 `low` 更新和「栈内」判定 |
+| **二分图** | 交替染色，冲突即非二分图 | 图可能不连通 —— **每个连通块都要染** |
+
+## 题单（8 题，1700 → 1900）
+
+| # | 题目 | 难度 | 考点 | 状态 |
+|---|---|---|---|---|
+| 1 | [1144F Graph Without Long Directed Paths](https://codeforces.com/problemset/problem/1144/F) | 1700 | 二分图染色（给边定向）| 待做 |
+| 2 | [1594D The Number of Imposters](https://codeforces.com/problemset/problem/1594/D) | 1700 | 二分图染色 + 每块取较大侧 | 待做 |
+| 3 | [427C Checkposts](https://codeforces.com/problemset/problem/427/C) | 1700 | SCC 缩点（Tarjan 入门）| 待做 |
+| 4 | [919D Substring](https://codeforces.com/problemset/problem/919/D) | 1700 | 拓扑排序 + DAG 上字符 DP | 待做 |
+| 5 | [1063B Labyrinth](https://codeforces.com/problemset/problem/1063/B) | 1800 | 0-1 BFS | 待做 |
+| 6 | [20C Dijkstra?](https://codeforces.com/problemset/problem/20/C) | 1900 | 堆优化 Dijkstra + **路径还原** | 待做 |
+| 7 | [1725M Moving Both Hands](https://codeforces.com/problemset/problem/1725/M) | 1800 | 反向图 + 多源最短路 | 待做 |
+| 8 | [144D Missile Silos](https://codeforces.com/problemset/problem/144/D) | 1900 | 最短路 + 计数 | 待做 |
+
+**1–4 只需要「染色」和「Tarjan/拓扑」两种骨架，5–8 才是最短路。**
+
+## T8 模板盲打（独立于题单）
+
+| 模板 | 状态 |
+|---|---|
+| **堆优化 Dijkstra** | ☐ 题单 6/7 会覆盖，但要单独盲打（`priority_queue<pair<ll,int>, vector<...>, greater<>>` + 懒删除）|
+| **拓扑排序** | ☐ 题单 4 覆盖 |
+
+## 四天排期
+
+| 日期 | 内容 |
+|---|---|
+| **11-10 下午** | 题单 1–3 |
+| **11-11** | 题单 4–6 |
+| **11-12** | 题单 7–8 + 模板盲打（Dijkstra、拓扑）|
+| **11-13** | **虚拟赛**（挑一场没做过的 Div.2，2 小时计时）|
+| **11-14** | 虚赛复盘 + 补弱项 |
+| **11-15（周日）22:35** | **#2285 Div.2** |
+
+
 
 
 
