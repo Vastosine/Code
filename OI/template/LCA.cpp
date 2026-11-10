@@ -43,3 +43,18 @@ int LCA(int u, int v) {
     }
     return f[u][0];
 }
+
+int dis(int u, int v) {
+    return dep[u] + dep[v] - 2 * dep[LCA(u, v)];
+}
+
+int kfa(int u, int k) {
+    if (k < 0) return u;
+    int d = 0;
+    while (k) {
+        if (k & 1) u = f[u][d];
+        d++;
+        k /= 2;
+    }
+    return u;
+}
