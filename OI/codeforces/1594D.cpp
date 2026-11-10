@@ -35,11 +35,13 @@ auto Main([[maybe_unused]] int C = 0) {
         int w = s == "imposter";
         e[u].push_back({v, w}); e[v].push_back({u, w});
     }
+    vi o;
+    vi cnt;
     for (int st = 1; st <= n; st++) {
         if (col[st]) continue;
         col[st] = 1;
-        vi o(1, st);
-        vi cnt(3);
+        o.assign(1, st);
+        cnt.assign(3, 0);
         for (int i = 0; i < (int) o.size(); i++) {
             int u = o[i];
             cnt[col[u]]++;
