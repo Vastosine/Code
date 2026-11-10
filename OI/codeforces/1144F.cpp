@@ -17,7 +17,7 @@ void init() {}
 
 // storage e with v and id/-id 
 // col[1] = 1; (col = 1 or 2)
-// dfs (start from 1) for u, for v in e[u], if (col[v] && col[v] == col[u]) return false
+// bfs (start from 1) for u, for v in e[u], if (col[v] && col[v] == col[u]) return false
 //                           if (!col[v]) col[v] = 3 - col[u];
 
 string Main([[maybe_unused]] int C = 0) {
