@@ -70,7 +70,7 @@ void init() {
     siz.assign(n + 1, 0);
     top.assign(n + 1, 0);
     vi o(1, 1);
-    fa[1] = 1, dep[1] = 1;
+    fa[1] = 1, dep[1] = 1, top[1] = 1;
     for (int i = 0; i < n; i++) {
         int u = o[i];
         for (int v : e[u]) {
@@ -132,7 +132,7 @@ ll query(int u, int v) {
         u = fa[top[u]];
     }
     if (dep[u] < dep[v]) swap(u, v);
-    return ans + query(dfn[v], dfn[u]);
+    return ans + s.query(dfn[v], dfn[u]);
 }
 
 void add(int u, ll x) {
