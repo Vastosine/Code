@@ -2441,6 +2441,89 @@ ll query(int u, int v) {                       // 127 行
 
 **共同点是：三者都只能靠对拍抓出来。** 手推小样例时它们经常恰好不出错（`top[1]=0` 在只有一条重链的树上能跑通；`siz` 写反在 $n=2$ 时也对）。
 
+# 模板盲打：堆优化 Dijkstra（2026-11-11）
+
+**09:12:44 建文件，35 行，`OI/template/Dijkstra.cpp`。** 这是他第一个**一次写成、零 bug** 的模板盲打（LCA 和树链剖分各被压测抓出两个）。
+
+```cpp
+vector<vector<pii>> e;   vi vis;   vll dis;   int n;
+void Dijkstra(int s) {
+    vis.assign(n + 1, 0);  dis.assign(n + 1, 1ll << 60);  dis[s] = 0;
+    priority_queue<pll> q; q.push({0, s});
+    while (!q.empty()) {
+        auto [d, u] = q.top(); q.pop();
+        if (vis[u]) continue;
+        vis[u] = 1;
+        for (auto [v, w] : e[u]) {
+            auto nd = w + dis[u];               // auto -> ll，没有再踩昨天的坑
+            if (nd < dis[v]) { dis[v] = nd; q.push({-nd, v}); }
+        }
+    }
+}
+```
+
+**`auto nd = w + dis[u];` 就是 20C 那行 `int nd` 的反面。** 同一个位置，昨天写 `int`，今天写 `auto`。这是今天最有价值的一处。
+
+## 验证（`stress/dij_check.cpp`）
+
+| 轮 | 内容 | 结果 |
+|---|---|---|
+| P1 | $n\le9$、$m\le 2n+3$、随机权 1..10，含自环 / 重边 / 不连通 / 单点，对 Bellman-Ford | 0 失败 |
+| P1b | 同一张图**连续对 7 个源点各调一次** | 0/7 错（`assign` 在函数内，可重入）|
+| P2 | $n\le300$、$m\le2000$、权到 $10^9$，对独立堆 Dijkstra | 0 失败 |
+| P3 | 链 $n=10^5$、权 $10^9$ → $\text{dis}[n]=9.9999\times10^{13}$ | 正确，3 ms |
+| P3 | 随机 $n=m=10^5$、权到 $10^9$（2 万点不可达）| 0 处不同，28 ms |
+| P3 | $n=1$、$m=0$ | `dis[1]=0` |
+
+**合计 3,910 组，0 失败。**
+
+## 最脆的一行：`q.push({-nd, v})` 的那个负号
+
+`stress/dij_fragile.cpp`：同一份惰性删除 Dijkstra，只把 `-nd` 改成 `nd`，在 3,500 张随机小图（$n\le8$，共 17,500 个点）上跑。
+
+| 写法 | 错的图 | 错的点 |
+|---|---|---|
+| `-nd`（他的） | 0 | 0 |
+| `nd`（去掉负号） | **286 / 3,500（8.2%）** | 446 / 17,500（2.5%） |
+
+**92% 的随机小图完全照不出这个错误。** 去掉负号等于把最小堆变成最大堆：第一个出队的是距离最大的点，`vis` 一标就把它的距离冻在错值上，而起点附近那几个点往往碰巧还对。
+
+这类「测试密度不够就看不见」的错只有两条防线：**换掉负号**（`greater<pll>`），或者**满规模压测**。前者便宜。
+
+## 两处可以更好
+
+| 项 | 现在 | 改法 | 理由 |
+|---|---|---|---|
+| 堆的方向靠**负号** | `priority_queue<pll>` + `push({-nd, v})` | `priority_queue<pll, vector<pll>, greater<pll>>` + `push({nd, v})` | 少一个「必须每次记得写」的符号；堆里存的是**真距离**，`cerr` 打出来直接可读 |
+| 惰性删除靠 `vis` | 多一个 `vi vis` + 两次 `assign` | 删掉 `vis`，判 `if (d > dis[u]) continue;` | 少一个数组、少两行 |
+
+## 一个接口隐患（唯一没被验证覆盖的地方）
+
+`e` 的元素是 `pii`，**边权只能是 `int`**。这本身没错（$w\le10^9$），但它属于「`ll` 被窄化」那一族的第一号坑，而且实测：
+
+```cpp
+long long w = 5000000000LL;
+e[u].push_back({v, w});          // -> 705032704，无任何报错
+e[u].emplace_back(v, w);         // -> 705032704
+e[u].push_back(pair<int,int>(v, w)); // -> 705032704
+```
+
+`g++ -Wall -Wextra -Wconversion` **一句警告都没有**（三种写法都试过，`-Wsystem-headers` 也没有）。原因是窄化发生在 `pair` 的模板构造函数里，不在他的代码里。
+
+对照：`int nd = dis[1] + w;`（今天的 20C）在 `-Wconversion` 下**会被抓**：
+
+```
+t_conv.cpp:6:21: warning: conversion from 'long long int' to 'int' may change value [-Wconversion]
+```
+
+> **所以本地编译加 `-Wconversion`。** 它能抓第 2 族（中间变量窄化），**抓不到第 1 族**（`pair` 窄化）—— 后者只能靠「`pair` 里装距离 / 角度 / 时间和一律写 `ll`」这条规矩。
+
+建议在模板头部补一句接口注释，与 `LCA.cpp` 的 `// e is given by main` 对齐：
+
+```cpp
+// e is given by main: e[u] = {{v, w}, ...}, w must fit int (use pll for 1e18 weights)
+```
+
 # T8 · 图论（11-10 ~ 11-14，11-15 比赛日）
 
 **为什么现在做图论**：T7 补上了树，而 Div.2 的 C/D 里「图」的出现频率仅次于树 —— 最短路、拓扑、连通性、二分图这四类几乎每场都至少出一道。而且他的模板表里 T8 正是「堆优化 Dijkstra + 拓扑排序」，**都还没盲打过**。
@@ -2475,7 +2558,7 @@ ll query(int u, int v) {                       // 127 行
 
 | 模板 | 状态 |
 |---|---|
-| **堆优化 Dijkstra** | ☐ 题单 6/7 会覆盖，但要单独盲打（`priority_queue<pair<ll,int>, vector<...>, greater<>>` + 懒删除）|
+| **堆优化 Dijkstra** | ✅ **11-11 盲打完成** → `OI/template/Dijkstra.cpp`，3,910 组对拍 0 失败（见文末「模板盲打：堆优化 Dijkstra」）|
 | **拓扑排序** | ☐ 题单 4 覆盖 |
 
 ## 排期（2026-11-10 修订：周五已有集训队模拟赛）
