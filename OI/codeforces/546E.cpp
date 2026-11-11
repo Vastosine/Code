@@ -98,7 +98,7 @@ int main() {
         // cout << OUT[ans] << "\n";
         // ans.empty() ? cout << OUT[0] << "\n" : cout << OUT[1] << "\n" << ans << "\n";
         cout << OUT[!ans.empty()] << "\n";
-        int n = ans.size() - 1;
+        int n = (int) ans.size() - 1;
         for (int i = 1; i <= n; i++) {
             for (int j = 1; j <= n; j++) cout << ans[i][j] << " ";
             cout << "\n";
