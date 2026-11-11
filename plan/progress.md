@@ -2531,6 +2531,55 @@ t_conv.cpp:6:21: warning: conversion from 'long long int' to 'int' may change va
 // e is given by main: e[u] = {{v, w}, ...}, w must fit int (use pll for 1e18 weights)
 ```
 
+# 模板盲打：拓扑排序（2026-11-11）
+
+**10:33:27 建文件，28 行，`OI/template/Toposort.cpp`。** 第二个零 bug 的模板盲打（第一个是 40 分钟前的 Dijkstra）。
+
+```cpp
+vector<vi> e;  vi order;  int n;
+bool solve() {
+    order.clear();
+    vi in(n + 1);
+    for (u) for (v : e[u]) in[v]++;
+    for (u) if (!in[u]) order.push_back(u);
+    for (int i = 0; i < (int) order.size(); i++) {   // order 自己当队列
+        int u = order[i];
+        for (int v : e[u]) { in[v]--; if (!in[v]) order.push_back(v); }
+    }
+    return order.size() == n;
+}
+```
+
+**用 `order` 自己当队列**是这 28 行里唯一的花招：下标 `i` 前进 = 出队，`push_back` = 入队。省掉一个 `queue<int>`，而且队列和输出天然是同一个东西。
+
+## 验证（`stress/topo_check.cpp`）
+
+| 项 | 内容 | 结果 |
+|---|---|---|
+| 判定 | $n\le9$，4,500 组（一半随机 DAG、一半含环随机图），对 $O(n^2)$ 朴素 Kahn | **0 处不同** |
+| 序的合法性 | 返回 `true` 时校验：是 $1..n$ 的排列，且每条 $u\to v$ 满足 $pos[u]<pos[v]$ | **0 处非法** |
+| 重入 | 连续对两张图调 `solve()` | 正确（`order.clear()` + 局部 `in`）|
+| 满规模 | $n=10^5$、$m=2\times10^5$ 随机 DAG | 正确，**11 ms** |
+
+自环、重边、不连通都覆盖到了。
+
+## 唯一的隐患：`bool` 返回值可以被无视
+
+`order` 是全局输出，但**只在 `solve()` 返回 `true` 时才是完整答案**。返回 `false` 时它是个**前缀** —— 看着完全像一个合法的拓扑序，只是短了。
+
+实测：**1,557 张带环图里，1,047 张（67.2%）留下了非空的 `order`。**
+
+所以危险写法是：
+
+```cpp
+solve();
+for (int u : order) dp[u] = ...;   // 带环时静默算一半
+```
+
+不 WA、不 RE，只是算错。**调用时必须 `if (!solve()) { ... }`。**
+
+还有一处语法糖不能动：`(int) order.size()` 要每次重新求值。写成 `int sz = order.size();` 再拿 `sz` 当循环条件，DAG 就只会处理种子那一层 —— 虽然会被 `order.size() == n` 抓成「有环」，但那是靠另一行兜的。
+
 # T8 · 图论（11-10 ~ 11-14，11-15 比赛日）
 
 **为什么现在做图论**：T7 补上了树，而 Div.2 的 C/D 里「图」的出现频率仅次于树 —— 最短路、拓扑、连通性、二分图这四类几乎每场都至少出一道。而且他的模板表里 T8 正是「堆优化 Dijkstra + 拓扑排序」，**都还没盲打过**。
@@ -2566,7 +2615,7 @@ t_conv.cpp:6:21: warning: conversion from 'long long int' to 'int' may change va
 | 模板 | 状态 |
 |---|---|
 | **堆优化 Dijkstra** | ✅ **11-11 盲打完成** → `OI/template/Dijkstra.cpp`，3,910 组对拍 0 失败（见文末「模板盲打：堆优化 Dijkstra」）|
-| **拓扑排序** | ☐ 题单 4 覆盖 |
+| **拓扑排序** | ✅ **11-11 盲打完成** → `OI/template/Toposort.cpp`，4,500 组对拍 0 失败（见「模板盲打：拓扑排序」）|
 
 ## 排期（2026-11-10 修订：周五已有集训队模拟赛）
 
