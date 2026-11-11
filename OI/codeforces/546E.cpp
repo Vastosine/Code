@@ -1,5 +1,5 @@
 // Problem : E. Soldier and Traveling https://codeforces.com/problemset/problem/546/E
-// Time    : 2026-11-11 17:31:06
+// Time    : 2026-11-11 18:27:38
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -15,13 +15,18 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
-auto Main([[maybe_unused]] int C = 0) {
-    int n, m, s = 0;
+const int inf = 1 << 30;
+
+vector<vi> Main([[maybe_unused]] int C = 0) {
+    int n, m;
     cin >> n >> m;
-    vi a, b, c, dep, to, cur;
     vector<vi> e;
-    assign(n + 2, a, b, c, to, e);
-    auto addEdge = [&] (int u, int v, int w) {
+    vi to, c, a, b, dep, cur;
+    int s1 = 0, s2 = 0;
+    int s = 0, t = 2 * n + 1;
+    assign(2 * n + 2, e, to, c, a, b);
+    
+    auto addEdge = [&] (int u, int v, int w = inf) {
         e[u].push_back(to.size());
         to.push_back(v);
         c.push_back(w);
@@ -29,65 +34,58 @@ auto Main([[maybe_unused]] int C = 0) {
         to.push_back(u);
         c.push_back(0);
     };
-    for (int i = 1; i <= n; i++) cin >> a[i], addEdge(0, i, a[i]);
-    for (int i = 1; i <= n; i++) cin >> b[i], addEdge(i, n + 1, b[i]), s += b[i];
+    for (int i = 1; i <= n; i++) cin >> a[i], s1 += a[i], addEdge(s, i, a[i]);
+    for (int i = 1; i <= n; i++) cin >> b[i], s2 += b[i], addEdge(i + n, t, b[i]);
+    for (int i = 1; i <= n; i++) addEdge(i, i + n, inf);
     while (m--) {
-        int u, v, w = 1 << 30;
+        int u, v;
         cin >> u >> v;
-        addEdge(u, v, w);
-        addEdge(v, u, w);
+        addEdge(u, v + n, inf);
+        addEdge(v, u + n, inf);
     }
+    if (s1 != s2) return {};
     auto Dinic = [&] (int s, int t) {
         int ans = 0;
         while (true) {
-            assign(n + 2, dep, cur);
+            assign(2 * n + 2, dep, cur);
             dep[s] = 1;
             vi o(1, s);
             for (int i = 0; i < (int) o.size(); i++) {
                 int u = o[i];
                 for (int j : e[u]) {
                     int v = to[j];
-                    if (c[j] && !dep[v]) dep[v] = dep[u] + 1, o.push_back(v);
+                    if (!dep[v] && c[j]) dep[v] = dep[u] + 1, o.push_back(v);
                 }
             }
             if (!dep[t]) return ans;
-            auto dfs = [&] (auto &&f, int u, int lim = 1 << 30) {
-                if (u == t || !lim) return lim;
+            auto dfs = [&] (auto &&f, int u, int lim = inf) {
+                if (!lim || u == t) return lim;
                 int ret = 0;
                 for (; cur[u] < (int) e[u].size() && ret < lim; cur[u]++) {
                     int id = e[u][cur[u]], v = to[id], w = c[id];
-                    if (dep[v] != dep[u] + 1) continue;
-                    int add = f(f, v, min(lim - ret, w));
-                    ret += add;
-                    c[id] -= add;
-                    c[id ^ 1] += add;
-                } 
+                    if (dep[v] == dep[u] + 1) {
+                        int add = f(f, v, min(lim - ret, w));
+                        ret += add;
+                        c[id] -= add;
+                        c[id ^ 1] += add;
+                    }
+                }
                 return ret;
             };
             ans += dfs(dfs, s);
         }
     };
-    int ans = Dinic(0, n + 1);
-    if (ans < s) return cout << "NO\n", 0;
-    cout << "YES\n";
-    vector<vi> res(n + 1, vi(n + 1));
+    int res = Dinic(s, t);
+    if (res < s1) return {};
+    vector<vi> ans(n + 1, vi(n + 1));
     for (int u = 1; u <= n; u++) {
-        res[u][u] += a[u];
         for (int i : e[u]) {
-            if (i & 1) continue;
-            int v = to[i], w = c[i ^ 1];
-            if (!v || v == n + 1) continue;
-            res[u][v] += w;
-            res[u][u] -= w;
+            int v = to[i] - n, w = c[i ^ 1];
+            if (v < 1 || v > n) continue;
+            ans[u][v] += w;
         }
     }
-    for (int u = 1; u <= n; u++) {
-        for (int v = 1; v <= n; v++) {
-            cout << res[u][v] << " ";
-        }
-        cout << "\n";
-    }
-    return 0;
+    return ans;
 }
 
 int main() {
@@ -99,6 +97,12 @@ int main() {
         // cout << ans << "\n";
         // cout << OUT[ans] << "\n";
         // ans.empty() ? cout << OUT[0] << "\n" : cout << OUT[1] << "\n" << ans << "\n";
+        cout << OUT[!ans.empty()] << "\n";
+        int n = ans.size() - 1;
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) cout << ans[i][j] << " ";
+            cout << "\n";
+        }
     }
     return 0;
 }
