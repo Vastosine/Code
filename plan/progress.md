@@ -2556,7 +2556,7 @@ t_conv.cpp:6:21: warning: conversion from 'long long int' to 'int' may change va
 | 4 | [919D Substring](https://codeforces.com/problemset/problem/919/D) | 1700 | 拓扑排序 + DAG 上字符 DP | 待做 |
 | 5 | [1063B Labyrinth](https://codeforces.com/problemset/problem/1063/B) | 1800 | 0-1 BFS | 待做 |
 | 6 | [20C Dijkstra?](https://codeforces.com/problemset/problem/20/C) | 1900 | 堆优化 Dijkstra + **路径还原** | 待做 |
-| 7 | [1725M Moving Both Hands](https://codeforces.com/problemset/problem/1725/M) | 1800 | 反向图 + 多源最短路 | 待做 |
+| 7 | [1725M Moving Both Hands](https://codeforces.com/problemset/problem/1725/M) | 1800 | 反向图 + 带初值的多源最短路 | ✅ **25.5 min / 1 次** |
 | 8 | [144D Missile Silos](https://codeforces.com/problemset/problem/144/D) | 1900 | 最短路 + 计数 | 待做 |
 
 **1–4 只需要「染色」和「Tarjan/拓扑」两种骨架，5–8 才是最短路。**
@@ -2978,6 +2978,58 @@ ans += f[u][v] <= x && f[u][v] + v - c <= y;
 | `a` / `vis` 用了 `vi` | 各 16 MB | `vector<string>` / `vector<char>` | 71 MB → 约 47 MB |
 
 703 ms 不是 WA 风险，是**没有余量**：2.67 倍的重复入队是纯浪费，而且它同时撑着内存。
+
+## 1725M 一次过 —— T8 第 7 题（反向图 + 带初值的多源最短路）
+
+**09:20:39 建文件 → 09:46:08 AC，1 次提交，25.5 min，328 ms / 11,200 KB。**
+
+### 模型（`wr` 阶段就已经对了）
+
+$$\mathrm{ans}[p] = \min_{x}\big(d(1,x) + d(p,x)\big)$$
+
+- **内层是相加**：题面写了 `can only move one hand at a time`，样例 Note 自己就在加 `1+2+1=4`。按 `max` 建模（当成两只手并行）会在 $p=5$ 上得 3，正解是 4 —— **四个答案里只有 $p=5$ 能区分这两种模型**。
+- **外层是 min**：在所有会合点里挑。他在 `wr` 时把这两层合成了一层，问过「不应该取 min 吗」。
+
+两遍实现：
+
+| 遍 | 图 | 初值 | 得到 |
+|---|---|---|---|
+| 1 | `e[0]` 原图 | 从 1 出发 | $d_1[x] = d(1,x)$ |
+| 2 | `e[1]` 反图 | **把整个 `dis` 原样当种子**，`dis[x] = d_1[x]` | $\min_x\big(d_1[x] + d_{G^R}(x,p)\big)$ |
+
+因为 $d_{G^R}(x,p) = d_G(p,x)$，第二遍直接就是答案。
+
+**`dis` 在两遍之间不复位** —— 这是全题的机关：$\min_x$ 的枚举被压成了一次松弛。老老实实写 `for x: for v: ans[v] = min(ans[v], d1[x] + drev[x][v])` 是 $O(n^2)$。
+
+边界也处理对了：只跳过**初值为 `INF` 的种子**，不跳过**答案为 `INF` 的点** —— 后者可以靠另一只手的路径拿到有限值。
+
+### 独立验证（`stress/1725M_verify.cpp`）
+
+**小规模验的不是代码，是模型。** 暴力直接在**状态空间 $(左手位置, 右手位置)$ 的乘积图**上跑 Dijkstra，逐字实现题面（一次只动一只手、两手重合即结束），完全不用「会合点」这个说法：
+
+| 组 | 内容 | 结果 |
+|---|---|---|
+| 小 | $n=2..7$，随机有向图 2,400 张，对乘积图暴力 | **0 处不同** |
+| 大 | $n=10^5$、$m=2\times10^5$，对独立写的两遍解 | **0 处不同**，9.7 万点可达，本地 210 ms |
+
+乘积图暴力跑通，说明**模型本身**对，而不只是「实现和模型一致」。这是第一次用「照题面建状态空间」的方式验模型。
+
+### 一处维护隐患
+
+```cpp
+auto Dij = [&](int mode) {
+    priority_queue<pll> q;
+    vis.assign(n + 1, 0);   // ← 复位
+                            // ← 这里「没有」dis.assign(n+1, INF)，而且不能有
+```
+
+**`vis` 复位、`dis` 不复位** —— 这个不对称就是整个算法，但它长得像 bug：任何一次「整理代码」都会顺手补上 `dis.assign`，然后输出全是 `-1`。lambda 的签名读起来是「对第 `mode` 张图跑 Dijkstra」，像纯函数，实际**依赖调用顺序**（必须先 0 后 1）。
+
+现在只在 `Main` 里调两次、顺序固定，暂时安全。一行注释就够：
+
+```cpp
+// do NOT reset dis: pass 2 seeds from pass 1's distances on purpose
+```
 
 # 11-06 集训队模拟赛（天梯赛 · 15 题 / 3 h / IOI 制）复盘
 
