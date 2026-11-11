@@ -33,7 +33,7 @@ ll Dinic(int s, int t) {
         auto dfs = [&] (auto &&f, int u, ll limit = INF) {
             if (u == t || !limit) return limit;
             ll ret = 0;
-            for (; cur[u] < (int) e[u].size(); cur[u]++) {
+            for (; cur[u] < (int) e[u].size() && ret < limit; cur[u]++) {
                 int id = e[u][cur[u]], v = to[id];
                 ll w = a[id];
                 if (dep[v] == dep[u] + 1) {
