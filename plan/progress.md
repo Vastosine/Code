@@ -3174,7 +3174,22 @@ ans += (x > l * 2) + (x >= l * 2) - (dis[u] >= l) - (dis[v] >= l);
 
 禁它的理由因此不是「你以前写过」，而是：**一份成熟库会把答案直接端上来，而且它的风格（命名空间 + class 封装 + `.h`/`.md` 配对）和他自己 28 行的裸文件风格毫无关系 —— 照抄反而破坏他自己的模板约定。**
 
-## 验证方式（教练侧）
+## T9 题单（网络流 I · 建模入门）
+
+**顺序不是按难度排的，是按「建模的陌生度」排的。** 546E 挂 2100，但它的模型是这四题里最好想的 —— 它的 2100 分在「还要输出方案」。
+
+| # | 题 | 难度 | 标签 | 一句话 |
+|---|---|---|---|---|
+| 1 | [546E Soldier and Traveling](https://codeforces.com/problemset/problem/546/E) | 2100 | flows / graphs / math | 每个士兵只能原地或走**一条**边 → 源→城市→城市→汇；**并且要输出 $n\times n$ 的调动矩阵** |
+| 2 | [1423B Valuable Paper](https://codeforces.com/problemset/problem/1423/B) | 1900 | binary search / flows / graph matchings | 二分答案 + 用最大流做匹配 |
+| 3 | [498C Array and Operations](https://codeforces.com/problemset/problem/498/C) | 2100 | flows / graph matchings / number theory | 质因数指数奇偶二分 + 最大流（和 895C 的 mask 是同一个想法）|
+| 4 | [852D Exploration plan](https://codeforces.com/problemset/problem/852/D) | 2100 | binary search / flows / graph matchings / shortest paths | 二分 + 全源最短路 + 匹配 |
+
+**546E 是第一个真正的新东西**：前三个网络流程序都是「算一个数」，这题要**把流量读回来**当成方案输出。
+
+> 这正好用上边表结构的一个副产品：某条边推了多少流量，去看它的**反边**。
+
+
 
 **小图枚举所有割**：$n\le10$ 时枚举 $2^{n}$ 个割，算最小割容量，与 maxflow 比。这个做法**不依赖任何流算法**，同时是「最大流最小割定理」的实证。
 
