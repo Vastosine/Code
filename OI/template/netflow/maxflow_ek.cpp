@@ -53,7 +53,7 @@ int main() {
         int u, v;
         ll w;
         cin >> u >> v >> w;
-        a[u][v] = w;
+        a[u][v] += w;
     }
     cout << EK(s, t);
 }
