@@ -23,7 +23,7 @@ auto Main([[maybe_unused]] int C = 0) {
     int n, m;
     cin >> n >> m;
     vector<vector<pii>> e[2];
-    vll dis(n + 1, INF);
+    vll dis;
     vi vis;
     assign(n + 1, e[0], e[1]);
     while (m--) {
@@ -37,6 +37,7 @@ auto Main([[maybe_unused]] int C = 0) {
         vis.assign(n + 1, 0);
         if (mode == 0) {
             q.push({0, 1});
+            dis.assign(n + 1, INF);
             dis[1] = 0;
         } else {
             for (int u = 1; u <= n; u++) {

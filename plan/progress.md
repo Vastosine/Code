@@ -2557,7 +2557,7 @@ t_conv.cpp:6:21: warning: conversion from 'long long int' to 'int' may change va
 | 5 | [1063B Labyrinth](https://codeforces.com/problemset/problem/1063/B) | 1800 | 0-1 BFS | 待做 |
 | 6 | [20C Dijkstra?](https://codeforces.com/problemset/problem/20/C) | 1900 | 堆优化 Dijkstra + **路径还原** | 待做 |
 | 7 | [1725M Moving Both Hands](https://codeforces.com/problemset/problem/1725/M) | 1800 | 反向图 + 带初值的多源最短路 | ✅ **25.5 min / 1 次** |
-| 8 | [144D Missile Silos](https://codeforces.com/problemset/problem/144/D) | 1900 | 最短路 + 计数 | 待做 |
+| 8 | [144D Missile Silos](https://codeforces.com/problemset/problem/144/D) | 1900 | 最短路 + 边上的点计数 | ✅ **35.0 min / 1 次**（模型改了 4 版，代码只写 2.4 min）|
 
 **1–4 只需要「染色」和「Tarjan/拓扑」两种骨架，5–8 才是最短路。**
 
@@ -3030,6 +3030,66 @@ auto Dij = [&](int mode) {
 ```cpp
 // do NOT reset dis: pass 2 seeds from pass 1's distances on purpose
 ```
+
+## 144D 一次过 —— T8 第 8 题（最短路 + 边上的点计数）
+
+**09:52:08 建文件 → 10:27:06 AC，1 次提交，35.0 min，374 ms / 1,900 KB。**
+
+### 时间分布才是这题的重点
+
+| 阶段 | 时间 |
+|---|---|
+| 模型（`wr` 四版） | 约 **32.5 min** |
+| 写码（最后一次存盘 → 提交） | **2.4 min** |
+
+**模型占 93% 的时间，代码 2.4 分钟，1 次过。** T1–T8 里模型/代码时间比最高的一题，也是唯一「模型改了四遍、代码只写一遍」的题。
+
+### 模型四版
+
+| # | 模型 | 样例 | 3,600 组随机 |
+|---|---|---|---|
+| 1 | `#(dis[u] == l)` | 挂两个 | 整类漏掉边上的点 |
+| 2 | 再加 `#(dis[u] < l && dis[v] > l)` | 挂两个 | 漏「两端都 $<l$ 的长边」 |
+| 3 | `(x>2l) + (x==2l) - (dis[u]==l) - (dis[v]==l)` | 挂两个 | 15% 错 |
+| 3′ | 同上但第一项乘 2 | **全过** | **22% 错** |
+| 4 | `(x>2l) + (x>=2l) - (dis[u]>=l) - (dis[v]>=l)` | **全过** | **0 错（36,600 组）** |
+
+第 3′ 行是关键：**把第一项乘个 2，两个样例立刻全过，随机还是 22% 错。** 今天第二次「改一改就过样例、但仍然是错的」。
+
+### 第 4 版为什么对
+
+$$\text{contribution}=(x>2l)+(x\ge 2l)-\big(d[u]\ge l\big)-\big(d[v]\ge l\big),\qquad x=d[u]+d[v]+w$$
+
+- `(x>2l)+(x>=2l)` **自动就是三路**：$x>2l\to2$、$x=2l\to1$、$x<2l\to0$。
+- 减号安全，靠两条三角不等式：
+
+| 不变量 | 证明 | 作用 |
+|---|---|---|
+| $x<2l\Rightarrow$ 两端都 $<l$ | $d[u]\le d[v]+w\Rightarrow x\ge2d[u]$，故 $2d[u]\le x<2l$ | 贡献不会减成负数 |
+| $x=2l\Rightarrow$ 至多一端 $\ge l$ | $d[u]+d[v]=2l-w<2l$ | 峰那一点不会漏算 |
+
+### 独立验证（`stress/144D_verify.cpp`）
+
+暴力**逐边枚举解**：$f(t)=l$ 在一条边上只可能有两个解 $t=l-d[u]$ 与 $t=w+d[v]-l$（都是整数），判 $0<t<w$ 后 `set` 去重。不依赖任何公式。
+
+| 组 | 内容 | 结果 |
+|---|---|---|
+| 随机 | $n=2..9$，4,007 组 × 3 个种子 = 12,021 组 | **0 处不同** |
+| 极端 $l$ | $0,\ 1,\ 999,\ 1000,\ 10^9,\ 4999,\ 5000$ | 全对 |
+
+### 实现上做对的一处
+
+`if (v < u) continue;` —— 用顶点编号给无向边去重，省掉一个边数组。成立依赖题面「两城之间至多一条路」。
+
+### 一处只剩 6.9% 余量的写法
+
+```cpp
+ans += (x > l * 2) + (x >= l * 2) - (dis[u] >= l) - (dis[v] >= l);
+```
+
+`l` 是 `int`，所以 `l * 2` 也在 `int` 里算。题面给 $l\le10^9$，于是 $2l=2\times10^9$，而 `INT_MAX = 2,147,483,647` —— **只剩 6.9%**。约束若是 $1.1\times10^9$，`l*2` 溢出成负数，公式静默变成「每条边贡献 2」。
+
+改 `2ll * l` 或把 `l` 读成 `ll` 就彻底安全。这是今天「`int` 装不下」这一族的第 4 个实例（前三个：L3-3 的 `atan`、20C 的 `priority_queue<pii>`、20C 的 `int nd`）—— 只是这个被题目约束救下来了。
 
 # 11-06 集训队模拟赛（天梯赛 · 15 题 / 3 h / IOI 制）复盘
 
