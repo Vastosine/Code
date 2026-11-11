@@ -22,8 +22,8 @@ ll Dinic(int s, int t) {
         for (int i = 0; i < (int) o.size(); i++) {
             int u = o[i];
             for (int j : e[u]) {
-                int v = to[j], w = a[j];
-                if (!dep[v] && w) {
+                int v = to[j];
+                if (!dep[v] && a[j]) {
                     dep[v] = dep[u] + 1;
                     o.push_back(v);
                 }
@@ -31,7 +31,7 @@ ll Dinic(int s, int t) {
         }
         if (!dep[t]) return ans;
         auto dfs = [&] (auto &&f, int u, ll limit = INF) {
-            if (u == t) return limit;
+            if (u == t || !limit) return limit;
             ll ret = 0;
             for (; cur[u] < (int) e[u].size(); cur[u]++) {
                 int id = e[u][cur[u]], v = to[id];
