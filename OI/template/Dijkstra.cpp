@@ -8,6 +8,7 @@ using vll = vector<ll>;
 using pii = pair<int, int>;
 using pll = pair<ll, ll>;
 
+// e is given by main: e[u] = {{v, w}, ...}; w must fit int (switch to pll for 1e18 weights)
 vector<vector<pii>> e;
 vi vis;
 vll dis;
