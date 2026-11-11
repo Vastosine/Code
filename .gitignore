@@ -22,3 +22,4 @@ plan/*.html
 plan/*.txt
 stress/chain_*.txt
 stress/*.exe
+/chain_*.txt
