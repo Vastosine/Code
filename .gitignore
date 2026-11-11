@@ -20,3 +20,5 @@ tmp/
 # 抓取临时文件（2026-11-02）
 plan/*.html
 plan/*.txt
+stress/chain_*.txt
+stress/*.exe
