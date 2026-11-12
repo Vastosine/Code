@@ -31,7 +31,7 @@ auto Main([[maybe_unused]] int C = 0) {
     auto f = [&] () {
         set<int> s;
         for (int i = 1; i <= n; i++) cin >> col[i], s.insert(col[i]);
-        if ((int) s.size() > c) return false;
+        if ((int) s.size() != c) return false;
         for (int u = 1; u <= n; u++) {
             for (int v : e[u]) {
                 if (col[v] == col[u]) return false;
