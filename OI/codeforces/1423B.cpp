@@ -1,5 +1,5 @@
 // Problem : B. Valuable Paper https://codeforces.com/problemset/problem/1423/B
-// Time    : 2026-11-12 07:54:00
+// Time    : 2026-11-13 08:52:58
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -15,20 +15,17 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
-const int inf = 1 << 30;
-
 auto Main([[maybe_unused]] int C = 0) {
     int n, m;
     cin >> n >> m;
-    int s = 0, t = 2 * n + 1, N = 2 * n + 2;
-    vector<vi> e, E(m, vi(3));
-    vi to, c, dep, cur, _c;
-    assign(N, e);
-    for (auto &i : E) {
-        cin >> i[1] >> i[2] >> i[0];
-    }
+    vector<vll> E(m, vll(3));
+    for (auto &i : E) cin >> i[1] >> i[2] >> i[0];
     Sort(E);
-    auto addEdge = [&] (int u, int v, int w = 1) {
+    int s = 0, t = 2 * n + 1, N = t + 1;
+    vector<vi> e(N);
+    vi to, dep, cur;
+    vll c;
+    auto addEdge = [&] (int u, int v, ll w) {
         e[u].push_back(to.size());
         to.push_back(v);
         c.push_back(w);
@@ -36,18 +33,18 @@ auto Main([[maybe_unused]] int C = 0) {
         to.push_back(u);
         c.push_back(0);
     };
-    for (int u = 1; u <= n; u++) {
-        addEdge(s, u);
-        addEdge(u + n, t);
+    for (int i = 1; i <= n; i++) {
+        addEdge(s, i, 1);
+        addEdge(i + n, t, 1);
     }
     for (auto &i : E) {
-        addEdge(i[1], i[2] + n);
+        addEdge(i[1], i[2] + n, 1);
     }
-    auto Dinic = [&] (int s, int t, int restrict) {
-        int ans = 0;
+    auto Dinic = [&] (int s, int t, int re) {
         auto visible = [&] (int x) {
-            return x / 2 <= restrict;
+            return x / 2 <= re;
         };
+        ll ans = 0;
         while (true) {
             assign(N, dep, cur);
             dep[s] = 1;
@@ -55,22 +52,21 @@ auto Main([[maybe_unused]] int C = 0) {
             for (int i = 0; i < (int) o.size(); i++) {
                 int u = o[i];
                 for (int j : e[u]) {
-                    if (!visible(j)) break;
-                    int v = to[j];
-                    if (c[j] && !dep[v]) dep[v] = dep[u] + 1, o.push_back(v);
+                    if (int v = to[j]; !dep[v] && c[j] && visible(j)){
+                        dep[v] = dep[u] + 1, o.push_back(v);
+                    }
                 }
             }
             if (!dep[t]) return ans;
-            auto dfs = [&] (auto &&f, int u, int lim = inf) {
+            auto dfs = [&] (auto &&f, int u, ll lim = INF) {
                 if (!lim || u == t) return lim;
-                int ret = 0;
+                ll ret = 0;
                 for (; cur[u] < (int) e[u].size() && ret < lim; cur[u]++) {
-                    int id = e[u][cur[u]], v = to[id], w = c[id];
-                    if (visible(id) && dep[v] == dep[u] + 1) {
-                        int add = f(f, v, min(lim - ret, w));
+                    if (int i = e[u][cur[u]]; visible(i) && dep[to[i]] == dep[u] + 1) {
+                        ll add = f(f, to[i], min(lim - ret, c[i]));
                         ret += add;
-                        c[id] -= add;
-                        c[id ^ 1] += add;
+                        c[i] -= add;
+                        c[i ^ 1] += add;
                     }
                 }
                 return ret;
@@ -78,17 +74,17 @@ auto Main([[maybe_unused]] int C = 0) {
             ans += dfs(dfs, s);
         }
     };
-    _c = c;
-    if (Dinic(s, t, 1 << 25) < n) return -1;
-    int l = 2 * n - 1, r = 2 * n + m + 1;
+    vll _c = c;
+    if (Dinic(s, t, 1 << 30) < n) return -1ll;
+    int l = -1, r = m + 1;
     while (l < r - 1) {
-        int x = ((l + r) >> 1);
+        int x = (l + r) >> 1;
         c = _c;
-        int d = Dinic(s, t, x);
-        if (d == n) r = x;
+        ll y = Dinic(s, t, n * 2 + x);
+        if (y == n) r = x;
         else l = x;
     }
-    return E[r - 2 * n][0];
+    return E[r][0];
 }
 
 int main() {
