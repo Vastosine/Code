@@ -15,29 +15,37 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
+const int inf = 1 << 30;
+
 auto Main([[maybe_unused]] int C = 0) {
     int n;
     cin >> n;
     int s = 0, t = n + 1, N = n + 2;
     vector<vi> e(N);
-    vi to, c, dep, cur;
+    vi to, c, dep, cur, w;
     int sum = 0;
-    auto addEdge = [&] (int u, int v, int w) {
+    auto addEdge = [&] (int u, int v, int cap, int cost) {
         e[u].push_back(to.size());
         to.push_back(v);
-        c.push_back(w);
+        c.push_back(cap);
+        w.push_back(cost);
         e[v].push_back(to.size());
         to.push_back(u);
         c.push_back(0);
+        w.push_back(-cost);
     };
     for (int i = 1; i <= n; i++) {
         int x;
         cin >> x;
-        addEdge(s, i, x);
+        addEdge(s, i, x, 0);
         sum += x;
     }
     for (int i = 1; i <= n; i++) {
-        addEdge(i, t, sum / n);
+        addEdge(i, t, sum / n, 0);
+    }
+    for (int i = 1; i <= n; i++) {
+        addEdge(i, i % n + 1, inf, 1);
+        addEdge(i % n + 1, i, inf, 1);
     }
     auto Dinic = [&] (int s, int t) {
         int ans = 0;
@@ -53,7 +61,7 @@ auto Main([[maybe_unused]] int C = 0) {
                 }
             }
             if (!dep[t]) return ans;
-            auto dfs = [&] (auto &&f, int u, int lim = 1 << 30) {
+            auto dfs = [&] (auto &&f, int u, int lim = inf) {
                 if (!lim || u == t) return lim;
                 int ret = 0;
                 for (; cur[u] < (int) e[u].size() && ret < lim; cur[u]++) {
