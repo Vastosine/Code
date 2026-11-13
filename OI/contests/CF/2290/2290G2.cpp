@@ -17,18 +17,20 @@ void init() {}
 
 ll need(vi a, int n, ll lim) {
     ll ans = 0;
-    for (int i = 0, c = 0, di = 1; c <= n; c++, i = (i + di + n) % n) {
-        di = 1;
-        if (ll dx = -lim - a[i]; dx > 0) {
+    for (int i = 0, c = 0, di = 1; ; c++, i = (i + di + n) % n) {
+        if (c > n) {
+            if (di == 1) di = -1, c = 0;
+            else break;
+        }
+        if (ll dx = -lim - a[i]; di == 1 && dx > 0) {
             a[i] += dx, a[(i + 1) % n] -= dx;
             c = 0;
             ans += dx;
         }
-        if (ll dx = a[i] - lim; dx > 0) {
+        if (ll dx = a[i] - lim; di == -1 && dx > 0) {
             a[i] -= dx, a[(i - 1 + n) % n] += dx;
             c = 0;
             ans += dx;
-            di = -1;
         }
     }
     return ans;
@@ -63,5 +65,6 @@ int main() {
         // cout << OUT[ans] << "\n";
         // ans.empty() ? cout << OUT[0] << "\n" : cout << OUT[1] << "\n" << ans << "\n";
     }
+    // cerr << clock() << "\n";
     return 0;
 }

@@ -53,7 +53,7 @@ vi Main([[maybe_unused]] int C = 0) {
         return s.query(1, x - 1) - s.quein(x + 1, n);
     };
     auto get = [&] (int target) {
-        int l = 0, r = n + 1;
+        int l = 0, r = n;
         while (l < r - 1) {
             int x = (l + r) >> 1;
             int y = f(x);
