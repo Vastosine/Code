@@ -1,6 +1,6 @@
+#include <algorithm>
 #include <queue>
 #include <vector>
-#include <climits>
 
 using namespace std;
 using vi = vector<int>;
@@ -89,7 +89,9 @@ pll MCMF(int s, int t, int dir = 1) {
         }
         if (preEdge[t] == -1) break;                  // 没有增广路 ⟹ 已经最大流
 
-        int lim = INT_MAX;
+        // lim 直接取路径上第一条边的容量当初始值：不依赖 INT_MAX 之类需要
+        // 额外 include 的宏。有人会把本文件整段粘进自己的代码，那时缺 <climits> 就 CE。
+        int lim = cap[preEdge[t]];
         for (int v = t; v != s; v = to[preEdge[v] ^ 1]) lim = min(lim, cap[preEdge[v]]);
         for (int v = t; v != s; v = to[preEdge[v] ^ 1]) {
             cap[preEdge[v]] -= lim;
