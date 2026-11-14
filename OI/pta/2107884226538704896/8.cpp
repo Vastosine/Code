@@ -41,13 +41,16 @@ auto Main([[maybe_unused]] int C = 0) {
     }
     // 4 5
     for (int i = 0; i < (int) ans.size(); i++) {
-        if (i && ans[i] == "you" && (ans[i - 1] == "can" || ans[i - 1] == "could")) {
+        if (i && ans[i].substr(0, 3) == "you" && (ans[i].size() == 3 || ans[i][3] < 'a' || ans[i][3] > 'z') && (ans[i - 1] == "can" || ans[i - 1] == "could")) {
+            ans[i - 1] += ans[i].substr(3);
             ans[i] = "I";
             swap(ans[i], ans[i - 1]);
         } else if (ans[i] == "I" || ans[i] == "me") {
             ans[i] = "you";
         } else if (ans[i][0] == 'I' && (ans[i][1] < 'a' || ans[i][1] > 'z') && ans[i][1] != 'I') {
             ans[i] = "you" + ans[i].substr(1);
+        } else if (ans[i].substr(0, 2) == "me" && (ans[i][2] < 'a' || ans[i][2] > 'z') && ans[i][2] != 'I') {
+            ans[i] = "you" + ans[i].substr(2);
         }
     }
     cout << "AI: ";

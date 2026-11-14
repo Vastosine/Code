@@ -17,80 +17,88 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
+vll read(const string &s) {
+    vll ans;
+    for (char i : s) {
+        if (ans.empty() || i == ' ') ans.push_back(0);
+        if (i == ' ') continue;
+        (ans.back() *= 10) += i - '0';
+    }
+    return ans;
+}
+
 auto Main([[maybe_unused]] int C = 0) {
     int n, m, k;
     cin >> n >> m >> k;
-    const int inf = 1e9;
-    vector<vector<pii>> e(n + 1);
-    auto addEdge = [&] (int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); };
+    vector<vector<pll>> e(n + 1);
+    auto addEdge = [&] (int u, int v, ll w) {
+        e[u].push_back({v, w}); e[v].push_back({u, w});
+    };
     set<int> must;
     while (m--) {
         string s;
         while (s.empty()) getline(cin, s);
-        vi a;
-        s += " ";
-        for (int p = 0; p < (int) s.length(); ) {
-            int q = s.find_first_of(' ', p);
-            // if (q == (int) string::npos) q = (int) s.length() - 1;
-            int x;
-            sscanf((s.substr(p, q - p) + " ").c_str(), "%d", &x);
-            p = q + 1;
-            a.push_back(x);
-        }
-        int len = (int) a.size() / 2;
+        auto a = read(s);
         must.insert(a[0]);
         must.insert(a.back());
-        for (int i = 0; i < len; i++) {
-            addEdge(a[i * 2], a[i * 2 + 2], a[i * 2 + 1]);
+        for (int i = 2; i < (int) a.size(); i += 2) {
+            addEdge(a[i], a[i - 2], a[i - 1]);
         }
     }
-    vector<vi> dis(n + 1, vi(n + 1, inf));
+    vector<vll> dis(n + 1, vll(n + 1, INF));
     for (int u = 1; u <= n; u++) {
-        if (e[u].size() == 1) must.insert(u);
         dis[u][u] = 0;
         for (auto &[v, w] : e[u]) {
             dis[u][v] = min(dis[u][v], w);
         }
     }
-    for (int mid = 1; mid <= n; mid++) {
-        for (int u = 1; u <= n; u++) {
-            for (int v = 1; v <= n; v++) {
-                dis[u][v] = min(dis[u][v], dis[u][mid] + dis[mid][v]);
+    for (int K = 1; K <= n; K++) {
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                dis[i][j] = min(dis[i][j], dis[i][K] + dis[K][j]);
             }
         }
     }
-    // for (int u = 1; u <= n; u++) {
-    //     for (int v = 1; v <= n; v++) {
-    //         cout << dis[u][v] << " ";
-    //     }
-    //     cout << "\n";
-    // }
+    vector<vi> nxt(n + 1);
+    for (int u = 1; u <= n; u++) {
+        set<int> ans;
+        ans.insert(u);
+        for (int v : must) {
+            if (dis[u][v] < INF) ans.insert(v);
+        }
+        map<ll, set<pll>> mp;
+        for (int v = 1; v <= n; v++) {
+            if (dis[u][v] == INF) continue;
+            int d = dis[u][v];
+            mp[d / k].insert({-d % k, v});
+        } 
+        for (auto &[T, L] : mp) {
+            ll x = L.begin()->first;
+            for (auto &[d, v] : L) {
+                if (x == d) ans.insert(v);
+            }
+        }
+        nxt[u] = vi(ans.begin(), ans.end());
+    }
     int q;
     cin >> q;
     while (q--) {
-        int u;
-        cin >> u;
-        set<int> ans;
-        for (auto i : must) {
-            if (dis[u][i] != inf) ans.insert(i);
-        }
-        map<int, set<pii>> s;
-        for (int v = 1; v <= n; v++) {
-            if (dis[u][v] == inf) continue;
-            int d = dis[u][v] + k - 1;
-            s[d / k].insert({-(d % k), v});
-        }
-        for (auto &[p, Q] : s) {
-            auto st = Q.begin()->first;
-            for (auto &[S, T] : Q) {
-                if (S == st) ans.insert(T);
+        int st;
+        cin >> st;
+        vi o(1, st), in(n + 1);
+        in[st] = 1;
+        for (int i = 0; i < (int) o.size(); i++) {
+            int u = o[i];
+            for (int v : nxt[u]) {
+                if (!in[v]) o.push_back(v), in[v] = 1;
             }
         }
-        ans.insert(u);
-        for (int i : ans) cout << i << " \n"[i == *--ans.end()];
-        // cout << "\n";
+        Sort(o);
+        for (int i = 0; i < (int) o.size(); i++) {
+            cout << o[i] << " \n"[i == (int) o.size() - 1];
+        }
     }
-    return 0;
+    return 0; 
 }
 
 int main() {

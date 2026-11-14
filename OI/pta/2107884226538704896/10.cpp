@@ -100,7 +100,7 @@ auto Main([[maybe_unused]] int C = 0) {
             continue;
         }
         int x = LCA(u, v);
-        if (!~x || max(dep[u] - dep[x], dep[v] - dep[x]) >= 4) {
+        if (!~x || min(dep[u] - dep[x], dep[v] - dep[x]) >= 4) {
             cout << "Yes\n";
         } else cout << "No\n";
     }
