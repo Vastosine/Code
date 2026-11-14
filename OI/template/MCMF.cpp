@@ -33,9 +33,9 @@ using pll = pair<ll, ll>;
 
 int N;                  // 点数（0..N-1）
 vector<vi> e;           // e[u] = {边号, ...}
-vi to, cap, preEdge;    // to[i] = 边 i 的终点；cap[i] = 剩余容量；preEdge[v] = 走到 v 用的边号
+vi to, preEdge;         // to[i] = 边 i 的终点；preEdge[v] = 走到 v 用的边号
+vll cap, cap0;          // cap[i] = 剩余容量。**用 ll**：P1251 里 Σr_i 能到 2×10^10，int 装不下
 vll cost, dis;          // cost[i] = 边 i 的单位费用；dis[v] = 当前增广路上的最短费用
-vi cap0;                // 建图时的原始容量，MCMF_reset() 用来复原
 
 void MCMF_init(int n) {
     N = n;
@@ -44,7 +44,8 @@ void MCMF_init(int n) {
 }
 
 // 加一条 u→v 容量 c、单位费用 w 的边；返回边号（方案还原时用它查 cap）
-int addEdge(int u, int v, int c, ll w) {
+// c 也是 ll：容量别在签名上收窄
+int addEdge(int u, int v, ll c, ll w) {
     int id = (int)to.size();
     e[u].push_back(id);
     to.push_back(v), cap.push_back(c), cost.push_back(w);
@@ -91,7 +92,7 @@ pll MCMF(int s, int t, int dir = 1) {
 
         // lim 直接取路径上第一条边的容量当初始值：不依赖 INT_MAX 之类需要
         // 额外 include 的宏。有人会把本文件整段粘进自己的代码，那时缺 <climits> 就 CE。
-        int lim = cap[preEdge[t]];
+        ll lim = cap[preEdge[t]];
         for (int v = t; v != s; v = to[preEdge[v] ^ 1]) lim = min(lim, cap[preEdge[v]]);
         for (int v = t; v != s; v = to[preEdge[v] ^ 1]) {
             cap[preEdge[v]] -= lim;

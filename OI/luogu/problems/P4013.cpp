@@ -105,7 +105,6 @@ auto Main([[maybe_unused]] int C = 0) {
         }
         for (int i = 0; i < m - 1; i++) {
             for (int j = 1; j <= n + i; j++) {
-                // cin >> a[i][j];
                 int x = f(i, j), y = f(i + 1, j);
                 addEdge(x * 2 + 1, y * 2, c2, 0);
                 addEdge(x * 2 + 1, y * 2 + 2, c2, 0);
