@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 
 using namespace std;
@@ -15,12 +14,5 @@ void sieve(int n) {
             is[i * p] = 0;
             if (i % p == 0) break;
         }
-    }
-}   
-
-int main() {
-    sieve(10000000);
-    for (int p : primes) {
-        cout << p << "\n";
     }
 }
