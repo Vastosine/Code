@@ -10,7 +10,7 @@ int n;
 vi dep;
 int D;
 
-void init() {
+void initLCA() {
     D = __lg(n) + 1;
     f.assign(n + 1, vi(D + 1));
     dep.assign(n + 1, 0);

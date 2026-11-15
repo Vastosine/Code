@@ -1,8 +1,9 @@
 #include <vector>
 
 using namespace std;
+using vi = vector<int>;
 
-vector<int> primes;
+vi primes;
 vector<bool> is;
 void sieve(int n) {
     is.assign(n + 1, 1);
