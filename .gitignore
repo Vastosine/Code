@@ -23,3 +23,5 @@ plan/*.txt
 stress/chain_*.txt
 stress/*.exe
 /chain_*.txt
+# Office 打开文件时生成的锁文件（2026-11-15）
+~$*

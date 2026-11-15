@@ -7,13 +7,13 @@ class Dinic {
     using ll = long long;
     using vi = vector<int>;
     using vll = vector<ll>;
-    static const ll INF = 1ll << 60;
+    static constexpr ll INF = 1ll << 60;
     
     Dinic(int n) : n(n), e(n) {}
 
     void reassign() { clear(n); }
     void clear(int n = 0) { this->n = n; e.assign(n, {}); to.clear(); cap.clear(); }
-    void addEdge(int u, int v, ll c) { add(u, v, c); add(v, u, 0); }
+    int addEdge(int u, int v, ll c) { add(u, v, c); add(v, u, 0); return (int) to.size() - 2; }
 
     // Run the Dinic, return the max flow.
     ll run(int s, int t) {
@@ -45,8 +45,7 @@ class Dinic {
         }
     }
 
-    // Print some information or else;
-    void print();
+    ll flowOn(int id) const { return cap[id ^ 1]; }
 
   private:
     // Add single edge
