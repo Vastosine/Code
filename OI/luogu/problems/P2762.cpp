@@ -77,9 +77,13 @@ class Dinic {
 
 vll getll(const string &s) {
     vll ans;
+    bool end = 1;
     for (int i : s) {
-        if (ans.empty() || i == ' ') ans.push_back(0);
-        if (i == ' ') continue;
+        if (i < '0' || i > '9') {
+            end = 1;
+            continue;
+        }
+        if (end) end = 0, ans.push_back(0);
         (ans.back() *= 10) += i - '0';
     }
     return ans;
@@ -93,7 +97,7 @@ auto Main([[maybe_unused]] int C = 0) {
     Dinic a(N);
     for (int i = 1; i <= n; i++) {
         string str;
-        while (str.empty()) getline(cin, str);
+        while (str.empty() || str == "\r") getline(cin, str);
         vll p = getll(str);
         a.addEdge(s, i, p[0]);
         sum += p[0];
@@ -106,7 +110,7 @@ auto Main([[maybe_unused]] int C = 0) {
         cin >> x;
         a.addEdge(i + n, t, x);
     }
-    int ans = sum - a.run(s, t);
+    ll ans = sum - a.run(s, t);
     vi dep = a.reachable(s);
     for (int i = 1; i <= n; i++) if (~dep[i]) cout << i << " ";
     cout << "\n";
