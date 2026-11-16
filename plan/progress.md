@@ -6094,3 +6094,101 @@ int ans = sum - a.run(s, t);     // sum 是 ll，run() 返回 ll，结果截成 
 2. T9 还剩 9 道：[P2770](https://www.luogu.com.cn/problem/P2770)、[P4012](https://www.luogu.com.cn/problem/P4012)、[P3356](https://www.luogu.com.cn/problem/P3356)、[P3358](https://www.luogu.com.cn/problem/P3358)、[P3357](https://www.luogu.com.cn/problem/P3357)、[P2766](https://www.luogu.com.cn/problem/P2766)、[P2754](https://www.luogu.com.cn/problem/P2754)、[P4011](https://www.luogu.com.cn/problem/P4011)、[P4009](https://www.luogu.com.cn/problem/P4009)
 3. 明天（11-17）三人联练 2 小时
 4. 11-19 13:00 南昌站，11-21 22:35 `#2288`
+
+# 11-16 补记（14:00 · 本地过 ≠ 洛谷过，三个静默 bug）
+
+起因：我说 P2762 的 `getline` 遇到 CRLF 会崩，他回「我在本地运行没事，本地用的 CRLF」。
+
+**他是对的。** 是我漏说了一层机制。
+
+## 一、Windows 的 CRT 会偷偷吃掉 `\r`
+
+输入文件确实有 4 个 CR 字节（实测 `0D count = 4`）。同一个 exe、同一个文件，只改 stdin 的打开模式：
+
+```
+[1] Windows 默认（text mode）
+  getline #1  len=0  bytes:                        <- 空串，\r 被翻译掉了
+  getline #2  len=6  bytes: 31 30 20 31 20 32      = "10 1 2"
+
+[2] Windows + _setmode(_O_BINARY)
+  getline #1  len=1  bytes: 0D                     <- "\r"
+  getline #2  len=7  bytes: 31 30 20 31 20 32 0D   = "10 1 2\r"
+```
+
+模式 [2] 等于我在 `istringstream` 里喂显式 CRLF 的结果，**也等于洛谷 Linux 上看到的东西**。
+
+## 二、三层对照
+
+| 环境 | stdin 模式 | `getline` 拿到 | 结果 |
+|---|---|---|---|
+| 本地 Windows（默认重定向） | text | `""` → while 继续 | ✅ 过 |
+| 本地 + `_setmode(_O_BINARY)` | binary | `"\r"` | ❌ 崩 |
+| 洛谷 Linux | 没有转换这回事 | `"\r"` | ❌ 会崩 —— **但数据是 LF，所以没崩** |
+
+> **本地环境自动替他修掉了这个 bug，所以本地测不出来。**
+
+## 三、代码对不对，要分两种数据说
+
+| 面对什么数据 | 结论 |
+|---|---|
+| 洛谷现在这份（LF） | **对**。`\r` 根本不存在，text / binary 都一样 |
+| 题面警告的那份（CRLF） | **不对**。第一行拿到 `"\r"`，`getll` 把 `\r` 并进最后一个数（`2*10 + (13-48) = -15`） |
+
+两道 AC 都是真的，没有运气成分。但「对」的原因是**数据是 LF**，不是「处理了 CRLF」。
+
+## 四、这一类坑会自己骗你
+
+**PowerShell 的 `Set-Content` 默认写 CRLF。**
+
+```
+gen 输出 CRLF → 本地 text mode 看不见 → 程序和暴力都"正常" → 对拍通过 → 交上去挂
+```
+
+**两边都错、看起来对**，这是最难查的一类对拍失效。
+
+## 五、怎么在本地复现洛谷的字节流
+
+别用 `_setmode`（洛谷上不存在，直接 CE）。用 `ifstream` 的二进制模式，两平台通用：
+
+```cpp
+ifstream fin("in.txt", ios::binary);   // 这时能看见 \r
+```
+
+或者用 `istringstream` 喂一个显式 CRLF 的字符串。
+
+## 六、加固（两行，正好对应「两处同时崩」）
+
+```cpp
+string str;
+do { getline(cin, str); } while (str.empty() || str == "\r");
+if (!str.empty() && str.back() == '\r') str.pop_back();
+```
+
+第一行处理「整行只有 `\r`」，第二行处理「行尾带 `\r`」。
+
+## 七、今天三个 bug 是同一个形状
+
+| bug | 只在什么数据下炸 | 状态 |
+|---|---|---|
+| `P2762.cpp:109` `int ans` | `Σp > 2.1e9` 时溢出 | **未修** |
+| `P2774.cpp` 初版 `id & 1` | `m` 为偶数时，图不是二分图 | 已修 |
+| `P2762.cpp` `getline` + `\r\n` | 数据是 CRLF 时（**本地测不出来**） | **未修** |
+
+> **AC 证明的是「过了这份数据」，不是「代码对」。**
+
+## 八、环境差异清单（本地 vs 洛谷）
+
+| | 本地 Windows | 洛谷 Linux |
+|---|---|---|
+| 换行 | text mode 自动把 CRLF 转成 LF | 不转换 |
+| `long` | **32 位**（LLP64） | **64 位**（LP64） |
+| 栈 | PE 默认远小于 8MB | 8MB |
+| `_setmode` / `_fileno` | 有 | **没有**（用了就是 CE） |
+
+**最该记的一条**：`long` 在本地 32 位、洛谷 64 位。**永远用 `long long` / `ll`，永远别写裸 `long`。**
+
+## 九、待办（更新）
+
+1. `P2762.cpp:109` —— `int ans` → `ll ans`
+2. `P2762.cpp` 的 `getline` 加固（上面那两行）
+3. 11-17 三人联练 / 11-19 南昌站 / 11-21 `#2288` —— 不变
