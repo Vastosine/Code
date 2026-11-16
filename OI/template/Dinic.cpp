@@ -12,22 +12,15 @@ class Dinic {
     Dinic(int n) : n(n), e(n) {}
 
     void reassign() { clear(n); }
-    void clear(int n = 0) { this->n = n; e.assign(n, {}); to.clear(); cap.clear(); }
+    void clear(int N = 0) { n = N; e.assign(N, {}); to.clear(); cap.clear(); }
     int addEdge(int u, int v, ll c) { add(u, v, c); add(v, u, 0); return (int) to.size() - 2; }
 
     // Run the Dinic, return the max flow.
     ll run(int s, int t) {
         ll ans = 0;
         while (true) {
-            vi cur(n), dep(n), o(1, s);
-            dep[s] = 1;
-            for (int i = 0; i < (int) o.size(); i++) {
-                int u = o[i];
-                for (int j : e[u]) {
-                    if (int v = to[j]; !dep[v] && cap[j]) dep[v] = dep[u] + 1, o.push_back(v);
-                }
-            }
-            if (!dep[t]) return ans;
+            vi cur(n), dep = reachable(s);
+            if (!~dep[t]) return ans;
             auto dfs = [&] (auto &&f, int u, ll lim = INF) {
                 if (!lim || u == t) return lim;
                 ll ret = 0;
@@ -47,6 +40,18 @@ class Dinic {
 
     ll flowOn(int id) const { return cap[id ^ 1]; }
 
+    vi reachable(int s) const {
+        vi o(1, s), dep(n, -1);
+        dep[s] = 0;
+        for (int i = 0; i < (int) o.size(); i++) {
+            int u = o[i];
+            for (int j : e[u]) {
+                if (int v = to[j]; !~dep[v] && cap[j]) o.push_back(v), dep[v] = dep[u] + 1;
+            }
+        }
+        return dep;
+    }
+
   private:
     // Add single edge
     void add(int u, int v, ll c) { e[u].push_back(to.size()); to.push_back(v); cap.push_back(c); };
@@ -56,5 +61,3 @@ class Dinic {
     vll cap;
     vi to;
 };
-
-
