@@ -41,6 +41,7 @@ if (-not $ck) { throw 'no cookies parsed from ' + $CookieFile }
 
 $tmp = Join-Path $env:TEMP 'lgpage.json'
 $acMap = @{}
+$lastMap = @{}
 $page = 1
 $total = -1
 $fetched = 0
@@ -61,9 +62,12 @@ while ($true) {
     if ($total -lt 0) { $total = $got.count; Write-Host "total records: $total" }
     foreach ($rec in $got.result) {
         $fetched++
-        if ($rec.status -ne $AcceptedStatus) { continue }
         $probId = $rec.problem.pid
         $t = [int64]$rec.submitTime
+        # last submission of ANY status: this is what the .cpp on disk represents
+        # (the file is the LAST version written, not the first-AC version)
+        if (-not $lastMap.ContainsKey($probId) -or $t -gt $lastMap[$probId]) { $lastMap[$probId] = $t }
+        if ($rec.status -ne $AcceptedStatus) { continue }
         if (-not $acMap.ContainsKey($probId) -or $t -lt $acMap[$probId]) { $acMap[$probId] = $t }
     }
     if ($fetched -ge $total) { break }
@@ -75,20 +79,25 @@ while ($true) {
 }
 
 # unix -> yyyy-MM-dd in +08:00
-$acDate = @{}
-foreach ($k in $acMap.Keys) {
-    $acDate[$k] = [DateTimeOffset]::FromUnixTimeSeconds($acMap[$k]).ToOffset([TimeSpan]::FromHours(8)).ToString('yyyy-MM-dd')
+function ToDate([int64]$t) {
+    [DateTimeOffset]::FromUnixTimeSeconds($t).ToOffset([TimeSpan]::FromHours(8)).ToString('yyyy-MM-dd')
 }
+$acDate = @{}
+foreach ($k in $acMap.Keys) { $acDate[$k] = ToDate $acMap[$k] }
+$lastDate = @{}
+foreach ($k in $lastMap.Keys) { $lastDate[$k] = ToDate $lastMap[$k] }
 
 $dir = Split-Path $Out -Parent
 if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
 $payload = [pscustomobject]@{
-    generated = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-    records   = $fetched
-    pids      = $acDate.Count
-    ac        = $acDate
+    generated  = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+    records    = $fetched
+    pids       = $lastDate.Count
+    acPids     = $acDate.Count
+    firstAc    = $acDate
+    lastSubmit = $lastDate
 }
 [IO.File]::WriteAllText($Out, ($payload | ConvertTo-Json -Depth 3 -Compress), (New-Object System.Text.UTF8Encoding($false)))
 
 ''
-'fetched {0} records, {1} distinct pids with an AC -> {2}' -f $fetched, $acDate.Count, $Out
+'fetched {0} records, {1} pids total, {2} ever AC -> {3}' -f $fetched, $lastDate.Count, $acDate.Count, $Out
