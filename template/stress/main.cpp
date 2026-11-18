@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define main sol_main
-#include "../../OI/codeforces/1036C.cpp"
+#include "../../OI/luogu/problems/P17805.cpp"
 #undef main
 #include "gen.cpp"
 #include "brute.cpp"
