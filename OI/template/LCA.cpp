@@ -17,7 +17,7 @@ void initLCA() {
     vi o(1, 1);
     dep[1] = 1;
     f[1][0] = 1;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < (int) o.size(); i++) {
         int u = o[i];
         for (int v : e[u]) {
             if (!dep[v]) dep[v] = dep[u] + 1, o.push_back(v), f[v][0] = u;
