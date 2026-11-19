@@ -33,6 +33,7 @@ void initCnk(int m = M) {
 }
 
 ll Cnk(int n, int k, int m = Cmod) {
+    if (m != Cmod) initCnk(m);
     if (k < 0 || k > n) return 0;
     return F[n] * inv(F[k] * F[n - k] % m, m) % m;
 }
