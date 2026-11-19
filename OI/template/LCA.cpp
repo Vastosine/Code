@@ -10,13 +10,13 @@ int n;
 vi dep;
 int D;
 
-void initLCA() {
+void initLCA(int root = 1) {
     D = __lg(n) + 1;
     f.assign(n + 1, vi(D + 1));
     dep.assign(n + 1, 0);
-    vi o(1, 1);
-    dep[1] = 1;
-    f[1][0] = 1;
+    vi o(1, root);
+    dep[root] = 1;
+    f[root][0] = root;
     for (int i = 0; i < (int) o.size(); i++) {
         int u = o[i];
         for (int v : e[u]) {
