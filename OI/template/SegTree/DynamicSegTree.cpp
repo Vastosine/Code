@@ -8,6 +8,7 @@ class SegTree {
   public:
     using ll = long long;
     using vll = vector<ll>;
+    using Order = vector<SegTree*>;
 
     SegTree(ll l, ll r) : L(l), R(r), LS(0), RS(0), data(getZero()), lazy(lazyZero()) {}
     template<typename T> SegTree(const vector<T> &input, ll start = 0) : SegTree(start, start + (ll) input.size() - 1) { fill(input, start); }
@@ -22,14 +23,7 @@ class SegTree {
 
     template<typename T> 
     void fill(const vector<T> &input, int start = 0) {
-        vector<SegTree*> order(1, this);
-        for (int i = 0; i < (int) order.size(); i++) {
-            SegTree *cur = order[i];
-            if (cur->isLeave()) continue;
-            order.push_back(cur->ls());
-            order.push_back(cur->rs());
-        }
-        Reverse(order);
+        Order order = allOrder(start, start + (int) input.size() - 1);
         for (SegTree *cur : order) {
             if (cur->isLeave()) cur->data = input[cur->L - start];
             else cur->update();
@@ -37,19 +31,19 @@ class SegTree {
     }
 
     void set(ll id, ll x) {
-        vector<SegTree*> order = getOrder(id);
+        Order order = getOrder(id);
         order.front()->data = x;
         for (SegTree *cur : order) cur->update();
     }
     
     void add(ll id, ll x) {
-        vector<SegTree*> order = getOrder(id);
+        Order order = getOrder(id);
         order.front()->data += x;
         for (SegTree *cur : order) cur->update();
     }
     
     void add(ll l, ll r, ll x) {
-        vector<SegTree*> order = getOrder(l, r);
+        Order order = getOrder(l, r);
         for (SegTree *cur : order) {
             if (cur->in(l, r)) *cur += x;
             else cur->update();
@@ -60,7 +54,7 @@ class SegTree {
     
     ll query(ll l, ll r) {
         ll ans = getZero();
-        vector<SegTree*> order = getOrder(l, r);
+        Order order = getOrder(l, r);
         for (SegTree *cur : order) {
             if (cur->in(l, r)) ans += cur->data;
         }
@@ -69,6 +63,8 @@ class SegTree {
 
     template<typename T>
     static void Reverse(vector<T> &a) { reverse(a.begin(), a.end()); }
+
+    ~SegTree() { delete LS, delete RS; }
   private:
     bool isLeave() { return L == R; }
     bool in(int l, int r) { return L >= l && R <= r; }
@@ -77,9 +73,9 @@ class SegTree {
     SegTree *ls() { return LS ? LS : LS = new SegTree(L, mid()); }
     SegTree *rs() { return RS ? RS : RS = new SegTree(mid() + 1, R); }
 
-    vector<SegTree*> getOrder(ll id, bool rvs = true) {
+    Order getOrder(ll id, bool rvs = true) {
         if (id < L || id > R) return {};
-        vector<SegTree*> order(1, this);
+        Order order(1, this);
         for (int i = 0; i < (int) order.size(); i++) {
             SegTree *cur = order[i];
             if (cur->needPushdown()) cur->pushdown();
@@ -90,13 +86,26 @@ class SegTree {
         return order;
     }
 
-    vector<SegTree*> getOrder(ll l, ll r, bool rvs = true) {
+    Order getOrder(ll l, ll r, bool rvs = true) {
         if (l > R || L > r) return {};
-        vector<SegTree*> order(1, this);
+        Order order(1, this);
         for (int i = 0; i < (int) order.size(); i++) {
             SegTree *cur = order[i];
             if (cur->needPushdown()) cur->pushdown(); 
             if ((cur->in(l, r)) || cur->L > r || l > cur->R) continue;
+            if (l <= cur->mid()) order.push_back(cur->ls());
+            if (r > cur->mid()) order.push_back(cur->rs());
+        }
+        if (rvs) Reverse(order);
+        return order;
+    }
+
+    Order allOrder(int l, int r, bool rvs = true) {
+        if (l > R || L > r) return {};
+        Order order(1, this);
+        for (int i = 0; i < (int) order.size(); i++) {
+            SegTree *cur = order[i];
+            if (cur->isLeave() || l > R || L > r) continue;
             if (l <= cur->mid()) order.push_back(cur->ls());
             if (r > cur->mid()) order.push_back(cur->rs());
         }
