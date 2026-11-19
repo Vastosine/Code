@@ -66,10 +66,6 @@ struct Matric {
     int size() const { return a.size(); }
 };
 
-Matric mqpow(const Matric &x, ll n) {
-    return (n ? mqpow(x * x, n / 2) * (n & 1 ? x : Matric::identity(x.size())) : Matric::identity(x.size()));
-}
-
 ll qpow(ll x, ll n) {
     x = (x % M + M) % M;
     ll r = 1;
