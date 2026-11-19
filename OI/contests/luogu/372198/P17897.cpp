@@ -17,68 +17,48 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
-vector<vi> e, f, dis;
+vector<vi> e;
 int n;
-vi dep;
-int D;
-
-void initLCA(int r = 1) {
-    D = __lg(n) + 1;
-    f.assign(n + 1, vi(D + 1));
-    dis.assign(n + 1, vi(D + 1));
-    dep.assign(n + 1, 0);
-    vi o(1, r);
-    dep[r] = 1;
-    f[r][0] = r;
-    for (int i = 0; i < (int) o.size(); i++) {
-        int u = o[i];
-        for (int v : e[u]) {
-            if (!dep[v]) dep[v] = dep[u] + 1, o.push_back(v), f[v][0] = u, dis[v][0] = gcd(u, v);
-        }
-    }
-    dis[r][0] = r;
-    for (int d = 0; d < D; d++) {
-        for (int u = 1; u <= n; u++) {
-            f[u][d + 1] = f[f[u][d]][d];
-            dis[u][d + 1] = min(dis[u][d], dis[f[u][d]][d]);
-        }
-    }
-}
-
-int LCA(int u, int v) {
-    if (u == v) return u;
-    int ans = inf;
-    if (dep[u] < dep[v]) swap(u, v);
-    for (int d = D; ~d; d--) {
-        int nu = f[u][d];
-        if (dep[nu] >= dep[v]) ans = min(ans, dis[u][d]), u = nu;
-    }
-    if (u == v) return ans;
-    for (int d = D; ~d; d--) {
-        int nu = f[u][d], nv = f[v][d];
-        if (nu != nv) ans = min({ans, dis[u][d], dis[v][d]}), u = nu, v = nv;
-    }
-    return min({ans, dis[u][0], dis[v][0]});
-}
 
 auto Main([[maybe_unused]] int C = 0) {
     int N, m;
     cin >> N >> m;
-    vi a(N);
+    vi a(N), ans(m);
     cin >> a;
     n = *max_element(a.begin(), a.end());
+    vector<pii> q(m);
+    vector<vi> p(n + 1);
+    cin >> q;
+    for (int i = 0; i < m; i++) {
+        auto &[u, v] = q[i];
+        u = a[u - 1], v = a[v - 1];
+        if (u == v) {
+            ans[i] = u;
+            continue;
+        }
+        p[u].push_back(i);
+        p[v].push_back(i);
+    }
     e.assign(n + 1, {});
     vi has(n + 1), fa(n + 1);
     auto getF = [&] (auto &&f, int u) -> int {
         return fa[u] = fa[u] ? fa[u] == u ? u : f(f, fa[u]) : u;
     }; 
-    auto merge = [&] (int u, int v) {
-        int fu = getF(getF, u), fv = getF(getF, v);
-        fa[fu] = fv;
-        return fu != fv;
-    };
     for (int x : a) has[x] = 1;
     for (int i = n; i; i--) {
+        auto merge = [&] (int u, int v) {
+            int fu = getF(getF, u), fv = getF(getF, v);
+            if (fu == fv) return false;
+            if (p[fv].size() > p[fu].size()) swap(fu, fv);
+            fa[fv] = fu;
+            for (int id : p[fv]) {
+                if (auto &[x, y] = q[id]; !ans[id] && getF(getF, x) == getF(getF, y)) {
+                    ans[id] = i;
+                }
+                if (!ans[id]) p[fu].push_back(id);
+            }
+            return true;
+        };
         vi lst;
         for (int j = i; j <= n; j += i) {
             if (has[j]) lst.push_back(j);
@@ -90,13 +70,15 @@ auto Main([[maybe_unused]] int C = 0) {
                 // cout << u << " " << v << "\n";
             }
         }
+        // for (int u : lst) {
+        //     for (int id : p[u]) {
+        //         if (auto &[x, y] = q[id]; !ans[id] && getF(getF, x) == getF(getF, y)) {
+        //             ans[id] = i;
+        //         }
+        //     }
+        // }
     }
-    initLCA(a[0]);
-    while (m--) {
-        int u, v;
-        cin >> u >> v;
-        cout << LCA(a[u - 1], a[v - 1]) << "\n";
-    }
+    for (int x : ans) cout << x << "\n";
     return 0;
 }
 
