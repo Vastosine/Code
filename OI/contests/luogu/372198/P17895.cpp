@@ -21,7 +21,7 @@ auto Main([[maybe_unused]] int C = 0) {
     cin >> n >> k;
     vi a(n);
     cin >> a;
-    ll s;
+    ll s = 0;
     for (ll x = 1; x <= k; x *= 2) {
         for (int i : a) s += i / x;
         if (s & 1) return true;
