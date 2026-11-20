@@ -28,13 +28,13 @@ void G(T &x) {
     }
 }
 
-struct Matric {
+struct Matrix {
     int n, m;
     vector<vll> a;
-    Matric(int n = 0, int m = 0) : n(n), m(m), a(n, vll(m)) {}
+    Matrix(int n = 0, int m = 0) : n(n), m(m), a(n, vll(m)) {}
 
-    static Matric identity(int n) {
-        Matric a(n, n);
+    static Matrix identity(int n) {
+        Matrix a(n, n);
         for (int i = 0; i < n; i++) a[i][i] = 1;
         return a;
     }
@@ -48,9 +48,9 @@ struct Matric {
     vll &operator[](int x) { return a[x]; }
     const vll &operator[](int x) const { return a[x]; }
 
-    Matric operator*(const Matric &b) const {
+    Matrix operator*(const Matrix &b) const {
         if (m != b.n) return {};
-        Matric ans(n, b.m);
+        Matrix ans(n, b.m);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < b.m; j++) {
                 __int128 s = 0;
@@ -142,7 +142,7 @@ struct Dlog {
 auto Main([[maybe_unused]] int C = 0) {
     int n, m, q;
     cin >> n >> m >> q;
-    Matric ID = Matric::identity(n), a = ID;
+    Matrix ID = Matrix::identity(n), a = ID;
     while (m--) {
         int x, u, v;
         cin >> x >> u >> v;
@@ -158,7 +158,7 @@ auto Main([[maybe_unused]] int C = 0) {
         // cout << "\n";
     }
     const int B = 2, L = 32;
-    vector<vector<Matric>> F(L + 1, vector<Matric>(B));
+    vector<vector<Matrix>> F(L + 1, vector<Matrix>(B));
     F[0][1] = a;
     for (int i = 0; i <= L; i++) {
         F[i][0] = ID;
@@ -169,7 +169,7 @@ auto Main([[maybe_unused]] int C = 0) {
     }
     Dlog dl;
     dl.init((ll) n * q);
-    auto mul = [&] (const Matric &a, const vll &b, vi &isz) {
+    auto mul = [&] (const Matrix &a, const vll &b, vi &isz) {
         vll ans(n);
         vi iz(n);
         for (int i = 0; i < n; i++) {

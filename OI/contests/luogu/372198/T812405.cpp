@@ -18,13 +18,13 @@ void init() {}
 
 const int M = 998244353;
 
-struct Matric {
+struct Matrix {
     int n, m;
     vector<vll> a;
-    Matric(int n = 0, int m = 0) : n(n), m(m), a(n, vll(m)) {}
+    Matrix(int n = 0, int m = 0) : n(n), m(m), a(n, vll(m)) {}
 
-    static Matric identity(int n) {
-        Matric a(n, n);
+    static Matrix identity(int n) {
+        Matrix a(n, n);
         for (int i = 0; i < n; i++) a[i][i] = 1;
         return a;
     }
@@ -38,9 +38,9 @@ struct Matric {
     vll &operator[](int x) { return a[x]; }
     const vll &operator[](int x) const { return a[x]; }
 
-    Matric operator*(const Matric &b) const {
+    Matrix operator*(const Matrix &b) const {
         if (m != b.n) return {};
-        Matric ans(n, b.m);
+        Matrix ans(n, b.m);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < b.m; j++) {
                 for (int k = 0; k < m; k++) {
@@ -54,8 +54,8 @@ struct Matric {
     int size() const { return a.size(); }
 };
 
-Matric mqpow(const Matric &x, ll n) {
-    return (n ? mqpow(x * x, n / 2) * (n & 1 ? x : Matric::identity(x.size())) : Matric::identity(x.size()));
+Matrix mqpow(const Matrix &x, ll n) {
+    return (n ? mqpow(x * x, n / 2) * (n & 1 ? x : Matrix::identity(x.size())) : Matrix::identity(x.size()));
 }
 
 ll qpow(ll x, ll n) {
@@ -66,7 +66,7 @@ ll qpow(ll x, ll n) {
 auto Main([[maybe_unused]] int C = 0) {
     int n, m, q;
     cin >> n >> m >> q;
-    Matric a = Matric::identity(n);
+    Matrix a = Matrix::identity(n);
     while (m--) {
         int x, u, v;
         cin >> x >> u >> v;
@@ -85,7 +85,7 @@ auto Main([[maybe_unused]] int C = 0) {
         vi x(n);
         int k;
         cin >> k >> x;
-        Matric b = mqpow(a, k);
+        Matrix b = mqpow(a, k);
         // Matric b = a;
         // for (int i = 1; i < k; i++) b = b * a;
         for (int i = 0; i < n; i++) {

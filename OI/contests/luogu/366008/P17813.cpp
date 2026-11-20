@@ -20,16 +20,16 @@ int mp(const vi &a) {
 
 const int M = 998244353;
 
-struct Matric {
+struct Matrix {
     using vec = vector<ll>;
     vector<vec> a;
     int n;
-    Matric(int n = 64) : n(n) {
+    Matrix(int n = 64) : n(n) {
         a.assign(n, vec(n));
     }
 
-    static Matric identity(int n = 64) {
-        Matric ans(n);
+    static Matrix identity(int n = 64) {
+        Matrix ans(n);
         for (int i = 0; i < n; i++) {
             ans[i][i] = 1;
         }
@@ -39,8 +39,8 @@ struct Matric {
     const vec &operator[](int x) const { return a[x]; }
     vec &operator[](int x) { return a[x]; }
     
-    Matric operator*(const Matric &b) const {
-        Matric ans(n);
+    Matrix operator*(const Matrix &b) const {
+        Matrix ans(n);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 for (int k = 0; k < n; k++) {
@@ -59,7 +59,7 @@ struct Matric {
         return ans;
     }
 
-    Matric operator*=(const Matric &b) { return *this = *this * b; }
+    Matrix operator*=(const Matrix &b) { return *this = *this * b; }
 };
 
 int phi(int x) {
@@ -91,7 +91,7 @@ auto Main([[maybe_unused]] int C = 0) {
         int x = mp(i); 
         res[x] = 1;
     }
-    Matric T;
+    Matrix T;
     for (int i = 0; i < 64; i++) {
         for (int j = 0; j < 4; j++) {
             int nxt = i * 4 + j;
@@ -102,7 +102,7 @@ auto Main([[maybe_unused]] int C = 0) {
         // for (int j = 0; j < 64; j++) cout << T[i][j] << " ";
         // cout << "\n";
     }
-    vector<Matric> Tp(20);
+    vector<Matrix> Tp(20);
     Tp[0] = T;
     for (int i = 1; i < 20; i++) {
         Tp[i] = Tp[i - 1] * Tp[i - 1];
@@ -112,7 +112,7 @@ auto Main([[maybe_unused]] int C = 0) {
         // }
     }
     auto f = [&](int n) {
-        Matric ans = Matric::identity();
+        Matrix ans = Matrix::identity();
         for (int k = 0; k < 20; k++) {
             int x = 1 << k;
             if (x > n) break;
