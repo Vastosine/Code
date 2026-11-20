@@ -1,8 +1,10 @@
+#include <cassert>
 #include <vector>
 using namespace std;
 
 const int M = 1e9 + 7;
 
+template<int M = M>
 class Matrix {
   public:
     using ll = long long;
@@ -19,7 +21,7 @@ class Matrix {
     bool canMulti(const Matrix &matrix) const { return m == matrix.n; }
 
     Matrix operator*(const Matrix &matrix) const {
-        if (!canMulti(matrix)) return {};
+        if (!canMulti(matrix)) { assert(false); return {}; }
         Matrix ans(n, matrix.m);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < matrix.m; j++) {
@@ -36,7 +38,7 @@ class Matrix {
     Matrix &operator*=(const Matrix &matrix) { return *this = *this * matrix; };
 
     Matrix operator^(unsigned long long N) const {
-        if (n != m) return {};
+        if (n != m) { assert(false); return {}; }
         Matrix cur = *this, res = identity(n);
         while (N) {
             if (N & 1) res *= cur;
