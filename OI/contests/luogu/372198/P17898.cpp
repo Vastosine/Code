@@ -1,8 +1,10 @@
 // Problem : T812405 [ICPC 2026 Nanchang I] Legacy Code https://www.luogu.com.cn/problem/T812405?contestId=372198
 // Time    : 2026-11-19 13:00:05
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef vector<ll> vll; typedef pair<int, int> pii; typedef pair<ll, ll> pll;
 [[maybe_unused]] const ll INF = 1ll << 60; [[maybe_unused]] const int inf = 0x3fffffff;
@@ -66,12 +68,76 @@ struct Matric {
     int size() const { return a.size(); }
 };
 
-ll qpow(ll x, ll n) {
-    x = (x % M + M) % M;
-    ll r = 1;
-    while (n) { if (n & 1) r = r * x % M; x = x * x % M; n >>= 1; }
-    return r;
+
+ll qpow(ll x, ll n, int m = M) {
+    x = (x % m + m) % m;
+    ll res = 1;
+    while (n) {
+        if (n & 1) (res *= x) %= m;
+        x = x * x % m;
+        n >>= 1;
+    }
+    return res % m;
 }
+
+// m need to be prime
+ll inv(ll x, int m = M) {
+    return qpow(x, m - 2, m);
+}
+
+int dlog(ll g, ll h, int m) {
+    int B = sqrt(m);
+    unordered_map<int, int> T;
+    T.reserve(B + 2);
+    ll x = qpow(g, B, m);
+    for (ll y = 1, i = 0; i <= B; i++, y = y * x % m) {
+        T[y] = i;
+    }
+    ll invh = inv(g, m);
+    for (ll i = 0, y = h; i < B; i++, y = y * invh % m) {
+        auto it = T.find(y);
+        if (it != T.end()) return i + B * it->second;
+    }
+    return -1;
+}
+
+struct Dlog {
+    int B, steps, cap;
+    vector<int> key, val;
+    ll step;                       // g^{-B}
+    static unsigned hs(ll y) { return (unsigned) y * 2654435761u >> 8; }
+
+    void init(ll N) {              // N = 要取对数的总个数 = n * q
+        B = (int) sqrt((double) N * (M - 1)) + 1;
+        steps = (M - 1) / B + 2;
+        step = inv(qpow(3, B, M), M);      // g^{-B}
+        cap = 1; while (cap < 2 * B) cap <<= 1;
+        key.assign(cap, 0); val.assign(cap, 0);
+        ll y = 1;
+        for (int j = 0; j < B; j++) {
+            int pos = hs(y) & (cap - 1);
+            while (key[pos]) pos = (pos + 1) & (cap - 1);
+            key[pos] = (int) y + 1;   // +1 让 0 当空槽
+            val[pos] = j;
+            y = y * 3 % M;
+        }
+    }
+    int operator()(ll h) const {
+        ll y = h;
+        for (int i = 0; i < steps; i++) {
+            int pos = hs(y) & (cap - 1);
+            while (key[pos]) {
+                if (key[pos] == (int) y + 1) {
+                    int x = i * B + val[pos];
+                    if (x <= M - 2) return x;    // 溢出 M-1 的是另一个代表元，继续找
+                }
+                pos = (pos + 1) & (cap - 1);
+            }
+            y = y * step % M;
+        }
+        return -1;
+    }
+};
 
 auto Main([[maybe_unused]] int C = 0) {
     int n, m, q;
@@ -91,7 +157,7 @@ auto Main([[maybe_unused]] int C = 0) {
         // }
         // cout << "\n";
     }
-    const int B = 20, L = 8;
+    const int B = 2, L = 32;
     vector<vector<Matric>> F(L + 1, vector<Matric>(B));
     F[0][1] = a;
     for (int i = 0; i <= L; i++) {
@@ -101,20 +167,35 @@ auto Main([[maybe_unused]] int C = 0) {
             F[i][j] = F[i][j - 1] * F[i][1];
         }
     }
-    auto mul = [&] (const Matric &a, const vll &b) {
+    Dlog dl;
+    dl.init((ll) n * q);
+    auto mul = [&] (const Matric &a, const vll &b, vi &isz) {
         vll ans(n);
+        vi iz(n);
         for (int i = 0; i < n; i++) {
-            ll res = 1;
-            for (int j = 0; j < n && res; j++) {
-                if (a[i][j]) (res *= qpow(b[j], a[i][j])) %= M;
+            ll res = 0;
+            for (int j = 0; j < n; j++) {
+                if (a[i][j]) {
+                    iz[i] |= isz[j];
+                    (res += b[j] * a[i][j]) %= (M - 1);
+                }
+                // if (a[i][j]) (res *= qpow(b[j], a[i][j])) %= M;
             }
             ans[i] = res;
         }  
+        isz = iz;
         return ans;
     };
+    auto lg = [&] (ll x) { return dl(x); };
     auto qp = [&] (ll n, vll &v) {
+        vi isz;
+        for (ll &i : v) isz.push_back(!i), i = lg(i);
         for (int i = 0; n; i++, n /= B) {
-            if (n % B) v = mul(F[i][n % B], v);
+            if (n % B) v = mul(F[i][n % B], v, isz);
+        }
+        for (int i = 0; i < (int) v.size(); i++) {
+            if (isz[i]) v[i] = 0;
+            else v[i] = qpow(3, v[i]);
         }
     };
     while (q--) {
