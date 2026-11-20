@@ -7457,18 +7457,66 @@ B=2 ：本地  885 → 洛谷  978    倍率 1.11
 新写三个文件：P17889(B, 10:22)  P17896(I, 10:32)  P17895(H, 10:53)
 ```
 
-## 二 洛谷同步：还是 401
+## 二 洛谷同步：【已更正】没断，是我用错了 HTTP 客户端
+
+原本这里写的是「同步断了，提交数只能靠口述」。**这个结论是错的。**
+
+他问了一句「为什么之前可以」，我去翻 `plan/fetch_luogu_ac.ps1`（11-17 写的，一直能跑的脚本），发现它用的是：
+
+```powershell
+curl.exe -s --compressed -b $CookieFile -H "x-lentille-request: content-only" $url
+```
+
+而我今天全程用的是 `Invoke-RestMethod -Headers @{ Cookie = '...' }`。隔离实验：
 
 ```
-/record/list?user=439583     401
-/problem/<pid>?_contentOnly  200，但 data 里已无 records 字段
-/record/R310916202            404
-/user/439583                  200（HTML 外壳）
+curl.exe  -b cookiefile              ->  HTTP 200   data.records 正常
+curl.exe  -H "Cookie: <同一个串>"     ->  HTTP 200
+Invoke-WebRequest -WebSession (手工塞) ->  HTTP 200
+Invoke-RestMethod -Headers @{Cookie=} ->  HTTP 401   ← 只有这个挂
 ```
 
-他 11:00 贴了浏览器 Cookie，我发现自己之前抄 `__client_id` 时**漏了一个 h**（`…hrnwxe…` 应为 `…hrhnwxe…`）。换正确的仍然 401，说明 `/record/list` 要的不只是 Cookie，得是真登录态。**这条路今天走不通，提交数只能靠他口述或截图。**
+而且手抄的 cookie 串和文件里的**逐字符相同**（都 73 字符，`-eq` 为 True）—— 所以 cookie 从来不是问题。
 
-正确的值已记下：`__client_id=ylcsatueavbaqvhrhnwxeeprtdqpgor4qksmp3h3u2pmkgmz`，`_uid=439583`（过期时间 2026-11-26）。
+**根因：Windows PowerShell 5.1 的 `Invoke-RestMethod` / `Invoke-WebRequest` 不会把手工放进 `-Headers` 的 `Cookie` 发出去。** 要发 cookie 必须用 `-WebSession`（或 `-SessionVariable`），或者干脆用 `curl.exe -b`。
+
+为什么这个错能骗我这么久：`/problem/<pid>?_contentOnly=1` 是**公开页**，匿名也返回 200，所以我以为"登录态没问题"；只有 `/record/list` 需要登录，才 401。加上我之前把 `records` 字段记成了在题目页里（实际在 `/record/list` 的 `data.records`），两个误判叠在一起，就成了一条"接口挂了"的假结论。
+
+### 今天真实的提交记录（终于拿到了）
+
+```
+11:04:57  P17895  AC        552ms     1MB
+10:53:48  P17895  部分分    359ms     1MB
+10:39:34  P17895  部分分    129ms     1MB
+10:32:38  P17896  AC         20ms    14MB
+10:22:23  P17889  AC          9ms     1MB
+08:54:25  P17898  AC       2366ms   186MB     B=20
+08:53:56  P17898  AC        978ms   150MB     B=2
+08:45:13  P17898  部分分   8200ms     2MB     单次 dlog 版，TLE
+08:41:27  P17898  部分分   8200ms     1MB     单次 dlog 版，TLE
+```
+
+```
+P17889  B   交 1  AC 1   最好   9 ms
+P17896  I   交 1  AC 1   最好  20 ms
+P17895  H   交 3  AC 1   最好 552 ms
+P17898  K   交 4  AC 2   最好 978 ms
+```
+
+全天 9 次提交，4 题全 AC。**H 那两次"部分分"（status=14）正是 `ll s;` 那个版本** —— 部分测试点碰巧过，和我的分析完全对上。
+
+### 以后用哪条路
+
+唯一正确的调用（cookie 文件 `plan/luogu_cookies.txt`，11-17 导出）：
+
+```powershell
+curl.exe -s --compressed -b plan/luogu_cookies.txt `
+  -H "x-lentille-request: content-only" `
+  "https://www.luogu.com.cn/record/list?user=439583&page=1&_contentOnly=1"
+```
+
+响应在 `data.records.result`，`data.records.count` 是总数，`status 12 = AC`。
+
 
 ## 三 三题审查
 
