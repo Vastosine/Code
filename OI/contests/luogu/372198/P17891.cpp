@@ -1,7 +1,9 @@
 // Problem : P17891 [ICPC 2026 Nanchang I] Eating Cherries https://www.luogu.com.cn/problem/P17891?contestId=372198
 // Time    : 2026-11-20 11:48:59
 #include <algorithm>
+#include <cassert>
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <vector>
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef vector<ll> vll; typedef pair<int, int> pii; typedef pair<ll, ll> pll;
@@ -37,43 +39,52 @@ auto Main([[maybe_unused]] int C = 0) {
         }
     }
     vi o(1, 1), fa(n + 1, 0), ans(n + 1);
+    vi pre(n + 1, 0); 
+    pre[1] = a[1]; 
     fa[1] = 1;
     for (int i = 0; i < n; i++) {
         int u = o[i];
         for (int v : e[u]) {
-            if (!fa[v]) fa[v] = u, o.push_back(v), s[u].push_back(v);
+            if (!fa[v]) fa[v] = u, o.push_back(v), s[u].push_back(v), pre[v] = pre[u] | a[v];
+            // if (!fa[v]) fa[v] = u, o.push_back(v), s[u].push_back(v);
         }
     }
     vector<vi> g(n + 1, vi(M, 0));
-    int lc = 0, base = 0;
+    int deg1 = 0, base = 0;
     for (int u = 1; u <= n; u++) {
         if (e[u].size() > 1) base |= a[u];
+        else deg1++;
     }
     for (int i = n - 1; ~i; i--) {
         int u = o[i];
-        lc += e[u].size() == 1;
-        if (e[u].size() == 1) g[u][a[u]] = 1;
+        if (s[u].empty()) g[u][a[u]] = 1;
         for (int v : s[u]) {
             for (int j = 0; j < M; j++) {
                 g[u][j | a[u]] += g[v][j];
             }
         }
     }
-    for (int i = 0; i < n; i++) {
+     for (int i = 0; i < n; i++) {
         int u = o[i];
-        vi tg = g[u];
         if (fa[u] != u) {
-            for (int j = 0; j < M; j++) {
-                tg[j | a[u]] += g[fa[u]][j] - g[u][j];
-            }
+            vi og = g[fa[u]];
+            for (int j = 0; j < M; j++) og[a[fa[u]] | j] -= g[u][j];
+            for (int j = 0; j < M; j++) g[u][a[u] | j] += og[j];
         }
+        vi hist = g[u];
+        int L = deg1 - ((int) e[u].size() == 1 ? 1 : 0);
+        int x = base | ((int) e[u].size() == 1 ? a[u] : 0);
+        if (u != 1 && (int) e[u].size() == 1) hist[a[u]]--;        // u 变根，自己不再是叶子
+        if (u != 1 && (int) e[1].size() == 1) hist[pre[u]]++;      // 原来的根 1 变回叶子
+
+        assert(accumulate(hist.begin(), hist.end(), 0ll) == L);
+
         int res = inf;
         for (int j = 0; j < M; j++) {
-            if ((j & base) != base) continue;
-            res = min(res, lc - tg[j] - (e[u].size() == 1 && a[u] != j));
+            if ((j & x) != x) continue;
+            res = min(res, L - hist[j]);
         }
-        ans[u] = res;
-        g[u] = tg;
+        ans[u] = res < 0 ? 0 : res;
     }
     for (int i = 1; i <= n; i++) cout << ans[i] << " ";
     return 0;
