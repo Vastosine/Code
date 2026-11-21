@@ -85,6 +85,28 @@ struct Reroot {
     bool isLeaf(int u) const { return s[u].empty(); }        // 有根意义下的叶子
     int degree(int u) const { return (int) e[u].size(); }    // 无根意义下的度数
 
+    // ---- 儿子表：两种表示，按 n 选 ----
+    //
+    // 实测 1e6 随机树（本地，9 轮交错取最小值，P3478 端到端）：
+    //   不建儿子表                                   基准
+    //   vector<vi> + reserve + push_back             +106 ms
+    //   CSR（cstart / cadj，两次前缀和，一次大分配）   +36 ms
+    //
+    // vector<vi> 的代价是 1e6 个 vector 头（24 MB）和 1e6 次 malloc。
+    // n <= 2e5 时随便用；n >= 1e6 且卡 1 s，必须换 CSR。
+    vi cstart, cadj;
+    void buildChildrenCSR() {
+        cstart.assign(n + 2, 0);
+        for (int v = 1; v <= n; v++)
+            if (v != root) cstart[fa[v] + 1]++;
+        for (int u = 1; u <= n; u++) cstart[u + 1] += cstart[u];
+        cadj.assign(n > 1 ? n - 1 : 1, 0);
+        vi cur(cstart.begin(), cstart.end());
+        for (int v = 1; v <= n; v++)
+            if (v != root) cadj[cur[fa[v]]++] = v;
+        // 遍历 u 的儿子： for (int i = cstart[u]; i < cstart[u + 1]; i++) { int v = cadj[i]; ... }
+    }
+
     // 反序：儿子先于父亲。向下 DP / 子树统计
     template<typename F> void down(F f) {
         for (int i = (int) o.size() - 1; ~i; i--) f(o[i]);
