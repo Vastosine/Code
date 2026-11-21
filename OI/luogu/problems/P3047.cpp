@@ -40,7 +40,7 @@ auto Main([[maybe_unused]] int C = 0) {
         int u = o[i];
         f[u][0] = a[u];
         for (int v : e[u]) {
-            for (int j = 0; j < k; j++) {
+            if (fa[v] == u) for (int j = 0; j < k; j++) {
                 f[u][j + 1] += f[v][j];
             }
         }
