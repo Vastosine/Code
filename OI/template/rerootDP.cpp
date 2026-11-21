@@ -48,13 +48,15 @@ class Reroot {
         reverse(ro.begin(), ro.end());
     }
 
-    bool isLeaf(int u) { return e[u].size() == 1 && u != root; }
+    [[nodiscard]] bool isLeaf(int u) { return e[u].size() == 1 && u != root; }
 
-    const vi &downOrder() { return check(), o; }
-    const vi &upOrder() { return check(), ro; }
+    [[nodiscard]] const vi &downOrder() { return check(), o; }
+    [[nodiscard]] const vi &upOrder() { return check(), ro; }
 
-    int &operator[](int i) { return fa[i]; }
-    const int &operator[](int i) const { return fa[i]; }
+    [[nodiscard]] int &operator[](int i) { return fa[i]; }
+    [[nodiscard]] const int &operator[](int i) const { return fa[i]; }
+
+    [[nodiscard]] const vi &children(int u) const { assert(needS && "need needS = true"); return s[u]; }
     
   private:
     void check() { if (o.empty()) build(); }
