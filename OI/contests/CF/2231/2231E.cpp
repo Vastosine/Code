@@ -21,6 +21,7 @@ auto Main([[maybe_unused]] int C = 0) {
     cin >> n >> d;
     vector<vi> e, s;
     vi dep, fa, o(1, 1);
+    assign(n + 1, e, s, dep, fa);
     for (int i = 1; i < n; i++) {
         int u, v;
         cin >> u >> v;
@@ -34,24 +35,57 @@ auto Main([[maybe_unused]] int C = 0) {
             if (!dep[v]) dep[v] = dep[u] + 1, o.push_back(v), fa[v] = u, s[u].push_back(v);
         }
     }
-    vector<vll> f(n + 1, vll(d + 1));
+    vector<vll> up(n + 1, vll(d + 1)), down(n + 1, vll(d + 1));
     for (int i = n - 1; ~i; i--) {
         int u = o[i];
-        f[u][0] = 1;
+        down[u][0] = 1;
         if (u != 1) for (int j = 0; j < d; j++) {
-            f[fa[u]][j + 1] += f[u][j];
+            down[fa[u]][j + 1] += down[u][j];
         }
     }
-    ll tri = 0;
     for (int u : o) {
-        if (s[u].size() < 3) continue;
+        up[u][0] = 1;
+        if (u != 1) for (int j = 0; j < d; j++) {
+            up[u][j + 1] += up[fa[u]][j];
+            if (j) up[u][j + 1] += down[fa[u]][j] - down[u][j - 1]; 
+        }
+    }
+    auto getOrder = [&] (int u) {
+        vi o(1, u);
+        for (int i = 0; i < (int) o.size(); i++) {
+            for (int v : s[o[i]]) o.push_back(v);
+        }
+        return o;
+    };
+    ll ans0 = 0, ans1 = 0, ans2 = 0;
+    for (int u : o) {
+        for (int v : s[u]) {
+            for (int j = 0; j < d - 2; j++) {
+                ans0 += down[v][d - j - 3] * (down[u][j + 1] - down[v][j]);
+            }
+        }
+        ans0 += down[u][d - 1] * 2;
+    }
+    for (int u : o) {
+        if (s[u].size() < 2) continue;
         for (int i = 0; i < (int) s[u].size(); i++) {
-            for (int j = 0; j < (int) s[u].size(); j++) {
-                if (i != j) tri += 
+            int p = s[u][i];
+            vi op = getOrder(p);
+            for (int j = i + 1; j < (int) s[u].size(); j++) {
+                int q = s[u][j];
+                vi oq = getOrder(q);
+                for (int v : op) {
+                    for (int w : oq) {
+                        if (int x = d - 1 - (dep[v] - dep[u]) - (dep[w] - dep[u]); x > 0) {
+                            ans1 += up[u][x];
+                            ans2 += down[u][x] - down[p][x - 1] - down[q][x - 1];
+                        }
+                    }
+                }
             }
         }
     }
-    return 0;
+    return ans0 * (d - 2) / 2 + ans1 + ans2 / 3;
 }
 
 int main() {
