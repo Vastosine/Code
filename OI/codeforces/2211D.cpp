@@ -1,6 +1,7 @@
 // Problem : D. AND-array https://codeforces.com/problemset/problem/2211/D
 // Time    : 2026-11-22 14:22:45
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -14,34 +15,49 @@ template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin()
 template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
 // void addEdge(int u, int v) { e[u].push_back(v); e[v].push_back(u); }
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
-void init() {}
-vll F;
-int Cmod = 1e9 + 7, M = 1e9 + 7;
-ll qpow(ll x, ll n, int m = M) {
+inline ll comb_pow(ll x, ll n, ll m) {
     x = (x % m + m) % m;
-    ll res = 1;
+    ll r = 1;
     while (n) {
-        if (n & 1) (res *= x) %= m;
-        x = x * x % m;
+        if (n & 1) r = (ll)(r * x % m);
+        x = (ll)(x * x % m);
         n >>= 1;
     }
-    return res % m;
-}
-ll inv(ll x, int m = M) {
-    return qpow(x, m - 2, m);
-}; 
-void initCnk(int m = M) {
-    Cmod = m;
-    int n = 1e6;
-    F.assign(n + 1, 1);
-    for (int i = 1; i <= n; i++) F[i] = F[i - 1] * i % Cmod;
+    return r % m;
 }
 
-ll Cnk(int n, int k, int m = Cmod) {
-    if (m != Cmod || F.empty()) initCnk(m);
-    if (k < 0 || k > n) return 0;
-    return F[n] * inv(F[k] * F[n - k] % m, m) % m;
+struct CnkPrime {
+    static inline int p = 0;
+    static inline std::vector<ll> fac, ifac;
+
+    // 前提：mod 是质数、maxN < mod。两者都 assert。
+    static void init(int maxN, int mod) {
+        assert(maxN >= 0);
+        assert(mod > 1);
+        assert(maxN < mod && "CnkPrime 要求 maxN < p；n 会到 p 以上时用 CnkLucas");
+        p = mod;
+        fac.assign(maxN + 1, 1);
+        ifac.assign(maxN + 1, 1);
+        for (int i = 1; i <= maxN; i++) fac[i] = fac[i - 1] * i % p;
+        ifac[maxN] = comb_pow(fac[maxN], p - 2, p);
+        for (int i = maxN; i >= 1; i--) ifac[i - 1] = ifac[i] * i % p;
+    }
+
+    static ll get(int n, int k) {
+        assert(p && "先 init");
+        assert(n >= 0 && n < (int)fac.size() && "n 超出 init 的表");
+        if (k < 0 || k > n) return 0;
+        return fac[n] * ifac[k] % p * ifac[n - k] % p;
+    }
+
+    static bool fits(int n) { return p && n >= 0 && n < (int)fac.size(); }
+};
+const int M = 1e9 + 7, N = 1e5 + 1;
+CnkPrime cnk;
+void init() {
+    cnk.init(N, M);
 }
+
 
 auto Main([[maybe_unused]] int C = 0) {
     int n;
@@ -52,7 +68,7 @@ auto Main([[maybe_unused]] int C = 0) {
     for (int k = n; k; k--) {
         ll s = 0;
         for (int i = 0; i < B; i++) {
-            if (c[i]) (s += (Cnk(c[i], k) << i) % M) %= M;
+            if (c[i]) (s += (cnk.get(c[i], k) << i) % M) %= M;
         }
         int add = (b[k] + M - s) % M;
         for (int i = 0; i < B; i++) {

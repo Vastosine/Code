@@ -22,18 +22,28 @@
 //
 // 对拍：stress/test_comb.cpp
 
+// 【第三次修正】原版用了 __int128。它在 64 位目标可用，但 32 位目标没有：
+//     g++ -dM -E -x c++ /dev/null | grep INT128   → 64 位有 __SIZEOF_INT128__，-m32 没有
+//   CF 的 "C++17 (GCC 7-32)" 是 32 位目标 → __int128 直接编译错误。
+//   ⟹ 本文件不用 __int128；代价是乘法必须保证 m * m 不溢出 ll：
+//        要求 模数 m <= 3e9   （m^2 <= 9e18 < 2^63-1）
+//      本文件所有模数都是这个量级，够用。
+//
+// 对拍：stress/test_comb.cpp / stress/test_comb_guard.cpp
+
 #ifndef COMB_H
 #define COMB_H
 #include <cassert>
 #include <vector>
 typedef long long ll;
 
+// 前提：m <= 3e9，保证 r * x 不溢出 ll
 inline ll comb_pow(ll x, ll n, ll m) {
     x = (x % m + m) % m;
     ll r = 1;
     while (n) {
-        if (n & 1) r = (ll)((__int128)r * x % m);
-        x = (ll)((__int128)x * x % m);
+        if (n & 1) r = r * x % m;
+        x = x * x % m;
         n >>= 1;
     }
     return r % m;
@@ -100,10 +110,11 @@ struct CnkLucas {
 inline ll CnkSmallK(ll n, ll k, ll p) {
     if (k < 0 || k > n) return 0;
     assert(p > k && "CnkSmallK 要求 p > k，否则 k! 不可逆");
+    assert(p <= 3000000000LL && "CnkSmallK 要求 p <= 3e9（不用 __int128，靠 ll）");
     ll num = 1, den = 1;
     for (ll i = 0; i < k; i++) {
-        num = (ll)((__int128)num * ((n - i) % p) % p);
-        den = (ll)((__int128)den * ((i + 1) % p) % p);
+        num = num * ((n - i) % p) % p;
+        den = den * ((i + 1) % p) % p;
     }
     return num * comb_pow(den, p - 2, p) % p;
 }
