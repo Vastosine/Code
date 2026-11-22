@@ -17,6 +17,47 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 void init() {}
 
 auto Main([[maybe_unused]] int C = 0) {
+    int n, k;
+    cin >> n >> k;
+    int N = n * 2;
+    vector<vi> son;
+    vi mn, mx, dep;
+    assign(N, son, mn, mx, dep);
+    const int D = __lg(n) + 1;
+    vector<vi> fa(N, vi(D + 1));
+    int s = n * 2 - 1;
+    for (int i = 1; i < n; i++) {
+        int u, v;
+        cin >> u >> v;
+        son[i + n] = {u, v};
+        fa[u][0] = fa[v][0] = i + n;
+    }
+    fa[s][0] = s;
+    for (int d = 0; d < D; d++) {
+        for (int u = 1; u < N; u++) {
+            fa[u][d + 1] = fa[fa[u][d]][d];
+        }
+    }
+    vi o(1, s);
+    dep[s] = 1;
+    for (int i = 0; i < (int) o.size(); i++) {
+        int u = o[i];
+        for (int v : son[u]) {
+            dep[v] = dep[u] + 1;
+            o.push_back(v);
+        }
+    }
+    for (int i = (int) o.size() - 1; ~i; i--) {
+        int u = o[i];
+        if (u <= n) mn[u] = mx[u] = u;
+        else {
+            int ls = son[u][0], rs = son[u][1];
+            mn[u] = min(mn[ls], mn[rs]);
+            if (mx[ls] > mx[rs]) swap(ls, rs);
+            // mx[u] = min({mx[ls] + k - 1, mx[rs] + k - 1, max(mx[ls], mx[rs])});
+        }
+    }
+    cout << mx << "\n";
     return 0;
 }
 
