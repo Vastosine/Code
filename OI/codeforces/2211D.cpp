@@ -19,8 +19,8 @@ inline ll comb_pow(ll x, ll n, ll m) {
     x = (x % m + m) % m;
     ll r = 1;
     while (n) {
-        if (n & 1) r = (ll)(r * x % m);
-        x = (ll)(x * x % m);
+        if (n & 1) r = (ll)((__int128)r * x % m);
+        x = (ll)((__int128)x * x % m);
         n >>= 1;
     }
     return r % m;
