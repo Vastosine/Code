@@ -1,179 +1,102 @@
-// 线段树合并（值域 [1, n] 的动态开点权值线段树）
-//
-// 用途：n 棵各自很小的树自底向上合并成一棵，每棵树代表一个集合。
-//       典型题：树上每个点一个集合、按值域统计、DSU on tree 的替代。
-//
-// 支持的操作：
-//   insert(p, x)        往根为 p 的集合里插入 x，返回新的根
-//   merge(a, b)         把 b 合并进 a，返回合并后的根；**b 之后不可再用**
-//   truncate(&p, T)     删掉所有 > T 的元素（这题 2289E 需要它）
-//   pred(p, T)          最大的 <= T 的元素，空则返回 0
-//   maximum(p)          整棵集合的最大值
-//
-// 复杂度：
-//   插入 O(log n)
-//   merge 的总代价 O(总节点数)，**不是** 每次 O(log²) —— 见下方说明
-//   截断 / 前驱 各 O(log n)
-//
-// 为什么 merge 是摊还 O(总节点数)：
-//   递归只在「a 和 b 的这个儿子都非空」时发生。一旦递归进去，b 的这个节点就被
-//   永久丢弃，之后不会再被访问。所以递归总次数 <= 被丢弃的节点总数。
-//
-// 内存：
-//   总节点数 = 总插入次数 * O(log n)。n = 2e5 时约 3.8e6，×12B ≈ 45 MB。
-//   **不需要算上界**：节点靠 push_back 增长，越界只会扩容，不会 UB。
-//   想免掉重分配就把 3.8e6 传给第二个参数当 reserve —— 那是优化，不是上界。
-//   多测用 clear()（内部 resize 到 1 号，容量保留）。
-//
-// 注意：
-//   1. 值域必须从 1 开始 —— 用 0 当「空」的标记。
-//   2. truncate 的参数是引用：它需要能把 p 本身置 0。
-//      ⇒ **不要在 truncate 内部调 newNode()**：push_back 扩容后这个引用会悬垂。
-//   3. merge 会就地改写 a 并丢弃 b，不要在有别处引用 b 的时候调。
-//   4. truncate 丢掉的节点不回收（不还进池子），所以内存只涨不落 —— 这是故意的，
-//      回收会让索引失效；要多测复用就靠 clear()。
-
 #include <algorithm>
-#include <cstdio>
-#include <set>
+#include <cassert>
+#include <iostream>
 #include <vector>
-#include <ctime>
-#include <cstdlib>
-
 using namespace std;
 
-class MergeSegTree {
+using ll = long long;
+struct Operation { 
+    ll operator()(ll x, ll y) { return f(x, y); } 
+    ll (*f)(ll, ll);
+    template<typename F> Operation(F f) : f(f) {}
+};
+static const Operation ADD = Operation([] (ll x, ll y) { return x + y; });
+static const Operation MINIMUM = Operation([] (ll x, ll y) { return min(x, y); });
+static const Operation MAXIMUM = Operation([] (ll x, ll y) { return max(x, y); });
+    
+class SegTree {
+#define mid ((l + r) >> 1)
+#define Ls ls[p], l, mid
+#define Rs rs[p], mid + 1, r
+#define update data[p] = UPDATE(data[ls[p]], data[rs[p]])
   public:
-    // reserveNodes 不传也行：靠 push_back 动态增长，永远不会越界。
-    // 传了只是免掉重分配（以及免掉「引用在扩容后悬垂」这类雷），不是上界。
-    MergeSegTree(int n = 0, int reserveNodes = 0) { init(n, reserveNodes); }
+    using ll = long long;
+    using vll = vector<ll>;
+    using vi = vector<int>;
+    using pii = pair<int, int>;
 
-    void init(int n_, int reserveNodes = 0) {
-        n = n_;
-        lc.assign(1, 0);
-        rc.assign(1, 0);
-        mx.assign(1, 0);  // 0 号是空节点
-        if (reserveNodes > 0) {
-            lc.reserve(reserveNodes + 1);
-            rc.reserve(reserveNodes + 1);
-            mx.reserve(reserveNodes + 1);
-        }
+
+    SegTree(int n = 0, int reserveSize = 0, const Operation &UPDATE = ADD) : n(n), UPDATE(UPDATE) {
+        ls.reserve(reserveSize);
+        rs.reserve(reserveSize);
+        data.reserve(reserveSize);
     }
 
-    // 多测：resize 回 1 号，容量保留，内存复用。不要 assign —— 语义会让人以为清空了容量
-    void clear(int N) { n = N, clear(); }
-    void clear() {
-        lc.resize(1);
-        rc.resize(1);
-        mx.resize(1);
-    }
+    void resize(int N) { n = N; }
+    void setUpdateMode(const Operation &updateMode) { UPDATE = updateMode; }
+    void clear(int N) { resize(N), ls.clear(), rs.clear(), data.clear(); }
 
-    int nodeCount() const { return (int) lc.size() - 1; }
+    int &modify(int &p, int pos, ll x) { return p = modify(p, 1, n, pos, x); }
+    int &add(int &p, int pos, ll x) { return p = add(p, 1, n, pos, x); }
+    int modify(int pos, ll x) { return modify(0, 1, n, pos, x); }
+    int add(int pos, ll x) { return add(*new int(), 1, n, pos, x); }
 
-    int insert(int p, int x) { return insert(p, 1, n, x); }
+    ll &at(int &p, int pos) { return at(!p ? p = newNode() : p, 1, n, pos).second; }
+    ll &operator[](pair<int&, int> id) { return at(id.first, id.second); }
+    ll at(int &&p, int pos) { return at(p, 1, n, pos).second; }
+    ll operator[](const pair<int&&, int> &id) { return at(id.first, 1, n, id.second).second; }
+    ll at(int p, int pos) const { return at(p, 1, n, pos); }
+    ll operator[](const pii &id) const { return at(id.first, id.second); }
 
-    int merge(int a, int b) {
-        if (!a || !b) return a | b;
-        lc[a] = merge(lc[a], lc[b]);
-        rc[a] = merge(rc[a], rc[b]);
-        mx[a] = max(mx[a], mx[b]);
-        return a;
-    }
-
-    void truncate(int &p, int T) { truncate(p, 1, n, T); }
-
-    int pred(int p, int T) const { return pred(p, 1, n, T); }
-
-    int maximum(int p) const { return p ? mx[p] : 0; }
-
-  private:
+  public:
     int newNode() {
-        lc.push_back(0);
-        rc.push_back(0);
-        mx.push_back(0);
-        return (int) lc.size() - 1;
+        ls.push_back({}), rs.push_back({}), data.push_back({});
+        if (data.size() <= 1) newNode();
+        return data.size() - 1;
     }
-
-    int insert(int p, int l, int r, int x) {
+    
+    int modify(int p, int l, int r, int pos, ll x) {
+        assert(!p || p < (int) data.size());
         if (!p) p = newNode();
-        if (l == r) return mx[p] = x, p;
-        int m = (l + r) >> 1;
-        if (x <= m) lc[p] = insert(lc[p], l, m, x);
-        else rc[p] = insert(rc[p], m + 1, r, x);
-        return mx[p] = max(mx[lc[p]], mx[rc[p]]), p;
+        if (l == r) return data[p] = x, p;
+        pos <= mid ? ls[p] = modify(Ls, pos, x) : rs[p] = modify(Rs, pos, x);
+        return update, p;
+    }
+    
+    int add(int p, int l, int r, int pos, ll x) {
+        assert(!p || p < (int) data.size());
+        if (!p) p = newNode();
+        if (l == r) return data[p] += x, p;
+        pos <= mid ? ls[p] = add(Ls, pos, x) : rs[p] = add(Rs, pos, x);
+        return update, p;
     }
 
-    void truncate(int &p, int l, int r, int T) {
-        if (!p || r <= T) return;
-        if (l > T) return p = 0, void();
-        int m = (l + r) >> 1;
-        truncate(lc[p], l, m, T);
-        truncate(rc[p], m + 1, r, T);
-        mx[p] = max(mx[lc[p]], mx[rc[p]]);
-        if (!mx[p]) p = 0;  // 整棵空了就断开引用（不回收节点）
+    pair<int, ll&> at(int p, int l, int r, int pos) { 
+        assert(!p || p < (int) data.size());
+        if (!p) p = newNode();
+        if (l == r) return{ p, data[pos] };
+        auto [id, val] = pos <= mid ? at(Ls, pos) : at(Rs, pos);
+        (pos <= mid ? ls[p] : rs[p]) = id;
+        return {p, val};
     }
-
-    int pred(int p, int l, int r, int T) const {
-        if (!p || l > T) return 0;
-        if (r <= T) return mx[p];
-        int m = (l + r) >> 1;
-        int res = pred(rc[p], m + 1, r, T);
-        return res ? res : pred(lc[p], l, m, T);
+    ll at(int p, int l, int r, int pos) const {
+        assert(p && p < (int) data.size());
+        return l == r ? data[pos] : pos <= mid ? at(Ls, pos) : at(Rs, pos);
     }
 
     int n;
-    vector<int> lc, rc, mx;
+    vi ls, rs;
+    vll data;
+    Operation UPDATE;
+#undef Ls
+#undef Rs
+#undef mid
+#undef update
 };
-
-// ---- 下方是自检，抄进题解时整段删掉 ----
-static void selfCheck() {
-    srand(20261123);
-    int bad = 0;
-    for (int round = 0; round < 400; round++) {
-        const int N = 1 + rand() % 8;
-        const int K = 1 + rand() % 4;
-        MergeSegTree st(N, 2000);
-        vector<int> root(K, 0);
-        vector<set<int>> ref(K);
-        for (int step = 0; step < 60; step++) {
-            int op = rand() % 4;
-            int t = rand() % K;
-            if (op == 0) {
-                int x = 1 + rand() % N;
-                root[t] = st.insert(root[t], x);
-                ref[t].insert(x);
-            } else if (op == 1) {
-                int T = rand() % (N + 1);
-                st.truncate(root[t], T);
-                vector<int> del;
-                for (int v : ref[t]) if (v > T) del.push_back(v);
-                for (int v : del) ref[t].erase(v);
-            } else if (op == 2) {
-                int T = rand() % (N + 1);
-                int got = st.pred(root[t], T);
-                int want = 0;
-                for (int v : ref[t]) if (v <= T) want = max(want, v);
-                if (got != want) {
-                    bad++;
-                    if (bad <= 3) fprintf(stderr, "pred bad: N=%d T=%d got=%d want=%d\n", N, T, got, want);
-                }
-            } else {
-                int s = rand() % K;
-                if (s == t) continue;
-                root[t] = st.merge(root[t], root[s]);
-                for (int v : ref[s]) ref[t].insert(v);
-                ref[s].clear();
-                root[s] = 0;
-            }
-            int got = st.maximum(root[t]);
-            int want = ref[t].empty() ? 0 : *ref[t].rbegin();
-            if (got != want) {
-                bad++;
-                if (bad <= 3) fprintf(stderr, "max bad: got=%d want=%d\n", got, want);
-            }
-        }
-    }
-    printf("selfCheck bad = %d\n", bad);
+int main() {
+    SegTree s(5);
+    int rt = 0;
+    s.at(1, 1);
+    s[{rt, 1}] = 1;
+    cout << s[{1, 2}] << "\n";
 }
-
-int main() { selfCheck(); }
