@@ -18,17 +18,35 @@ void init() {}
 
 class MergeSegTree {
   public:
-    MergeSegTree(int n = 0, int maxNode = 0) { init(n, maxNode); }
+    // reserveNodes 不传也行：靠 push_back 动态增长，永远不会越界。
+    // 传了只是免掉重分配（以及免掉「引用在扩容后悬垂」这类雷），不是上界。
+    MergeSegTree(int n = 0, int reserveNodes = 0) { init(n, reserveNodes); }
 
-    void init(int n_, int maxNode) {
+    void init(int n_, int reserveNodes = 0) {
         n = n_;
-        cnt = 0;
-        lc.assign(maxNode + 1, 0);
-        rc.assign(maxNode + 1, 0);
-        mx.assign(maxNode + 1, 0);
+        lc.assign(1, 0);
+        rc.assign(1, 0);
+        mx.assign(1, 0);  // 0 号是空节点
+        if (reserveNodes > 0) {
+            lc.reserve(reserveNodes + 1);
+            rc.reserve(reserveNodes + 1);
+            mx.reserve(reserveNodes + 1);
+        }
     }
 
-    void clear() { cnt = 0; }  // 多测：只清计数，内存复用
+    // 多测：resize 回 1 号，容量保留，内存复用。不要 assign —— 语义会让人以为清空了容量
+    void clear(int N) {
+        n = N;
+        clear();
+    }
+
+    void clear() {
+        lc.resize(1);
+        rc.resize(1);
+        mx.resize(1);
+    }
+
+    int nodeCount() const { return (int) lc.size() - 1; }
 
     int insert(int p, int x) { return insert(p, 1, n, x); }
 
@@ -46,13 +64,12 @@ class MergeSegTree {
 
     int maximum(int p) const { return p ? mx[p] : 0; }
 
-    int nodeCount() const { return cnt; }
-
   private:
     int newNode() {
-        ++cnt;
-        lc[cnt] = rc[cnt] = mx[cnt] = 0;
-        return cnt;
+        lc.push_back(0);
+        rc.push_back(0);
+        mx.push_back(0);
+        return (int) lc.size() - 1;
     }
 
     int insert(int p, int l, int r, int x) {
@@ -82,9 +99,11 @@ class MergeSegTree {
         return res ? res : pred(lc[p], l, m, T);
     }
 
-    int n, cnt;
+    int n;
     vector<int> lc, rc, mx;
 };
+
+MergeSegTree t;
 
 auto Main([[maybe_unused]] int C = 0) {
     int n, k;
@@ -94,15 +113,15 @@ auto Main([[maybe_unused]] int C = 0) {
     vi mx, dep;
     assign(N, son, mx, dep);
     const int D = __lg(n) + 1;
-    vector<vi> fa(N, vi(D + 1)), mn(N, vi(D + 1));
+    vector<vi> fa(D + 1, vi(N)), mn(D + 1, vi(N));
     int s = n * 2 - 1;
     for (int i = 1; i < n; i++) {
         int u, v;
         cin >> u >> v;
         son[i + n] = {u, v};
-        fa[u][0] = fa[v][0] = i + n;
+        fa[0][u] = fa[0][v] = i + n;
     }
-    fa[s][0] = s;
+    fa[0][s] = s;
     vi o(1, s);
     dep[s] = 1;
     for (int i = 0; i < (int) o.size(); i++) {
@@ -112,7 +131,7 @@ auto Main([[maybe_unused]] int C = 0) {
             o.push_back(v);
         }
     }
-    MergeSegTree t(N, N << 4);
+    t.clear(N);
     vi rt(N);
     for (int i = (int) o.size() - 1; ~i; i--) {
         int u = o[i];
@@ -127,17 +146,17 @@ auto Main([[maybe_unused]] int C = 0) {
         }
     }
     // cout << mx << "\n";
-    for (int u = 1; u < N; u++) mn[u][0] = min(mx[u], mx[fa[u][0]]);
+    for (int u = 1; u < N; u++) mn[0][u] = min(mx[u], mx[fa[0][u]]);
     for (int d = 0; d < D; d++) {
         for (int u = 1; u < N; u++) {
-            fa[u][d + 1] = fa[fa[u][d]][d];
-            mn[u][d + 1] = min(mn[u][d], mn[fa[u][d]][d]);
+            fa[d + 1][u] = fa[d][fa[d][u]];
+            mn[d + 1][u] = min(mn[d][u], mn[d][fa[d][u]]);
         }
     }
     for (int i = 1; i <= n; i++) {
         int u = i;
         for (int d = D; ~d; d--) {
-            if (mn[u][d] >= i) u = fa[u][d]; 
+            if (mn[d][u] >= i) u = fa[d][u]; 
         }
         cout << dep[i] - dep[u] + (u != N - 1) << " ";
     }

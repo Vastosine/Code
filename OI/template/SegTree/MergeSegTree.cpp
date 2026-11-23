@@ -61,6 +61,7 @@ class MergeSegTree {
     }
 
     // 多测：resize 回 1 号，容量保留，内存复用。不要 assign —— 语义会让人以为清空了容量
+    void clear(int N) { n = N, clear(); }
     void clear() {
         lc.resize(1);
         rc.resize(1);
