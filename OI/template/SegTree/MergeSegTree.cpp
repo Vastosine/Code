@@ -20,13 +20,18 @@
 //   永久丢弃，之后不会再被访问。所以递归总次数 <= 被丢弃的节点总数。
 //
 // 内存：
-//   总节点数 = 总插入次数 * O(log n)。n = 2e5 时约 3.6e6，MAXNODE 开 4e6。
-//   多测只在 clear() 里把 cnt 置 0 复用内存，不要每测重新 assign。
+//   总节点数 = 总插入次数 * O(log n)。n = 2e5 时约 3.8e6，×12B ≈ 45 MB。
+//   **不需要算上界**：节点靠 push_back 增长，越界只会扩容，不会 UB。
+//   想免掉重分配就把 3.8e6 传给第二个参数当 reserve —— 那是优化，不是上界。
+//   多测用 clear()（内部 resize 到 1 号，容量保留）。
 //
 // 注意：
 //   1. 值域必须从 1 开始 —— 用 0 当「空」的标记。
 //   2. truncate 的参数是引用：它需要能把 p 本身置 0。
+//      ⇒ **不要在 truncate 内部调 newNode()**：push_back 扩容后这个引用会悬垂。
 //   3. merge 会就地改写 a 并丢弃 b，不要在有别处引用 b 的时候调。
+//   4. truncate 丢掉的节点不回收（不还进池子），所以内存只涨不落 —— 这是故意的，
+//      回收会让索引失效；要多测复用就靠 clear()。
 
 #include <algorithm>
 #include <cstdio>
@@ -39,17 +44,30 @@ using namespace std;
 
 class MergeSegTree {
   public:
-    MergeSegTree(int n = 0, int maxNode = 0) { init(n, maxNode); }
+    // reserveNodes 不传也行：靠 push_back 动态增长，永远不会越界。
+    // 传了只是免掉重分配（以及免掉「引用在扩容后悬垂」这类雷），不是上界。
+    MergeSegTree(int n = 0, int reserveNodes = 0) { init(n, reserveNodes); }
 
-    void init(int n_, int maxNode) {
+    void init(int n_, int reserveNodes = 0) {
         n = n_;
-        cnt = 0;
-        lc.assign(maxNode + 1, 0);
-        rc.assign(maxNode + 1, 0);
-        mx.assign(maxNode + 1, 0);
+        lc.assign(1, 0);
+        rc.assign(1, 0);
+        mx.assign(1, 0);  // 0 号是空节点
+        if (reserveNodes > 0) {
+            lc.reserve(reserveNodes + 1);
+            rc.reserve(reserveNodes + 1);
+            mx.reserve(reserveNodes + 1);
+        }
     }
 
-    void clear() { cnt = 0; }  // 多测：只清计数，内存复用
+    // 多测：resize 回 1 号，容量保留，内存复用。不要 assign —— 语义会让人以为清空了容量
+    void clear() {
+        lc.resize(1);
+        rc.resize(1);
+        mx.resize(1);
+    }
+
+    int nodeCount() const { return (int) lc.size() - 1; }
 
     int insert(int p, int x) { return insert(p, 1, n, x); }
 
@@ -67,13 +85,12 @@ class MergeSegTree {
 
     int maximum(int p) const { return p ? mx[p] : 0; }
 
-    int nodeCount() const { return cnt; }
-
   private:
     int newNode() {
-        ++cnt;
-        lc[cnt] = rc[cnt] = mx[cnt] = 0;
-        return cnt;
+        lc.push_back(0);
+        rc.push_back(0);
+        mx.push_back(0);
+        return (int) lc.size() - 1;
     }
 
     int insert(int p, int l, int r, int x) {
@@ -103,7 +120,7 @@ class MergeSegTree {
         return res ? res : pred(lc[p], l, m, T);
     }
 
-    int n, cnt;
+    int n;
     vector<int> lc, rc, mx;
 };
 
