@@ -103,7 +103,7 @@ class MergeSegTree {
     vector<int> lc, rc, mx;
 };
 
-MergeSegTree t;
+MergeSegTree t(0, 4e6);
 
 auto Main([[maybe_unused]] int C = 0) {
     int n, k;
@@ -131,7 +131,7 @@ auto Main([[maybe_unused]] int C = 0) {
             o.push_back(v);
         }
     }
-    t.clear(N);
+    t.clear(n);
     vi rt(N);
     for (int i = (int) o.size() - 1; ~i; i--) {
         int u = o[i];
