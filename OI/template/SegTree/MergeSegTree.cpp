@@ -14,8 +14,8 @@ using vi = vector<int>;
 using pii = pair<int, int>;
 
 struct Operation { 
-    ll operator()(ll x, ll y) const { return f(x, y); }
-    ll operator*() const { return e; } 
+    inline ll operator()(ll x, ll y) const { return f(x, y); }
+    inline ll operator*() const { return e; } 
     ll (*f)(ll, ll);
     ll e;
     template<typename F> Operation(F f, ll e = 0) : f(f), e(e) {}
