@@ -96,8 +96,8 @@ auto Main([[maybe_unused]] int C = 0) {
             addEdge(g(i), g((i + 1) % M), use[i], e);
             if (~col[i] && (p.empty() || (col[p.back()] != col[i]))) p.push_back(i);
         }
-        while (!p.empty() && col[p[0]] == col[p.back()]) {
-            p = vi(p.begin() + 1, p.end());
+        if (!p.empty() && col[p[0]] == col[p.back()]) {
+            p.erase(p.begin());
         }
         int pn = (int) p.size();
         if (!pn) {

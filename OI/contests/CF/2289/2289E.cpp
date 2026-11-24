@@ -53,14 +53,14 @@ class SegTree {
         const Operation &UPDATE = MAXIMUM,
         const Operation &MERGE = MAXIMUM
     ) : n(n), CALCULATE(CALCULATE), UPDATE(UPDATE), MERGE(MERGE) {
-        ls.reserve(reserveSize);
-        rs.reserve(reserveSize);
+        LS.reserve(reserveSize);
+        RS.reserve(reserveSize);
         pos.reserve(reserveSize);
         data.reserve(reserveSize);
     }
 
     void resize(int N) { n = N; }
-    void clear(int N) { resize(N), ls.clear(), rs.clear(), data.clear(), pos.clear(), cache.clear(); }
+    void clear(int N) { resize(N), LS.clear(), RS.clear(), data.clear(), pos.clear(), cache.clear(); }
 
     int &modify(int &p, int POS, ll x) { return p = modify(p, 1, n, POS, x); }
     int &add(int &p, int POS, ll x) { return p = add(p, 1, n, POS, x); }
@@ -71,8 +71,8 @@ class SegTree {
 
     int merge(int p, int q) {
         if (!p || !q) return p | q;
-        ls[p] = merge(ls[p], ls[q]);
-        rs[p] = merge(rs[p], rs[q]);
+        LS[p] = merge(LS[p], LS[q]);
+        RS[p] = merge(RS[p], RS[q]);
         if (pos[p]) data[p] = MERGE(data[p], data[q]);
         else data[p] = UPDATE(calculate(p), calculate(q));
         cache.push_back(q);
@@ -89,11 +89,11 @@ class SegTree {
         if (!cache.empty()) {
             int p = cache.back();
             cache.pop_back();
-            ls[p] = rs[p] = pos[p] = 0;
+            LS[p] = RS[p] = pos[p] = 0;
             data[p] = UPDATE.e;
             return p;
         }
-        ls.push_back(0), rs.push_back(0), data.push_back(UPDATE.e);
+        LS.push_back(0), RS.push_back(0), data.push_back(UPDATE.e);
         pos.push_back(0);
         if (data.size() <= 1) newNode();
         return data.size() - 1;
@@ -103,7 +103,7 @@ class SegTree {
         assert(!p || p < (int) data.size());
         if (!p) p = newNode();
         if (l == r) return data[p] = x, pos[p] = POS, p;
-        POS <= mid ? ls[p] = modify(Ls, POS, x) : rs[p] = modify(Rs, POS, x);
+        POS <= mid ? LS[p] = modify(Ls, POS, x) : RS[p] = modify(Rs, POS, x);
         return update(p);
     }
     
@@ -111,15 +111,15 @@ class SegTree {
         assert(!p || p < (int) data.size());
         if (!p) p = newNode();
         if (l == r) return data[p] += x, pos[p] = POS, p;
-        POS <= mid ? ls[p] = add(Ls, POS, x) : rs[p] = add(Rs, POS, x);
+        POS <= mid ? LS[p] = add(Ls, POS, x) : RS[p] = add(Rs, POS, x);
         return update(p);
     }
 
     int discard(int p, int l, int r, int L, int R) {
         if (!p || l > R || L > r) return p;
         if (l >= L && r <= R) return discard(p), 0;
-        ls[p] = discard(Ls, L, R);
-        rs[p] = discard(Rs, L, R);
+        LS[p] = discard(Ls, L, R);
+        RS[p] = discard(Rs, L, R);
         return update(p);
     }
 
@@ -128,20 +128,20 @@ class SegTree {
         for (int i = 0; i < (int) o.size(); i++) {
             int u = o[i];
             if (!u) continue;
-            o.push_back(ls[u]);
-            o.push_back(rs[u]);
+            o.push_back(LS[u]);
+            o.push_back(RS[u]);
             cache.push_back(u);
         }
     }
 
     ll update(int p) { 
-        if (!ls[p] && !rs[p]) return cache.push_back(p), 0;
-        return data[p] = UPDATE(calculate(ls[p]), calculate(rs[p])), p; 
+        if (!LS[p] && !RS[p]) return cache.push_back(p), 0;
+        return data[p] = UPDATE(calculate(LS[p]), calculate(RS[p])), p; 
     }
     ll calculate(int p) const { return pos[p] ? CALCULATE(pos[p], data[p]) : data[p]; }
 
     int n;
-    vi ls, rs, pos;
+    vi LS, RS, pos;
     vll data;
     const Operation CALCULATE, UPDATE, MERGE;
     vi cache;

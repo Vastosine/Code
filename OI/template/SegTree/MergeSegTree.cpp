@@ -8,7 +8,6 @@ namespace Vas {
 
 using ll = long long;
 const ll INF = 1ll << 60;
-using ll = long long;
 using vll = vector<ll>;
 using vi = vector<int>;
 using pii = pair<int, int>;
