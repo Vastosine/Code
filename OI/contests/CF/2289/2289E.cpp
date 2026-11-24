@@ -16,94 +16,142 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
-class MergeSegTree {
+
+namespace Vas {
+#include <cassert>
+
+using ll = long long;
+const ll INF = 1ll << 60;
+using ll = long long;
+using vll = vector<ll>;
+using vi = vector<int>;
+using pii = pair<int, int>;
+
+struct Operation { 
+    ll operator()(ll x, ll y) const { return f(x, y); } 
+    ll operator*() const { return e; } 
+    ll (*f)(ll, ll);
+    ll e;
+    template<typename F> Operation(F f, ll e = 0) : f(f), e(e) {}
+};
+static const Operation ADD = Operation([] (ll x, ll y) { return x + y; });
+static const Operation MULTIPLE = Operation([] (ll x, ll y) { return x * y; }, 1);
+static const Operation MINIMUM = Operation([] (ll x, ll y) { return min(x, y); }, INF);
+static const Operation MAXIMUM = Operation([] (ll x, ll y) { return max(x, y); }, -INF);
+static const Operation FORMER = Operation([] (ll x, ll) { return x; });
+static const Operation LATTER = Operation([] (ll, ll y) { return y; });
+    
+class SegTree {
+#define mid ((l + r) >> 1)
+#define Ls ls[p], l, mid
+#define Rs rs[p], mid + 1, r
   public:
-    // reserveNodes 不传也行：靠 push_back 动态增长，永远不会越界。
-    // 传了只是免掉重分配（以及免掉「引用在扩容后悬垂」这类雷），不是上界。
-    MergeSegTree(int n = 0, int reserveNodes = 0) { init(n, reserveNodes); }
 
-    void init(int n_, int reserveNodes = 0) {
-        n = n_;
-        lc.assign(1, 0);
-        rc.assign(1, 0);
-        mx.assign(1, 0);  // 0 号是空节点
-        if (reserveNodes > 0) {
-            lc.reserve(reserveNodes + 1);
-            rc.reserve(reserveNodes + 1);
-            mx.reserve(reserveNodes + 1);
-        }
+    SegTree(
+        int n = 0, int reserveSize = 0, 
+        const Operation &CALCULATE = FORMER, 
+        const Operation &UPDATE = MAXIMUM,
+        const Operation &MERGE = MAXIMUM
+    ) : n(n), CALCULATE(CALCULATE), UPDATE(UPDATE), MERGE(MERGE) {
+        ls.reserve(reserveSize);
+        rs.reserve(reserveSize);
+        pos.reserve(reserveSize);
+        data.reserve(reserveSize);
     }
 
-    // 多测：resize 回 1 号，容量保留，内存复用。不要 assign —— 语义会让人以为清空了容量
-    void clear(int N) {
-        n = N;
-        clear();
+    void resize(int N) { n = N; }
+    void clear(int N) { resize(N), ls.clear(), rs.clear(), data.clear(), pos.clear(), cache.clear(); }
+
+    int &modify(int &p, int POS, ll x) { return p = modify(p, 1, n, POS, x); }
+    int &add(int &p, int POS, ll x) { return p = add(p, 1, n, POS, x); }
+    int modify(int POS, ll x) { return modify(0, 1, n, POS, x); }
+    int add(int POS, ll x) { return add(*new int(), 1, n, POS, x); }
+    ll at(int p) const { return p ? data[p] : UPDATE.e;}
+    ll operator[](int id) const { return at(id); }
+
+    int merge(int p, int q) {
+        if (!p || !q) return p | q;
+        ls[p] = merge(ls[p], ls[q]);
+        rs[p] = merge(rs[p], rs[q]);
+        if (pos[p]) data[p] = MERGE(data[p], data[q]);
+        else data[p] = UPDATE(calculate(p), calculate(q));
+        cache.push_back(q);
+        return p;
     }
 
-    void clear() {
-        lc.resize(1);
-        rc.resize(1);
-        mx.resize(1);
-    }
-
-    int nodeCount() const { return (int) lc.size() - 1; }
-
-    int insert(int p, int x) { return insert(p, 1, n, x); }
-
-    int merge(int a, int b) {
-        if (!a || !b) return a | b;
-        lc[a] = merge(lc[a], lc[b]);
-        rc[a] = merge(rc[a], rc[b]);
-        mx[a] = max(mx[a], mx[b]);
-        return a;
-    }
-
-    void truncate(int &p, int T) { truncate(p, 1, n, T); }
-
-    int pred(int p, int T) const { return pred(p, 1, n, T); }
-
-    int maximum(int p) const { return p ? mx[p] : 0; }
+    int &discard(int &p, int L, int R) { return p = discard(p, 1, n, L, R); }
+    int &truncateSuf(int &p, int L) { return p = discard(p, 1, n, L, n); }
+    int &truncatePre(int &p, int R) { return p = discard(p, 1, n, 1, R); }
+    int &insert(int &p, int x) { return modify(p, x, 1);}
 
   private:
     int newNode() {
-        lc.push_back(0);
-        rc.push_back(0);
-        mx.push_back(0);
-        return (int) lc.size() - 1;
+        if (!cache.empty()) {
+            int p = cache.back();
+            cache.pop_back();
+            ls[p] = rs[p] = pos[p] = 0;
+            data[p] = UPDATE.e;
+            return p;
+        }
+        ls.push_back(0), rs.push_back(0), data.push_back(UPDATE.e);
+        pos.push_back(0);
+        if (data.size() <= 1) newNode();
+        return data.size() - 1;
     }
-
-    int insert(int p, int l, int r, int x) {
+    
+    int modify(int p, int l, int r, int POS, ll x) {
+        assert(!p || p < (int) data.size());
         if (!p) p = newNode();
-        if (l == r) return mx[p] = x, p;
-        int m = (l + r) >> 1;
-        if (x <= m) lc[p] = insert(lc[p], l, m, x);
-        else rc[p] = insert(rc[p], m + 1, r, x);
-        return mx[p] = max(mx[lc[p]], mx[rc[p]]), p;
+        if (l == r) return data[p] = x, pos[p] = POS, p;
+        POS <= mid ? ls[p] = modify(Ls, POS, x) : rs[p] = modify(Rs, POS, x);
+        return update(p);
+    }
+    
+    int add(int p, int l, int r, int POS, ll x) {
+        assert(!p || p < (int) data.size());
+        if (!p) p = newNode();
+        if (l == r) return data[p] += x, pos[p] = POS, p;
+        POS <= mid ? ls[p] = add(Ls, POS, x) : rs[p] = add(Rs, POS, x);
+        return update(p);
     }
 
-    void truncate(int &p, int l, int r, int T) {
-        if (!p || r <= T) return;
-        if (l > T) return p = 0, void();
-        int m = (l + r) >> 1;
-        truncate(lc[p], l, m, T);
-        truncate(rc[p], m + 1, r, T);
-        mx[p] = max(mx[lc[p]], mx[rc[p]]);
-        if (!mx[p]) p = 0;  // 整棵空了就断开引用（不回收节点）
+    int discard(int p, int l, int r, int L, int R) {
+        if (!p || l > R || L > r) return p;
+        if (l >= L && r <= R) return discard(p), 0;
+        ls[p] = discard(Ls, L, R);
+        rs[p] = discard(Rs, L, R);
+        return update(p);
     }
 
-    int pred(int p, int l, int r, int T) const {
-        if (!p || l > T) return 0;
-        if (r <= T) return mx[p];
-        int m = (l + r) >> 1;
-        int res = pred(rc[p], m + 1, r, T);
-        return res ? res : pred(lc[p], l, m, T);
+    void discard(int p) {
+        vi o(1, p);
+        for (int i = 0; i < (int) o.size(); i++) {
+            int u = o[i];
+            if (!u) continue;
+            o.push_back(ls[u]);
+            o.push_back(rs[u]);
+            cache.push_back(u);
+        }
     }
+
+    ll update(int p) { 
+        if (!ls[p] && !rs[p]) return cache.push_back(p), 0;
+        return data[p] = UPDATE(calculate(ls[p]), calculate(rs[p])), p; 
+    }
+    ll calculate(int p) const { return pos[p] ? CALCULATE(pos[p], data[p]) : data[p]; }
 
     int n;
-    vector<int> lc, rc, mx;
+    vi ls, rs, pos;
+    vll data;
+    const Operation CALCULATE, UPDATE, MERGE;
+    vi cache;
+#undef Ls
+#undef Rs
+#undef mid
 };
+}
 
-MergeSegTree t(0, 4e6);
+Vas::SegTree t(0, 4e6);
 
 auto Main([[maybe_unused]] int C = 0) {
     int n, k;
@@ -139,9 +187,9 @@ auto Main([[maybe_unused]] int C = 0) {
         else {
             int ls = son[u][0], rs = son[u][1];
             if (mx[ls] > mx[rs]) swap(ls, rs);
-            t.truncate(rt[rs], mx[ls] + k - 1);
+            t.truncateSuf(rt[rs], mx[ls] + k);
             rt[u] = t.merge(rt[ls], rt[rs]);
-            mx[u] = t.maximum(rt[u]);
+            mx[u] = t[rt[u]];
             // mx[u] = min({mx[ls] + k - 1, mx[rs] + k - 1, max(mx[ls], mx[rs])});
         }
     }

@@ -11743,3 +11743,64 @@ CF 开赛提醒 4 条全部 ended，活跃 0 条
 主线   网络流 2 道（剩 P4011 孤岛营救 / P4009 汽车加油 / 498C，都不是纯流）
 单排   P7916 对偶图 + 环形区间 DP —— 完整时段，用他这份 45 分代码当 oracle
 ```
+
+## 11-24 start（09:35）
+
+上次收工 11-23 22:08 → 间隔 11 h 27 min。
+
+### 同步
+
+```
+CF    rating 1892（Expert，峰值 1913）· 11-23 之后没有 rated 场次
+      新增 9 次提交，全部 2289E，全部 OK（09:12–09:33）
+洛谷  自 11-23 19:23 P7916（45 分）之后没有提交
+```
+
+### 今早 9 次 2289E（全部 OK）
+
+```
+09:12:03  id=399653849  671 ms / 167200 KB
+09:14:21  id=399653895  640 ms / 167100 KB
+09:19:17  id=399654019  765 ms / 167200 KB
+09:25:57  id=399654177  703 ms / 151600 KB
+09:29:39  id=399654271  718 ms / 155100 KB
+09:31:15  id=399654327  640 ms / 170700 KB
+09:32:24  id=399654370  640 ms / 166400 KB
+09:33:09  id=399654397  718 ms / 170200 KB
+09:33:51  id=399654426  640 ms / 166400 KB
+
+昨晚最好：11-23 09:34  500 ms / 122800 KB
+```
+
+内存 +29 ~ +48 MB，时间 +140 ~ +265 ms。**超出 ±13% 噪声，是真的变重了**，不是抖动。
+
+假设（**未验证成因果**）：2289E 里原来的 `class MergeSegTree` 是 `lc/rc/mx` 三个 int 数组 = 12 B/点；
+换成 `Vas::SegTree` 后是 `ls/rs/pos` 三个 int + `data` 一个 ll = 20 B/点。
+节点数若 ~4.19e6，增量 4.19e6 × 8 B = 33.5 MB，122.8 + 33.5 ≈ 156 MB —— 落在 151.6 ~ 170.7 之间。
+数字吻合，但不排除别的原因。**具体在做什么等他自己说，我不从文件残留倒推**（昨天在这个动作上错了五次）。
+
+### 工作区（未提交）
+
+```
+M OI/contests/CF/2289/2289E.cpp         09:34:16 · 226 行 · 本地 MergeSegTree 换成 Vas::SegTree
+M OI/template/SegTree/MergeSegTree.cpp  09:34:40 · 146 行 · 重写版
+```
+
+昨天那版三个问题（无 `merge`、`at()` 读 `data[pos]`、自带 main assert 失败）
+**在重写版里都没了**：`merge` 有了、`at(p)` 读 `data[p]`、main 编译 exit 0 并输出 8。
+
+### 我对新 SegTree 做的验证
+
+抽出 `namespace Vas` 块到 `stress/mst_ns.inc`（**没改他的文件**），自写对拍 `stress/mst_test.cpp`：
+
+```
+300 轮 × 400 次操作，4 棵树，n=40
+操作  modify / add / merge / truncatePre / truncateSuf / discard
+配置  CALCULATE=LATTER, UPDATE=ADD, MERGE=ADD
+每步与数组暴力逐棵比对总和
+结果  all ok（exit 0）
+```
+
+**没测**：`CALCULATE=MULTIPLE`（pos 参与运算）、`UPDATE=MAXIMUM` 下的降值 modify、`reserveSize` 行为。
+另外记一笔：`merge` 第 63 行 `data[p] = UPDATE(calculate(p), calculate(q))` 用的是**合并前的旧 data[p]**，
+只在 UPDATE 可交换可结合时正确（max/min/sum/积都满足，非交换运算不满足）。
