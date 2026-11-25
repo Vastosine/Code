@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <set>
+#include <unordered_map>
 #include <vector>
 #include <algorithm>
 using namespace std; typedef long long ll; typedef vector<int> vi; typedef vector<ll> vll; typedef pair<int, int> pii; typedef pair<ll, ll> pll;
@@ -21,6 +22,60 @@ auto Main([[maybe_unused]] int C = 0) {
     vll a(n);
     cin >> a;
     Sort(a);
+    if (op == 0) {
+        set<ll> p, q;
+        for (ll x : a) {
+            if (x % k == 0 && p.find(x / k) != p.end()) q.insert(x);
+            else p.insert(x);
+        }
+        if (q.empty()) cout << 1 << "\n" << p.size() << " " << vll(p.begin(), p.end());
+        else cout << 2 << "\n" << p.size() << " " << vll(p.begin(), p.end()) << "\n" << q.size() << " " << vll(q.begin(), q.end()); 
+        return 0;
+    }
+    auto check = [&] () -> bool {
+        set<ll> s(a.begin(), a.end());
+        unordered_map<ll, int> col;
+        vector<vll> res(2);
+        while (!s.empty()) {
+            vll o(1, *s.begin());
+            s.erase(s.begin());
+            for (int i = 0; i < (int) o.size(); i++) {
+                ll u = o[i];
+                vll lst;
+                res[col[u]].push_back(u);
+                for (auto it = s.upper_bound(u / (k + 1)); it != s.end() && u / *it == k; it++) {
+                    lst.push_back(*it);
+                }
+                for (auto it = s.lower_bound(u * k); it != s.end() && *it / u == k; it++) {
+                    lst.push_back(*it);
+                }
+                for (ll x : lst) {
+                    col[x] = col[u] ^ 1;
+                    s.erase(x);
+                    o.push_back(x);
+                }
+            }
+        }
+        Sort(res[0]);
+        Sort(res[1]);
+        if (res[1].empty()) res.pop_back();
+        for (auto &t : res) {
+            for (auto &i : t) {
+                auto it = upper_bound(t.begin(), t.end(), i / (k + 1));
+                if (it != t.end() && i / *it == k) return false;
+            }
+        }
+        cout << res.size() << "\n";
+        for (auto &t : res) {
+            cout << t.size() << " ";
+            for (auto &i : t) {
+                cout << i << " ";
+            }
+            cout << "\n";
+        }
+        return true;
+    };
+    if (check()) return 0;
     vector<set<ll>> s;
     int p = 0;
     for (ll x : a) {
@@ -28,7 +83,7 @@ auto Main([[maybe_unused]] int C = 0) {
         int sn = (int) s.size();
         for (int q = 0; q < sn; q++) {
             auto &i = s[(p + q) % sn];
-            if (auto it = i.upper_bound(x / (k + op) - !op); it == i.end() || x / *it != k) {
+            if (auto it = i.upper_bound(x / (k + 1)); it == i.end() || x / *it != k) {
                 i.insert(x);
                 t = true;
                 p = (p + q) % sn;
@@ -37,62 +92,6 @@ auto Main([[maybe_unused]] int C = 0) {
         }
         if (!t) s.push_back({}), s.back().insert(x);
     }
-    // if (s.size() >= 3) {
-    //     vector<vi> e(n + 1);
-    //     vi f(n + 1);
-    //     for (int i = 1, l = 1; i <= n; i++) {
-    //         f[i] = i;
-    //         while (a[l - 1] < a[i - 1] * k) l++;
-    //         for (int j = l; j <= n && a[j - 1] / a[i - 1] == k; j++) {
-    //             e[i].push_back(j);
-    //             e[j].push_back(i);
-    //         }
-    //     }
-    //     auto g = [&] (auto &&g, int u) -> int {
-    //         return f[u] == u ? u : g(g, f[u]);
-    //     };
-    //     auto merge = [&] (int u, int v) {
-    //         f[g(g, v)] = g(g, u);
-    //     };
-    //     vi vis(n + 1), col(n + 1);
-    //     vector<vi> lst(2);
-    //     for (int i = 1; i <= n; i++) {
-    //         if (!vis[i]) {
-    //             vis[i] = 1;
-    //             vi o(1, i);
-    //             for (int j = 0; j < (int) o.size(); j++) {
-    //                 int u = o[j];
-    //                 lst[col[u]].push_back(u);
-    //                 for (int v : e[u]) {
-    //                     if (!vis[v]) {
-    //                         vis[v] = 1;
-    //                         o.push_back(v);
-    //                         col[v] = col[u] ^ 1;
-    //                         // auto &X = lst[col[v]];
-    //                         // if (!X.empty()) {
-    //                         //     merge(X[0], v);
-    //                         // }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     bool ans = 1;
-    //     for (int u = 1; u <= n; u++) {
-    //         for (int v : e[u]) {
-    //             if (col[u] == col[v]) ans = 0;
-    //         }
-    //     }
-    //     if (ans) {
-    //         cout << 2 << "\n";
-    //         for (auto &i : lst) {
-    //             cout << i.size() << " ";
-    //             for (auto &j : i) cout << a[j - 1] << " ";
-    //             cout << "\n";
-    //         }
-    //         return 0;
-    //     }
-    // }
     cout << s.size() << "\n";
     for (auto &i : s) {
         cout << i.size() << " ";
