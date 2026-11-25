@@ -26,18 +26,19 @@ class BoundFlow : private Dinic {
 
     pair<bool, ll> feasible(int s, int t) {
         int e = Dinic::addEdge(t, s, INF);
-        auto res = feasible();
+        bool allow = feasible().first;
+        ll flow = flowOn(e);
         eraseEdge(e);
-        return res;
+        return {allow, flow};
     }
 
-    // mode =  1 : Maximum feasible flow. 
+    // mode = 0 : Maximum feasible flow. 
     //
-    // mode = -1 : Minimum feasible flow.
-    ll run(int s, int t, int mode = 1) {
+    // mode = 1 : Minimum feasible flow.
+    ll run(int s, int t, bool mode = 0) {
         auto [res, flow] = feasible(s, t);
         if (!res) return -1;
-        return flow + mode * Dinic::run(s, t);
+        return flow + (mode ? -Dinic::run(t, s) : Dinic::run(s, t));
     }
 
     ll flowOn(int id) const { return Dinic::flowOn(id); }
@@ -64,9 +65,9 @@ int main() {
         L[i] = l;
         e[i] = a.addEdge(u, v, l, r);
     }
-    ll ans = 0;a.feasible(s, t);
+    ll ans = a.run(s, t, 1);
     if (!~ans) cout << "N";
     else cout << ans << "\n";
-    for (int i : e) cout << a.flowOn(i) << " ";
+    // for (int i : e) cout << a.flowOn(i) << " ";
 
 }

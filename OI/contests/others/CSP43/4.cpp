@@ -76,27 +76,20 @@ auto Main([[maybe_unused]] int C = 0) {
         return true;
     };
     if (check()) return 0;
-    vector<set<ll>> s;
-    int p = 0;
-    for (ll x : a) {
-        bool t = false;
-        int sn = (int) s.size();
-        for (int q = 0; q < sn; q++) {
-            auto &i = s[(p + q) % sn];
-            if (auto it = i.upper_bound(x / (k + 1)); it == i.end() || x / *it != k) {
-                i.insert(x);
-                t = true;
-                p = (p + q) % sn;
-                break;
-            }
-        }
-        if (!t) s.push_back({}), s.back().insert(x);
+    vll powk(1, 1);
+    while (powk.back() <= INF / k) powk.push_back(powk.back() * k);
+    auto logk = [&] (ll x) {
+        return upper_bound(powk.begin(), powk.end(), x) - powk.begin() - 1;
+    };
+    vll b(n);
+    vector<vll> res(3);
+    for (int i = 0; i < n; i++) {
+        b[i] = logk(a[i]);
+        res[b[i] % 3].push_back(a[i]);
     }
-    cout << s.size() << "\n";
-    for (auto &i : s) {
-        cout << i.size() << " ";
-        for (auto &j : i) cout << j << " ";
-        cout << "\n";
+    cout << "3\n";
+    for (auto &i : res) {
+        cout << i.size() << " " << i << "\n";
     }
     return 0;
 }
