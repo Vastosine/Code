@@ -8,7 +8,7 @@
 #include <queue>
 #include <random>
 #include <algorithm>
-#include "../OI/template/Dinic.cpp"
+#include "../OI/template/netflow/Dinic.cpp"
 
 using ll = long long;
 

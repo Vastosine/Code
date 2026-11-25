@@ -9,15 +9,13 @@ class Dinic {
     using vll = vector<ll>;
     static constexpr ll INF = 1ll << 60;
     
+    // 0-index
     Dinic(int n) : n(n), e(n) {}
 
+    void resize(int N) { n = N, e.resize(n); }
     void reassign() { clear(n); }
     void clear(int N = 0) { n = N; e.assign(N, {}); to.clear(); cap.clear(); }
     int addEdge(int u, int v, ll c) { add(u, v, c); add(v, u, 0); return (int) to.size() - 2; }
-    void addNodeTo(int N) {
-        n = max(n, N);
-        e.resize(n);
-    }
     
     // Run the Dinic, return the max flow.
     ll run(int s, int t) {

@@ -125,7 +125,7 @@ int main() {
 //     cin >> n >> m;
 //     vll a(n);
 //     for (ll &i : a) cin >> i;
-//     SegTree s(n, n << 5);
+//     SegTree s(n, 5e7);
 //     vi rt(m + 1);
 //     for (int i = 0; i < n; i++) {
 //         rt[0] = s.modify(rt[0], i + 1, a[i]);

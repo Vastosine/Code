@@ -12506,3 +12506,89 @@ stress/dinic_stress.cpp    6 万张随机图（n≤8，cap≤5，含 0 容量）
 （那 11 个用例没覆盖的细节是 `cur[u]` 在增广成功后也 `++` —— 标准 Dinic 只在
 边饱和或下游走死时才推进。这里的写法拿到的不是阻塞流，所以可能多几轮，但
 **不影响答案**；6 万张随机图是对这一点的验证。）
+
+## 11-25 com #1
+
+（10:16 → 11:56，工作 **1 h 40 min**）
+
+### 同步
+
+```
+CF     0 条
+洛谷   1 条    P14578  AC 100   1026 ms / 1292 KB   11:36:35
+```
+
+### P14578 【模板】无源汇上下界可行流
+
+10:31 布置 → **11:36:35 AC，1 h 05 min，28/28 全绿。**
+
+他自述「最开始容量写成 r 了」。这一脚值得记，因为它是**单向**的：
+
+```
+残余容量写 r  ->  每条边比该有的多出 l 的容量
+             ->  可行域只会变大，不会变小
+             ->  错的方向永远只有一个：把「不可行」判成「可行」
+             ->  d[] 完全不受影响（d 只看 l）
+```
+
+所以「验算守恒」抓不到它 —— 账本是对的，只有残余图错。**只有「本该 No 却输出 Yes」才看得见。**
+而他 11:27 问的那组 `l=r` 用例正好是唯一能抓到它的一组（残余容量从 0 变成 r）。
+
+### 11:36 之后又修了三轮（11:37 → 11:56）
+
+| 轮 | 改了什么 | 谁发现的 |
+|---|---|---|
+| 1 | `addEdge` 的 `int l, r` → `ll l, r` | 我 |
+| 2 | 我建议 `d` 开到 `n + 2` | **我错了** |
+| 3 | 他自己新加的 `clear/resize` 里 `Dinic::clear(n)` 应为 `n + 2` | `-D_GLIBCXX_DEBUG` 的越界断言 |
+
+第 2 条是我过度谨慎：`run()` 只访问 `d[u] (u < n)`，`S`、`T` 从不进 `d`，所以 `d(n)` 本来就是对的。
+
+第 3 条是**他修第 1 条时带出来的新 bug**：`Dinic::clear(n)` 把 `e` 缩到 n 个点，而 `run()` 用 `S = n`、`T = n + 1`。`-O2` 下静默越界，只有 `_GLIBCXX_DEBUG` 会 abort。
+
+### 方法：`-D_GLIBCXX_DEBUG`
+
+```
+g++ -std=c++17 -O0 -D_GLIBCXX_DEBUG -o test test.cpp
+
+current : reused clear(3) ...  Error: attempt to subscript container with
+                               out-of-bounds index 3, but container only
+                               holds 3 elements.
+fixed   : fresh run()=1 / clear(3) run()=1 / reassign() run()=1
+```
+
+同一份代码 `-O2` 下跑完输出「正常」。**这个开关把静默越界变成 abort + 打印下标和容器大小。**
+
+所以以后分工：
+
+```
+提交       -O2
+自测       -O2 和 -D_GLIBCXX_DEBUG 各跑一遍
+```
+
+`_GLIBCXX_DEBUG` 慢几十倍，只能小数据；但模板的 bug 基本都是越界和脏状态，小数据足够。
+
+### 顺带：模板目录重组
+
+`OI/template/` 现在分了 `Graph / NumberAndMath / netflow / SegTree / string / Utilty`。
+这一动打穿了 `stress/` 里 **30 个** `#include "../OI/template/..."`。
+
+修好了 netflow 那 8 个（`dinic_test`、`dinic_stress`、`mcmf_test`、`p1251_fix`、`p1251_flow`、`p4014_via_mcmf`、`p4016_via_mcmf`、`maxflow_ek_verify`），验过：
+
+```
+dinic_test      ALL PASS (0 failures)
+dinic_stress    ALL PASS  fails=0 / 60000
+```
+
+剩下 22 个待改（`lca_*` 4、`hld_*` 3、`ac_*` 2、`bsgs_*` 2、`qpow_*` 3、`dij_check`、`kmp_test`、`spfa_test`、`topo_check`、`matric_*` 2、`dst_*` 2、`test_comb*` 2、`test_digitSum`、`getline_test`）。
+
+另外 `reroot.cpp` / `rerootDP.cpp` 还留在 template 根上，且 `rerootDP.cpp` 名字是反的。
+
+### 今天
+
+```
+10:12  P3919 数组版 AC 100        80 -> 100，模板落地
+11:36  P14578 无源汇上下界 AC 100  新类型打通
+```
+
+**2 道 AC。**
