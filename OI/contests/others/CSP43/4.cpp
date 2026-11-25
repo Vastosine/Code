@@ -37,6 +37,62 @@ auto Main([[maybe_unused]] int C = 0) {
         }
         if (!t) s.push_back({}), s.back().insert(x);
     }
+    // if (s.size() >= 3) {
+    //     vector<vi> e(n + 1);
+    //     vi f(n + 1);
+    //     for (int i = 1, l = 1; i <= n; i++) {
+    //         f[i] = i;
+    //         while (a[l - 1] < a[i - 1] * k) l++;
+    //         for (int j = l; j <= n && a[j - 1] / a[i - 1] == k; j++) {
+    //             e[i].push_back(j);
+    //             e[j].push_back(i);
+    //         }
+    //     }
+    //     auto g = [&] (auto &&g, int u) -> int {
+    //         return f[u] == u ? u : g(g, f[u]);
+    //     };
+    //     auto merge = [&] (int u, int v) {
+    //         f[g(g, v)] = g(g, u);
+    //     };
+    //     vi vis(n + 1), col(n + 1);
+    //     vector<vi> lst(2);
+    //     for (int i = 1; i <= n; i++) {
+    //         if (!vis[i]) {
+    //             vis[i] = 1;
+    //             vi o(1, i);
+    //             for (int j = 0; j < (int) o.size(); j++) {
+    //                 int u = o[j];
+    //                 lst[col[u]].push_back(u);
+    //                 for (int v : e[u]) {
+    //                     if (!vis[v]) {
+    //                         vis[v] = 1;
+    //                         o.push_back(v);
+    //                         col[v] = col[u] ^ 1;
+    //                         // auto &X = lst[col[v]];
+    //                         // if (!X.empty()) {
+    //                         //     merge(X[0], v);
+    //                         // }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     bool ans = 1;
+    //     for (int u = 1; u <= n; u++) {
+    //         for (int v : e[u]) {
+    //             if (col[u] == col[v]) ans = 0;
+    //         }
+    //     }
+    //     if (ans) {
+    //         cout << 2 << "\n";
+    //         for (auto &i : lst) {
+    //             cout << i.size() << " ";
+    //             for (auto &j : i) cout << a[j - 1] << " ";
+    //             cout << "\n";
+    //         }
+    //         return 0;
+    //     }
+    // }
     cout << s.size() << "\n";
     for (auto &i : s) {
         cout << i.size() << " ";

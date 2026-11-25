@@ -12,8 +12,7 @@ template<typename T> ostream &operator<<(ostream &out, const vector<T> &a) { for
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
 template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
-// void addEdge(int u, int v) { e[u].push_back(v); e[v].push_back(u); }
-// void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
+ll popcnt(ll x) { return __builtin_popcountll(x); }
 void init() {}
 
 auto Main([[maybe_unused]] int C = 0) {

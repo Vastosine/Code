@@ -13,7 +13,7 @@ template<typename... Args> void assign(int n, vector<Args> &...args) { (..., arg
 // void addEdge(int u, int v, ll w) { e[u].push_back({v, w}); e[v].push_back({u, w}); }
 void init() {}
 
-ll popcnt(ll x) { return __builtin_popcount(x); }
+ll popcnt(ll x) { return __builtin_popcountll(x); }
 
 void c1(int n, int m, int k, int q) {
     vector<vector<pll>> e;
@@ -25,7 +25,8 @@ void c1(int n, int m, int k, int q) {
         cin >> c;
         light[i] = c - '0';
     }
-    for (int i = 1; i <= n; i++) cin >> col[i], cmask[i] = (1 << (col[i] - 1));
+    auto FC = [] (int c) { return 1ll << (c - 1); };
+    for (int i = 1; i <= n; i++) cin >> col[i], cmask[i] = FC(col[i]);
     for (int i = 1; i < n; i++) {
         int u, v;
         ll w;
@@ -72,7 +73,7 @@ void c1(int n, int m, int k, int q) {
     };
     auto getmask = [&] (int u, int v, int x = 0) {
         if (!x) x = LCA(u, v);
-        return cmask[u] ^ cmask[v] ^ (1 << (col[x] - 1));
+        return cmask[u] ^ cmask[v] ^ FC(col[x]);
     };
     auto check = [&] (int u, int v) {
         int x = LCA(u, v);
