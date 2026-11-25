@@ -13176,3 +13176,39 @@ D:\code\..cpp             程序设计基础作业，建议移到 D:\study\
 最小费用可行流                                 <- 上下界的最后一行
 T5 类「n log n」题的整体档次
 ```
+
+### 11-25 21:40 补：`-D_GLIBCXX_DEBUG` 在 clang++ 下要配 `-pthread`
+
+`.vscode/tasks.json` 里的编译器是 **`clang++ 19.1.1 (x86_64-w64-windows-gnu)`**，不是 g++。
+加 `-D_GLIBCXX_DEBUG` 之后**编译能过、链接不过**：
+
+```
+ld: undefined reference to `pthread_mutex_lock'
+ld: undefined reference to `pthread_mutex_unlock'
+```
+
+原因：`_GLIBCXX_DEBUG` 会让 libstdc++ 实例化 `__gnu_debug::_Safe_sequence_base`，
+它的构造/析构要锁互斥量 → `__gthread_mutex_lock` → `pthread_mutex_lock`。
+**g++ 会内联掉或自带 specs 链接 winpthreads；clang++ 不会。**
+
+四个对照（同一台机器）：
+
+```
+clang++ + -D_GLIBCXX_DEBUG               exit=1   链接失败
+clang++ 去掉 -D_GLIBCXX_DEBUG             exit=0   成功
+clang++ + -D_GLIBCXX_DEBUG + -pthread     exit=0   成功
+g++     + -D_GLIBCXX_DEBUG               exit=0   成功
+```
+
+修法：给 `tasks.json` 里带 `-D_GLIBCXX_DEBUG` 的两个任务各加 `"-pthread"`（`-lpthread` 也行，但 `-pthread` 顺带定义 `_REENTRANT`）。
+
+已改并验：
+
+```
+任务 1（正常构建）  args 加 -pthread   exit=0
+任务 2（调试构建）  args 加 -pthread   exit=0
+越界验证  vector<int> a(1); a[5]=1;   exit=3，打印
+          debug/vector:508: attempt to subscript container with out-of-bounds index 5
+```
+
+**调试构建的抓错能力没受影响。**
