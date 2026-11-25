@@ -21,13 +21,28 @@ auto Main([[maybe_unused]] int C = 0) {
     vll a(n);
     cin >> a;
     Sort(a);
-    set<ll> p, q;
+    vector<set<ll>> s;
+    int p = 0;
     for (ll x : a) {
-        if (x % k == 0 && p.find(x / k) != p.end()) q.insert(x);
-        else p.insert(x);
+        bool t = false;
+        int sn = (int) s.size();
+        for (int q = 0; q < sn; q++) {
+            auto &i = s[(p + q) % sn];
+            if (auto it = i.upper_bound(x / (k + op) - !op); it == i.end() || x / *it != k) {
+                i.insert(x);
+                t = true;
+                p = (p + q) % sn;
+                break;
+            }
+        }
+        if (!t) s.push_back({}), s.back().insert(x);
     }
-    if (q.empty()) cout << 1 << "\n" << p.size() << " " << vll(p.begin(), p.end());
-    else cout << 2 << "\n" << p.size() << " " << vll(p.begin(), p.end()) << "\n" << q.size() << " " << vll(q.begin(), q.end()); 
+    cout << s.size() << "\n";
+    for (auto &i : s) {
+        cout << i.size() << " ";
+        for (auto &j : i) cout << j << " ";
+        cout << "\n";
+    }
     return 0;
 }
 
