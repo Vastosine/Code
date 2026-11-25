@@ -16,7 +16,8 @@ class Dinic {
     void reassign() { clear(n); }
     void clear(int N = 0) { n = N; e.assign(N, {}); to.clear(); cap.clear(); }
     int addEdge(int u, int v, ll c) { add(u, v, c); add(v, u, 0); return (int) to.size() - 2; }
-    
+    void eraseEdge(int id) { cap[id] = cap[id ^ 1] = 0; }
+
     // Run the Dinic, return the max flow.
     ll run(int s, int t) {
         ll ans = 0;

@@ -11,14 +11,33 @@ class BoundFlow : private Dinic {
         return id;
     }
 
-    bool run() {
+    pair<bool, ll> feasible() {
         int S = n, T = n + 1;
         ll sum = 0;
+        vi e;
         for (int u = 0; u < n; u++) {
-            if (d[u] > 0) Dinic::addEdge(S, u, d[u]), sum += d[u];
-            if (d[u] < 0) Dinic::addEdge(u, T, -d[u]);
+            if (d[u] > 0) e.push_back(Dinic::addEdge(S, u, d[u])), sum += d[u];
+            if (d[u] < 0) e.push_back(Dinic::addEdge(u, T, -d[u]));
         }
-        return Dinic::run(S, T) == sum;
+        auto res = Dinic::run(S, T);
+        for (int i : e) eraseEdge(i);
+        return {res == sum, sum};
+    }
+
+    pair<bool, ll> feasible(int s, int t) {
+        int e = Dinic::addEdge(t, s, INF);
+        auto res = feasible();
+        eraseEdge(e);
+        return res;
+    }
+
+    // mode =  1 : Maximum feasible flow. 
+    //
+    // mode = -1 : Minimum feasible flow.
+    ll run(int s, int t, int mode = 1) {
+        auto [res, flow] = feasible(s, t);
+        if (!res) return -1;
+        return flow + mode * Dinic::run(s, t);
     }
 
     ll flowOn(int id) const { return Dinic::flowOn(id); }
@@ -34,8 +53,8 @@ class BoundFlow : private Dinic {
 using ll = long long;
 using vi = vector<int>;
 int main() {
-    int n, m;
-    cin >> n >> m;
+    int n, m, s, t;
+    cin >> n >> m >> s >> t;
     BoundFlow a(n + 1);
     vi e(m), L(m);
     for (int i = 0; i < m; i++) {
@@ -45,9 +64,9 @@ int main() {
         L[i] = l;
         e[i] = a.addEdge(u, v, l, r);
     }
-    if (!a.run()) return cout << "No", 0;
-    cout << "Yes\n";
-    for (int i = 0; i < m; i++) {
-        cout << a.flowOn(e[i]) + L[i] << "\n";
-    }
+    ll ans = 0;a.feasible(s, t);
+    if (!~ans) cout << "N";
+    else cout << ans << "\n";
+    for (int i : e) cout << a.flowOn(i) << " ";
+
 }
