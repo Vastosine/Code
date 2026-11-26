@@ -2,14 +2,15 @@
 #define __BOUND_COST_FLOW__
 
 #include "MCMF.cpp"
+#include <cassert>
 
-class BoundCostFlow : private MCMF {
+class BoundCostFlow : protected MCMF {
   public:
     // 0-index
-    BoundCostFlow(size_t n) : MCMF(n + 2), n(n), d(n), baseCost(0) {}
+    BoundCostFlow(szt n) : MCMF(n + 2), n(n), d(n), baseCost(0) {}
 
-    size_t addEdge(size_t u, size_t v, ll l, ll r, ll w) {
-        size_t id = MCMF::addEdge(u, v, r - l, w);
+    szt addEdge(szt u, szt v, ll l, ll r, ll w) {
+        szt id = MCMF::addEdge(u, v, r - l, w);
         d[v] += l, d[u] -= l;
         baseCost += l * w;
         return id;
@@ -17,51 +18,59 @@ class BoundCostFlow : private MCMF {
 
     // {allow, {flow, cost}}
     pair<bool, pll> feasible() {
-        size_t S = n, T = n + 1;
+        szt S = n, T = n + 1;
         ll sum = 0;
         vst e;
-        for (size_t u = 0; u < n; u++) {
+        for (szt u = 0; u < n; u++) {
             if (d[u] > 0) e.push_back(MCMF::addEdge(S, u, d[u], 0)), sum += d[u];
             if (d[u] < 0) e.push_back(MCMF::addEdge(u, T, -d[u], 0));
         }
         auto res = MCMF::run(S, T);
         res.second += baseCost;
-        for (size_t i : e) MCMF::eraseEdge(i);
+        for (szt i : e) MCMF::eraseEdge(i);
         return pair{res.first == sum, res};
     }
 
     // {allow, {flow, cost}}
-    pair<bool, pll> feasible(size_t s, size_t t) {
-        size_t e = MCMF::addEdge(t, s, INF, 0);
+    pair<bool, pll> feasible(szt s, szt t) {
+        szt e = MCMF::addEdge(t, s, INF, 0);
         auto [allow, res] = feasible();
         ll flow = flowOn(e);
         MCMF::eraseEdge(e);
         return {allow, {flow, res.second}};
     }
 
-    // mode = 0 : Maximum feasible flow. 
-    //
-    // mode = 1 : Minimum feasible flow.
-    // pll run(size_t s, size_t t, bool mode = 0) {
-    //     auto [allow, res] = feasible(s, t);
-    //     if (!allow) return {-1, -1};
-    //     if (mode) {
-    //         auto ans = MCMF::run(t, s);
-    //         return {res.first - ans.first, res.second - ans.second};
-    //     } else {
-    //         auto ans = MCMF::run(s, t);
-    //         return {res.first + ans.first, res.second + ans.second};
-    //     }
-    // }
-
-    ll flowOn(size_t id) const { return MCMF::flowOn(id); }
-    void clear(size_t N = 0) { n = N, d.assign(n, 0), MCMF::clear(n + 2), baseCost = 0; }
-    void resize(size_t N) { n = N, d.assign(n, 0), MCMF::resize(n + 2); }
+    ll flowOn(szt id) const { return MCMF::flowOn(id); }
+    void clear(szt N = 0) { n = N, d.assign(n, 0), MCMF::clear(n + 2), baseCost = 0; }
+    void resize(szt N) { n = N, d.assign(n, 0), MCMF::resize(n + 2); }
     void reassign() { clear(n); }
   private:
-    size_t n;
+    szt n;
+  protected:
     vll d;
     ll baseCost;
+};
+
+class NegMCMF : private BoundCostFlow {
+  public:
+    NegMCMF(szt n) : BoundCostFlow(n) {}
+
+    szt addEdge(szt u, szt v, ll c, ll w) {
+        if (w >= 0) return BoundCostFlow::addEdge(u, v, 0, c, w);
+        szt id = 1 ^ MCMF::addEdge(v, u, c, -w);
+        d[v] += c, d[u] -= c;
+        baseCost += c * w;
+        return id;
+    }
+
+    // {flow, cost}
+    pll run(szt s, szt t) {
+        auto [allow, res] = feasible();
+        assert(allow);
+        auto [f1, c1] = res;
+        auto [f2, c2] = MCMF::run(s, t);
+        return {f2, c1 + c2};
+    }
 };
 
 #endif

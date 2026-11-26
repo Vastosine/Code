@@ -10,7 +10,7 @@ class MCMF {
     void clear(szt N = 0) { n = N, e.assign(N, {}), to.clear(), cap.clear(), cost.clear(); }
     void reassign() { clear(n); }
     void resize(szt N) { n = N, e.resize(n); }
-    szt addEdge(szt u, szt v, ll c, ll w) { add(u, v, c, w), add(v, u, 0, -w); return (szt) to.size() - 2; }
+    szt addEdge(szt u, szt v, ll c, ll w) { add(u, v, c, w), add(v, u, 0, -w); return to.size() - 2; }
     void eraseEdge(szt id) { cap[id] = cap[id ^ 1] = 0; }
 
     // Run the MCMF. run with scale equally when the sign(scale) are equal.
@@ -23,33 +23,39 @@ class MCMF {
             vst in(n), cnt(n), pre(n, ~0ull);
             vll dis(n, INF);
             queue<szt> q;
-            q.push(s), in[s] = 1, dis[s] = 0;
-            while (!q.empty()) {
-                szt u = q.front();
-                q.pop();
-                in[u] = 0;
-                for (szt i : e[u]) {
-                    szt v = to[i];
-                    ll nd = dis[u] + cost[i] * scale;
-                    if (nd < dis[v] && cap[i]) {
-                        dis[v] = nd;
-                        pre[v] = i;
-                        cnt[v] = cnt[u] + 1;
-                        if (cnt[v] >= n) return {-1, 0};
-                        if (!in[v]) q.push(v), in[v] = 1;
+            szt ncs;
+            auto SPFA = [&] () {
+                q.push(s), in[s] = 1, dis[s] = 0;
+                while (!q.empty()) {
+                    szt u = q.front();
+                    q.pop();
+                    in[u] = 0;
+                    for (szt i : e[u]) {
+                        szt v = to[i];
+                        ll nd = dis[u] + cost[i] * scale;
+                        if (nd < dis[v] && cap[i]) {
+                            dis[v] = nd;
+                            pre[v] = i;
+                            cnt[v] = cnt[u] + 1;
+                            if (cnt[v] >= n) return ncs = v, true;
+                            if (!in[v]) q.push(v), in[v] = 1;
+                        }
                     }
                 }
-            }
-            if (!~pre[t]) return {flow, ans};
+                return false;
+            };
             ll lim = INF;
-            for (szt v = t; v != s; v = to[pre[v] ^ 1]) lim = min(lim, cap[pre[v]]);
-            for (szt v = t; v != s; ) {
+            auto f = [&] (szt v) {
                 szt i = pre[v];
                 cap[i] -= lim;
                 cap[i ^ 1] += lim;
                 ans += lim * cost[i];
-                v = to[i ^ 1];
-            }
+                return to[i ^ 1];
+            };
+            if (SPFA()) return {-1, 0};
+            if (!~pre[t]) return {flow, ans};
+            for (szt v = t; v != s; v = to[pre[v] ^ 1]) lim = min(lim, cap[pre[v]]);
+            for (szt v = t; v != s; v = f(v));
             flow += lim;
         }
     }

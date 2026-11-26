@@ -8,6 +8,7 @@
 using namespace std; 
 
 typedef long long ll; 
+typedef vector<bool> vb; 
 typedef vector<int> vi; 
 typedef pair<int, int> pii;
 typedef vector<ll> vll; 

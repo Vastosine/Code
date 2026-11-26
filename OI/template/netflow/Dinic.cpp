@@ -10,7 +10,7 @@ class Dinic {
     void resize(szt N) { n = N, e.resize(n); }
     void reassign() { clear(n); }
     void clear(szt N = 0) { n = N; e.assign(N, {}); to.clear(); cap.clear(); }
-    szt addEdge(szt u, szt v, ll c) { add(u, v, c); add(v, u, 0); return (szt) to.size() - 2; }
+    szt addEdge(szt u, szt v, ll c) { add(u, v, c); add(v, u, 0); return to.size() - 2; }
     void eraseEdge(szt id) { cap[id] = cap[id ^ 1] = 0; }
 
     // Run the Dinic, return the max flow.
@@ -22,7 +22,7 @@ class Dinic {
             auto dfs = [&] (auto &&f, szt u, ll lim = INF) {
                 if (!lim || u == t) return lim;
                 ll ret = 0;
-                for (; cur[u] < (szt) e[u].size() && ret < lim; cur[u]++) {
+                for (; cur[u] < e[u].size() && ret < lim; cur[u]++) {
                     if (szt i = e[u][cur[u]], v = to[i]; dep[v] == dep[u] + 1 && cap[i]) {
                         ll add = f(f, v, min(lim - ret, cap[i]));
                         ret += add;
@@ -41,7 +41,7 @@ class Dinic {
     vst reachable(szt s) const {
         vst o(1, s), dep(n, ~0ull);
         dep[s] = 0;
-        for (szt i = 0; i < (szt) o.size(); i++) {
+        for (szt i = 0; i < o.size(); i++) {
             szt u = o[i];
             for (szt j : e[u]) {
                 if (szt v = to[j]; !~dep[v] && cap[j]) o.push_back(v), dep[v] = dep[u] + 1;

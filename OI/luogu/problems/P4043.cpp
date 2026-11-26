@@ -43,7 +43,7 @@ class MCMF {
     void clear(szt N = 0) { n = N, e.assign(N, {}), to.clear(), cap.clear(), cost.clear(); }
     void reassign() { clear(n); }
     void resize(szt N) { n = N, e.resize(n); }
-    szt addEdge(szt u, szt v, ll c, ll w) { add(u, v, c, w), add(v, u, 0, -w); return (szt) to.size() - 2; }
+    szt addEdge(szt u, szt v, ll c, ll w) { add(u, v, c, w), add(v, u, 0, -w); return to.size() - 2; }
     void eraseEdge(szt id) { cap[id] = cap[id ^ 1] = 0; }
 
     // Run the MCMF. run with scale equally when the sign(scale) are equal.

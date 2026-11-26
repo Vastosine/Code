@@ -1,19 +1,15 @@
 #include "netflow/BoundCostFlow.cpp"
 
 int main() {
-    szt n;
-    cin >> n;
-    BoundCostFlow a(n + 1);
-    for (szt u = 1; u <= n; u++) {
-        szt k;
-        cin >> k;
-        a.addEdge(u, 0, 0, INF, 0);
-        while (k--) {
-            szt v;
-            ll w;
-            cin >> v >> w;
-            a.addEdge(u, v, 1, INF, w);
-        }
+    szt n, m, s, t;
+    cin >> n >> m >> s >> t;
+    NegMCMF g(n + 1);
+    while (m--) {
+        szt u, v;
+        ll c, w;
+        cin >> u >> v >> c >> w;
+        g.addEdge(u, v, c, w);
     }
-    cout << a.feasible(1, 0).second.second;
+    auto res = g.run(s, t);
+    cout << res.first << " " << res.second;
 }
