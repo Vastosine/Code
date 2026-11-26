@@ -10,13 +10,13 @@ class MCMF {
     void clear(szt N = 0) { n = N, e.assign(N, {}), to.clear(), cap.clear(), cost.clear(); }
     void reassign() { clear(n); }
     void resize(szt N) { n = N, e.resize(n); }
-    szt addEdge(szt u, szt v, ll c, ll w) { add(u, v, c, w), add(v, u, 0, -w); return to.size() - 2; }
+    szt addEdge(szt u, szt v, szt c, ll w) { add(u, v, c, w), add(v, u, 0, -w); return to.size() - 2; }
     void eraseEdge(szt id) { cap[id] = cap[id ^ 1] = 0; }
 
     // Run the MCMF. run with scale equally when the sign(scale) are equal.
     // i.e. scale = 0 stands for ignoring cost, scale > 0 stands for finding minimum cost, and scale < 0 stands for finding maximum cost.
     // Return {-1, 0} when it has at least one negative cycle in the graph
-    pll run(szt s, szt t, ll scale = 1) {
+    pair<szt, ll> run(szt s, szt t, ll scale = 1) {
         scale = scale ? scale > 0 ? 1 : -1 : 0;
         ll flow = 0, ans = 0;
         while (true) {
@@ -44,12 +44,12 @@ class MCMF {
                 }
                 return false;
             };
-            ll lim = INF;
+            szt lim = INF;
             auto f = [&] (szt v) {
                 szt i = pre[v];
                 cap[i] -= lim;
                 cap[i ^ 1] += lim;
-                ans += lim * cost[i];
+                ans += (ll) lim * cost[i];
                 return to[i ^ 1];
             };
             if (SPFA()) return {-1, 0};
@@ -63,10 +63,10 @@ class MCMF {
     // Print some information or else...
     void solve() {}
 
-    ll flowOn(szt id) const { return cap[id ^ 1]; }
+    szt flowOn(szt id) const { return cap[id ^ 1]; }
 
   private:
-    void add(szt u, szt v, ll c, ll w) {
+    void add(szt u, szt v, szt c, ll w) {
         e[u].push_back(to.size());
         to.push_back(v);
         cap.push_back(c);
@@ -75,8 +75,8 @@ class MCMF {
 
     szt n;
     vector<vst> e;
-    vst to;
-    vll cap, cost;
+    vst cap, to;
+    vll cost;
 };
 
 #endif
