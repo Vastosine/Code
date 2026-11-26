@@ -14,7 +14,7 @@ class BoundFlow : private Dinic {
         return id;
     }
 
-    pair<bool, szt> feasible() {
+    bool feasible() {
         size_t S = n, T = n + 1;
         szt sum = 0;
         vst e;
@@ -24,24 +24,24 @@ class BoundFlow : private Dinic {
         }
         auto res = Dinic::run(S, T);
         for (size_t i : e) Dinic::eraseEdge(i);
-        return {res == sum, sum};
+        return res == sum;
     }
 
     pair<bool, szt> feasible(size_t s, size_t t) {
         size_t e = Dinic::addEdge(t, s, INF);
-        bool allow = feasible().first;
+        bool allow = feasible();
         szt flow = flowOn(e);
         Dinic::eraseEdge(e);
         return {allow, flow};
     }
 
     // mode = 0 : Maximum feasible flow. 
-    //
     // mode = 1 : Minimum feasible flow.
-    pair<bool, szt> run(size_t s, size_t t, bool mode = 0) {
+    // caution for negative return when mode is 1.
+    pair<bool, ll> run(size_t s, size_t t, bool mode = 0) {
         auto [allow, flow] = feasible(s, t);
         if (!allow) return {allow, flow};
-        return {allow, flow + (mode ? -Dinic::run(t, s) : Dinic::run(s, t))};
+        return {allow, (ll) flow + (mode ? -(ll) Dinic::run(t, s) : (ll) Dinic::run(s, t))};
     }
 
     szt flowOn(size_t id) const { return Dinic::flowOn(id); }

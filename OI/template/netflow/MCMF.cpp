@@ -15,7 +15,7 @@ class MCMF {
 
     // Run the MCMF. run with scale equally when the sign(scale) are equal.
     // i.e. scale = 0 stands for ignoring cost, scale > 0 stands for finding minimum cost, and scale < 0 stands for finding maximum cost.
-    // Return {-1, 0} when it has at least one negative cycle in the graph
+    // Return {-1, 0} when it has at least one negative cycle reachable from s in the graph
     pair<szt, ll> run(szt s, szt t, ll scale = 1) {
         scale = scale ? scale > 0 ? 1 : -1 : 0;
         ll flow = 0, ans = 0;
