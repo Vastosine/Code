@@ -50,7 +50,10 @@ while ($true) {
     $url = "https://www.luogu.com.cn/record/list?user=$Uid&page=$page&_contentOnly=1"
     $got = $null
     for ($try = 1; $try -le 4; $try++) {
-        curl.exe -s --compressed -b $CookieFile -H "x-lentille-request: content-only" $url -o $tmp
+        # 2026-11-27: `-b $CookieFile` now 401s -- curl skips __client_id because its
+        # cookie-file expiry (1795695010) is in the past, while the server still accepts
+        # the value. Send the parsed pair as an explicit header instead.
+        curl.exe -s --compressed -H "Cookie: $ck" -H "x-lentille-request: content-only" $url -o $tmp
         try {
             $j = Get-Content $tmp -Raw -Encoding UTF8 | ConvertFrom-Json
             if ($j.data.records -and $j.data.records.result) { $got = $j.data.records; break }
@@ -78,6 +81,11 @@ while ($true) {
     Start-Sleep -Milliseconds $DelayMs
 }
 
+# 2026-11-27: never overwrite a good cache with a failed crawl. A 401 on page 1 used to
+# fall through and write {records:0, firstAc:{}} over 632 AC records.
+if ($fetched -eq 0) { throw "page 1 failed (no records parsed) - cache left untouched: $Out" }
+$partial = ($total -gt 0 -and $fetched -lt $total)
+
 # unix -> yyyy-MM-dd in +08:00
 function ToDate([int64]$t) {
     [DateTimeOffset]::FromUnixTimeSeconds($t).ToOffset([TimeSpan]::FromHours(8)).ToString('yyyy-MM-dd')
@@ -87,11 +95,29 @@ foreach ($k in $acMap.Keys) { $acDate[$k] = ToDate $acMap[$k] }
 $lastDate = @{}
 foreach ($k in $lastMap.Keys) { $lastDate[$k] = ToDate $lastMap[$k] }
 
+# A partial crawl only knows the newest N pages, so pids older than the cut-off would
+# disappear. Keep whatever the previous cache had for pids this run did not see.
+$kept = 0
+if (Test-Path $Out) {
+    try { $old = Get-Content $Out -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $old = $null }
+    if ($old) {
+        foreach ($k in $old.firstAc.PSObject.Properties.Name) {
+            if (-not $acDate.ContainsKey($k)) { $acDate[$k] = $old.firstAc.$k; $kept++ }
+        }
+        foreach ($k in $old.lastSubmit.PSObject.Properties.Name) {
+            if (-not $lastDate.ContainsKey($k)) { $lastDate[$k] = $old.lastSubmit.$k }
+        }
+    }
+}
+
 $dir = Split-Path $Out -Parent
 if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
 $payload = [pscustomobject]@{
     generated  = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
     records    = $fetched
+    total      = $total
+    partial    = $partial
+    keptFromOld = $kept
     pids       = $lastDate.Count
     acPids     = $acDate.Count
     firstAc    = $acDate
