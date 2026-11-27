@@ -16,112 +16,96 @@ template<typename... Args> void assign(szt n, vector<Args> &...args) { (..., arg
 int popcnt(szt x) { return __builtin_popcountll(x); }
 void init() {}
 
-class MCMF {
+class Dinic {
   public:
-    MCMF(szt n = 0) : n(n), e(n) {}
-    
-    void clear(szt N = 0) { n = N, e.assign(N, {}), to.clear(), cap.clear(), cost.clear(); }
-    void reassign() { clear(n); }
+    // 0-index
+    Dinic(szt n) : n(n), e(n) {}
+
     void resize(szt N) { n = N, e.resize(n); }
-    szt addEdge(szt u, szt v, szt c, ll w) {
-        // cout << u << " " << v << " " << c << " " << w << "\n";
-        add(u, v, c, w), add(v, u, 0, -w); 
-        return to.size() - 2; 
-    }
+    void reassign() { clear(n); }
+    void clear(szt N = 0) { n = N; e.assign(N, {}); to.clear(); cap.clear(); }
+    szt addEdge(szt u, szt v, szt c) { 
+        // cerr << u << " " << v << " " << c << "\n";
+        add(u, v, c); add(v, u, 0); return to.size() - 2; }
     void eraseEdge(szt id) { cap[id] = cap[id ^ 1] = 0; }
 
-    // Run the MCMF. run with scale equally when the sign(scale) are equal.
-    // i.e. scale = 0 stands for ignoring cost, scale > 0 stands for finding minimum cost, and scale < 0 stands for finding maximum cost.
-    // Return {-1, 0} when it has at least one negative cycle reachable from s in the graph
-    pair<szt, ll> run(szt s, szt t, ll scale = 1) {
-        scale = scale ? scale > 0 ? 1 : -1 : 0;
-        ll flow = 0, ans = 0;
+    // Run the Dinic, return the max flow.
+    szt run(szt s, szt t) {
+        szt ans = 0;
         while (true) {
-            vst in(n), cnt(n), pre(n, ~0ull);
-            vll dis(n, INF);
-            queue<szt> q;
-            szt ncs;
-            auto SPFA = [&] () {
-                q.push(s), in[s] = 1, dis[s] = 0;
-                while (!q.empty()) {
-                    szt u = q.front();
-                    q.pop();
-                    in[u] = 0;
-                    for (szt i : e[u]) {
-                        szt v = to[i];
-                        ll nd = dis[u] + cost[i] * scale;
-                        if (nd < dis[v] && cap[i]) {
-                            dis[v] = nd;
-                            pre[v] = i;
-                            cnt[v] = cnt[u] + 1;
-                            if (cnt[v] >= n) return ncs = v, true;
-                            if (!in[v]) q.push(v), in[v] = 1;
-                        }
+            vst cur(n), dep = reachable(s);
+            if (!~dep[t]) return ans;
+            auto dfs = [&] (auto &&f, szt u, szt lim = INF) {
+                if (!lim || u == t) return lim;
+                szt ret = 0;
+                for (; cur[u] < e[u].size() && ret < lim; cur[u]++) {
+                    if (szt i = e[u][cur[u]], v = to[i]; dep[v] == dep[u] + 1 && cap[i]) {
+                        szt add = f(f, v, min(lim - ret, cap[i]));
+                        ret += add;
+                        cap[i] -= add;
+                        cap[i ^ 1] += add;
                     }
                 }
-                return false;
+                return ret;
             };
-            szt lim = INF;
-            auto f = [&] (szt v) {
-                szt i = pre[v];
-                cap[i] -= lim;
-                cap[i ^ 1] += lim;
-                ans += (ll) lim * cost[i];
-                return to[i ^ 1];
-            };
-            if (SPFA()) return {-1, 0};
-            if (!~pre[t]) return {flow, ans};
-            for (szt v = t; v != s; v = to[pre[v] ^ 1]) lim = min(lim, cap[pre[v]]);
-            for (szt v = t; v != s; v = f(v));
-            flow += lim;
+            ans += dfs(dfs, s);
         }
     }
 
-    // Print some information or else...
-    void solve() {}
-
     szt flowOn(szt id) const { return cap[id ^ 1]; }
 
-  private:
-    void add(szt u, szt v, szt c, ll w) {
-        e[u].push_back(to.size());
-        to.push_back(v);
-        cap.push_back(c);
-        cost.push_back(w);
+    vst reachable(szt s) const {
+        vst o(1, s), dep(n, ~0ull);
+        dep[s] = 0;
+        for (szt i = 0; i < o.size(); i++) {
+            szt u = o[i];
+            for (szt j : e[u]) {
+                if (szt v = to[j]; !~dep[v] && cap[j]) o.push_back(v), dep[v] = dep[u] + 1;
+            }
+        }
+        return dep;
     }
+
+  protected:
+    // Add single edge
+    void add(szt u, szt v, szt c) { e[u].push_back(to.size()); to.push_back(v); cap.push_back(c); };
 
     szt n;
     vector<vst> e;
     vst cap, to;
-    vll cost;
 };
 
 auto Main(int = 0) {
     szt n;
     cin >> n;
-    vector<vll> a(2, vll(n + 1));
-    for (szt i = 1; i <= 2; i++) {
+    vector<vst> a(2, vst(n + 1));
+    szt sum = 0;
+    for (szt i = 0; i < 2; i++) {
         for (szt j = 1; j <= n; j++) {
             cin >> a[i][j];
+            sum += a[i][j];
         }
     }
     szt m;
     cin >> m;
-    szt s = 0, t = n + m + 1, N = t + 1;
-    MCMF g(N);
-    for (szt i = 1; i <= 2; i++) g.addEdge(i + n, t, INF, 0);
-    for (szt i = 1; i <= n; i++) g.addEdge(s, i, 1, 0);
-    for (szt i = 1; i <= 2; i++) {
-        for (szt j = 1; j <= n; j++) {
-            g.addEdge(j, i + n, 1, -a[i][j]);
-        }
-    }
-    while (m--) {
+    szt s = 0, t = n + m * 2 + 1, N = t + 1;
+    Dinic g(N);
+    for (szt i = 1; i <= n; i++) g.addEdge(s, i, a[0][i]);
+    for (szt i = 1; i <= n; i++) g.addEdge(i, t, a[1][i]);
+    for (szt i = 1; i <= m; i++) {
         szt k, c1, c2;
         cin >> k >> c1 >> c2;
-        
+        g.addEdge(s, n + i, c1);
+        g.addEdge(n + m + i, t, c2);
+        sum += c1 + c2;
+        while (k--) {
+            szt x;
+            cin >> x;
+            g.addEdge(n + i, x, INF);
+            g.addEdge(x, n + m + i, INF);
+        }
     }
-    return 0;
+    return sum - g.run(s, t);
 }
 
 int main() {
