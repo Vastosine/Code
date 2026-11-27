@@ -1,10 +1,13 @@
 // Problem : P4149 [IOI 2011] Race https://www.luogu.com.cn/problem/P4149
 // Time    : 2026-11-27 19:36:58
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/hash_policy.hpp> 
 #include <algorithm>
-#include <cstdio>
 #include <iostream>
 #include <string>
 #include <vector>
+using namespace __gnu_cxx;
+using namespace __gnu_pbds;
 using namespace std; typedef long long ll; typedef vector<bool> vb; typedef vector<int> vi; typedef vector<ll> vll; typedef pair<int, int> pii; typedef pair<ll, ll> pll;
 typedef unsigned long long szt; typedef vector<szt> vst; typedef pair<szt, szt> pst;
 [[maybe_unused]] const ll INF = 1ll << 60; [[maybe_unused]] const int inf = 0x3fffffff;
@@ -113,26 +116,21 @@ class TreeDivide {
 
 class Race : public TreeDivide {
   public:
-    Race(szt n, szt k) : TreeDivide(n), k(k), dep(n), least(k + 1, INF) {}
+    Race(szt n, szt k) : TreeDivide(n), k(k), dep(n) {}
 
-    void calcInit(szt) override {
-        for (szt x : lst) least[x] = INF;
-        lst.clear();
-        least[0] = 0;
-    }
+    void calcInit(szt) override { least.clear(), least[0] = 0; }
 
     szt calcSub(szt s, ll d) override {
         vst o = getSubOrder(s, d);
         dep[fa[s]] = 0;
         for (szt u : o) {
             dep[u] = dep[fa[u]] + 1;
-            if (dis[u] <= k && least[k - dis[u]] != INF) {
-                ans = min(ans, dep[u] + least[k - dis[u]]);
+            if (auto it = least.find(k - (szt) dis[u]); it != least.end()) {
+                ans = min(ans, dep[u] + it->second);
             }
         }
         for (szt u : o) {
-            if (dis[u] <= k && dep[u] < least[dis[u]]) {
-                if (least[dis[u]] == INF) lst.push_back(dis[u]);
+            if (auto it = least.find(dis[u]); dis[u] <= k && (it == least.end() || dep[u] < it->second)) {
                 least[dis[u]] = dep[u];
             }
         }
@@ -145,36 +143,25 @@ class Race : public TreeDivide {
     }
   private:
     szt k, ans = INF;
-    vst dep, least, lst;
+    vst dep;
+    __gnu_pbds::gp_hash_table<szt, szt> least;
 };
 
-ll read() {
-    ll x = 0;
-    ll ch;
-    while ((ch = getchar()) < '0' || ch > '9');
-    while (ch >= '0' && ch <= '9') {
-        x = x * 10 + ch - '0';
-        ch = getchar();
-    }
-    return x;
-}
-
 auto Main(int = 0) {
-    szt n = read(), k = read();
+    szt n, k;
+    cin >> n >> k;
     Race g(n, k);
     for (szt i = 1; i < n; i++) {
         szt u, v;
         ll w;
-        u = read();
-        v = read();
-        w = read();
+        cin >> u >> v >> w;
         g.addEdge(u, v, w);
     }
     return g.run();
 }
 
 int main() {
-    // ios::sync_with_stdio(0), cin.tie(0), cout.tie(0);
+    ios::sync_with_stdio(0), cin.tie(0), cout.tie(0);
     const string OUT[2] = {"NO", "YES"}; init(); int C = 1;
     // cin >> C;
     for (int c = 0; c < C; c++) {
