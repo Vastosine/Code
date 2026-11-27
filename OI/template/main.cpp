@@ -1,13 +1,17 @@
-#include "netflow/HLPP.cpp"
+#include "Graph/TreeDivide.cpp"
 
 int main() {
-    szt n, m, s, t;
-    cin >> n >> m >> s >> t;
-    HLPP g(n + 1);
-    while (m--) {
-        szt u, v, c;
-        cin >> u >> v >> c;
-        g.addEdge(u, v, c);
+    szt n, m;
+    cin >> n >> m;
+    SampleTreeDivide g(n + 1);
+    for (szt i = 1; i < n; i++) {
+        szt u, v;
+        ll w;
+        cin >> u >> v >> w;
+        g.addEdge(u, v, w);
     }
-    cout << g.run(s, t);
+    vst q(m);
+    cin >> q;
+    g.query = q;
+    g.run();
 }

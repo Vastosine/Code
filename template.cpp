@@ -12,11 +12,11 @@ template<typename T> istream &operator>>(istream &in, vector<T> &a) { for (T &x 
 template<typename T> ostream &operator<<(ostream &out, const vector<T> &a) { for (const T &x : a) out << x << " "; return out; }
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
-template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
-int popcnt(ll x) { return __builtin_popcountll(x); }
+template<typename... Args> void assign(szt n, vector<Args> &...args) { (..., args.assign(n, {})); }
+int popcnt(szt x) { return __builtin_popcountll(x); }
 void init() {}
 
-auto Main([[maybe_unused]] int C = 0) {
+auto Main(int = 0) {
     return 0;
 }
 
