@@ -1,0 +1,51 @@
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std; typedef long long ll; typedef vector<int> vi; typedef vector<ll> vll; typedef pair<int, int> pii; typedef pair<ll, ll> pll;
+[[maybe_unused]] const ll INF = 1ll << 60; [[maybe_unused]] const int inf = 0x3fffffff;
+template<typename A, typename B> istream &operator>>(istream &in, pair<A, B> &a) { return in >> a.first >> a.second; }
+template<typename T> istream &operator>>(istream &in, vector<T> &a) { for (T &x : a) in >> x; return in; }
+template<typename T> ostream &operator<<(ostream &out, const vector<T> &a) { for (const T &x : a) out << x << " "; return out; }
+template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
+template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
+template<typename... Args> void assign(int n, vector<Args> &...args) { (..., args.assign(n, {})); }
+ll popcnt(ll x) { return __builtin_popcountll(x); }
+void init() {}
+
+bool find(const string s, const string t) {
+    int n = s.length(), len = t.length();
+    for (int i = 0; i + len <= n; i++) {
+        if (s.substr(i, len) == t) return true;
+    }
+    return false;
+}
+
+string Main([[maybe_unused]] int C = 0) {
+    int n, m;
+    cin >> n >> m;
+    string s;
+    getline(cin, s);
+    int cnt = 0;
+    for (int i = 0; i < n; i++) {
+        getline(cin, s);
+        if (!(find(s, "easy") || find(s, "qiandao"))) {
+            cnt++;
+        }
+        if (cnt > m) return s;
+    }
+    return "Wo AK le";
+}
+
+int main() {
+    ios::sync_with_stdio(0), cin.tie(0), cout.tie(0);
+    const string OUT[2] = {"NO", "YES"}; init(); int C = 1;
+    // cin >> C;
+    for (int c = 0; c < C; c++) {
+        [[maybe_unused]] auto ans = Main(c);
+        cout << ans << "\n";
+        // cout << OUT[ans] << "\n";
+        // ans.empty() ? cout << OUT[0] << "\n" : cout << OUT[1] << "\n" << ans << "\n";
+    }
+    return 0;
+}
