@@ -1,10 +1,9 @@
 // Problem : P4149 [IOI 2011] Race https://www.luogu.com.cn/problem/P4149
 // Time    : 2026-11-27 19:36:58
 #include <algorithm>
+#include <cstdio>
 #include <iostream>
-#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 using namespace std; typedef long long ll; typedef vector<bool> vb; typedef vector<int> vi; typedef vector<ll> vll; typedef pair<int, int> pii; typedef pair<ll, ll> pll;
 typedef unsigned long long szt; typedef vector<szt> vst; typedef pair<szt, szt> pst;
@@ -114,21 +113,26 @@ class TreeDivide {
 
 class Race : public TreeDivide {
   public:
-    Race(szt n, szt k) : TreeDivide(n), k(k), dep(n) {}
+    Race(szt n, szt k) : TreeDivide(n), k(k), dep(n), least(k + 1, INF) {}
 
-    void calcInit(szt) override { least.clear(), least[0] = 0; }
+    void calcInit(szt) override {
+        for (szt x : lst) least[x] = INF;
+        lst.clear();
+        least[0] = 0;
+    }
 
     szt calcSub(szt s, ll d) override {
         vst o = getSubOrder(s, d);
         dep[fa[s]] = 0;
         for (szt u : o) {
             dep[u] = dep[fa[u]] + 1;
-            if (auto it = least.find(k - (szt) dis[u]); it != least.end()) {
-                ans = min(ans, dep[u] + it->second);
+            if (dis[u] <= k && least[k - dis[u]] != INF) {
+                ans = min(ans, dep[u] + least[k - dis[u]]);
             }
         }
         for (szt u : o) {
-            if (auto it = least.find(dis[u]); dis[u] <= k && (it == least.end() || dep[u] < it->second)) {
+            if (dis[u] <= k && dep[u] < least[dis[u]]) {
+                if (least[dis[u]] == INF) lst.push_back(dis[u]);
                 least[dis[u]] = dep[u];
             }
         }
@@ -141,25 +145,36 @@ class Race : public TreeDivide {
     }
   private:
     szt k, ans = INF;
-    vst dep;
-    map<szt, szt> least;
+    vst dep, least, lst;
 };
 
+ll read() {
+    ll x = 0;
+    ll ch;
+    while ((ch = getchar()) < '0' || ch > '9');
+    while (ch >= '0' && ch <= '9') {
+        x = x * 10 + ch - '0';
+        ch = getchar();
+    }
+    return x;
+}
+
 auto Main(int = 0) {
-    szt n, k;
-    cin >> n >> k;
+    szt n = read(), k = read();
     Race g(n, k);
     for (szt i = 1; i < n; i++) {
         szt u, v;
         ll w;
-        cin >> u >> v >> w;
+        u = read();
+        v = read();
+        w = read();
         g.addEdge(u, v, w);
     }
     return g.run();
 }
 
 int main() {
-    ios::sync_with_stdio(0), cin.tie(0), cout.tie(0);
+    // ios::sync_with_stdio(0), cin.tie(0), cout.tie(0);
     const string OUT[2] = {"NO", "YES"}; init(); int C = 1;
     // cin >> C;
     for (int c = 0; c < C; c++) {
