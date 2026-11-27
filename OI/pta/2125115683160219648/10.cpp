@@ -17,7 +17,7 @@ auto Main([[maybe_unused]] int C = 0) {
     int n;
     cin >> n;
     if (n == 1) {
-        cout << "1\n1";
+        cout << "1\n0";
         return 0;
     }
     vector<vi> nxt(n);
