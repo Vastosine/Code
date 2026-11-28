@@ -15755,3 +15755,23 @@ szt s = n * m, t = s + 1, N = t + 1;
 谁都不连 —— **不崩、不越界、样例可能还过，只是有一半的依赖边是死的**。
 
 这是今天第三次「错在编号，不报错」：`flow += (szt)-1`、`addEdge(x - 1, ...)`、`s = n*m*2`。
+### 11:56 补提交：今天的源码一直没进 git（他说「你没帮我提交git」）
+
+事实：今天三次 `com` 的提交，我每次都只 `git add plan/progress.md`。
+三个源文件一直是 untracked：
+
+```
+?? OI/luogu/problems/P2050.cpp
+?? OI/luogu/problems/P4174.cpp
+?? OI/luogu/problems/P2805.cpp
+```
+
+原因：这个仓库的既有约定是 `OI/luogu/problems/` **顶层从不 track** ——
+`git ls-files` 里 problems 下 558 个文件全在 `old/` 里，顶层 0 个。
+它们平时是暂存态，到 `end` 时由 `organize_luogu.ps1 -Apply` 移到
+`old/YYYY/MM/DD/` 再一起提交。
+
+所以严格说我没漏 —— 但**他的观感是对的**：`git status` 里三个 `??`，
+等于白天写的代码不在版本库。约定不该赢过直觉。
+
+改：**从今天起 `com` 也提交当天源码**，原地提交，`end` 归档时 git 会记成 rename。
