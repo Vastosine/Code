@@ -12,7 +12,7 @@ int main() {
         cin >> u >> v;
         g.addEdge(u, v);
     }
-    auto &&[N, scc] = g.run(1);
+    auto &&[N, scc] = g.run();
     vector<vst> e(N);
     vst sum(N);
     for (szt i = 1; i <= n; i++) {

@@ -16409,3 +16409,30 @@ f[i] += sum[i];        // i 是队列下标，不是节点编号
 40 分和 100 分的差别就在这。
 
 和今天另外六次一样：**不崩、不越界、样例还过。**
+### 15:48 Tarjan 模板修完，三个测试全过
+
+他连着改了两轮。第一轮把 `run(start)`、`delete` 修掉了，但引入两个新 bug，
+我用两个最小测试逮住：
+
+```
+① build() 里 !scc[v] 写成了 ~scc[v] 的相反面
+   实测：4 个单点分量、两条跨分量边，build() 只吐出 1 条（2->3 被吞）
+   改一个字符后 total = 2
+② ~Tarjan() { delete _e; } 对「调用方自己的 vector」调 delete
+   实测：exit = -1073740940 = 0xC0000374 = STATUS_HEAP_CORRUPTION
+   连 printf 都没来得及 flush
+```
+
+**第二轮改法是对的**：把 `_e` 变成值成员、`e` 变成引用绑定到「`_e` 或调用方的 vector」，
+析构函数整个删掉，不再有 `new` / `delete`。
+
+三个测试（`stress/test_tarjan_*.cpp`）：
+
+```
+test_build.exe    build() -> total edges in DAG = 2          OK
+test_dtor.exe     survived the destructor, exit=0            OK
+test_random.exe   3000 组随机图，分区与暴力 SCC 一致，
+                  缩点 DAG 与暴力凝缩一致 —— bad=0           OK
+```
+
+`main.cpp` 也改成 `g.run()`（不再传 start），编译通过。

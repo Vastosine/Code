@@ -8,9 +8,8 @@ using namespace std;
 
 class Tarjan {
   public:
-    Tarjan(vector<vst> &e) : n(e.size()), e(e) {}
-
-    Tarjan(szt n) : Tarjan(*new vector<vst>(n)) {}
+    Tarjan(vector<vst> &e) : n(e.size()), _e(), e(e) {}
+    Tarjan(szt n) : n(n), _e(n), e(_e) {}
 
     void addEdge(szt u, szt v) { e[u].push_back(v); }
 
@@ -38,12 +37,12 @@ class Tarjan {
     }
 
     // returns scc with 0-index
-    pair<szt, const vst &> run(szt start = 0) {
+    pair<szt, const vst &> run() {
         assign(n, dfn, low, in);
         scc.assign(n, (szt) -1);
         st.clear();
         cnt_dfn = cnt_scc = 0;
-        for (szt i = start; i < n; i++) dfs(i);
+        for (szt i = 0; i < n; i++) dfs(i);
         return {cnt_scc, scc};
     }
 
@@ -56,8 +55,8 @@ class Tarjan {
         if (scc.size() != n) run();
         vector<vst> E(cnt_scc);
         for (szt u = 0; u < n; u++) {
-            for (szt v : e[u]) {
-                if (!inScc(u, v)) E[scc[u]].push_back(scc[v]);
+            if (~scc[u]) for (szt v : e[u]) {
+                if (!inScc(u, v) && ~scc[v]) E[scc[u]].push_back(scc[v]);
             }
         }
         for (auto &i : E) Unique(i);
@@ -66,7 +65,7 @@ class Tarjan {
 
   private:
     szt n, cnt_dfn, cnt_scc;
-    vector<vst> &e;
+    vector<vst> _e, &e;
     vst dfn, scc, low, st;
     vb in;
 };
