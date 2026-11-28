@@ -13,6 +13,7 @@ template<typename T> ostream &operator<<(ostream &out, const vector<T> &a) { for
 template<typename T> ostream &operator<<(ostream &out, const vector<vector<T>> &a) { for (szt i = 0; i < a.size(); i++) out << (i ? "\n" : "") << a[i]; return out; }
 template<typename T> void Sort(vector<T> &a) { sort(a.begin(), a.end()); }
 template<typename T, typename C> void Sort(vector<T> &a, C cmp) { sort(a.begin(), a.end(), cmp); }
+template<typename T> void Unique(vector<T> &a) { sort(a.begin(), a.end()), a.erase(unique(a.begin(), a.end()), a.end()); }
 template<typename... Args> void assign(szt n, vector<Args> &...args) { (..., args.assign(n, {})); }
 template<typename T> T Max(T &x, const T &y) { return x = max(x, y); } template<typename T> T Min(T &x, const T &y) { return x = min(x, y); }
 int popcnt(szt x) { return __builtin_popcountll(x); }
