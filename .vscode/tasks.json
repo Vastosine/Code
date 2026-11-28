@@ -23,7 +23,7 @@
                 "-DLOCAL",
                 "-Wall",
                 "-Wextra",
-                "-Wconversion",
+                // "-Wconversion",
                 "-D_GLIBCXX_DEBUG",
                 "-pthread",
                 // "-v",
