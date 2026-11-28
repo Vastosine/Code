@@ -97,75 +97,26 @@ class MCMF {
     vll cost;
 };
 
-
-class BoundCostFlow : public MCMF {
-  public:
-    // 0-index
-    BoundCostFlow(szt n) : MCMF(n + 2), n(n), d(n), baseCost(0) {}
-
-    szt addEdge(szt u, szt v, szt l, szt r, ll w) {
-        // cout << u << " " << v << " " << l << " " << r << " " << w << "\n";
-        szt id = MCMF::addEdge(u, v, r - l, w);
-        d[v] += l, d[u] -= l;
-        baseCost += (ll) l * w;
-        return id;
-    }
-
-    // {allow, {flow, cost}}
-    pair<bool, pll> feasible() {
-        szt S = n, T = n + 1;
-        szt sum = 0;
-        vst e;
-        for (szt u = 0; u < n; u++) {
-            if (d[u] > 0) e.push_back(MCMF::addEdge(S, u, (szt) d[u], 0)), sum += (szt) d[u];
-            if (d[u] < 0) e.push_back(MCMF::addEdge(u, T, (szt) -d[u], 0));
-        }
-        auto res = MCMF::run(S, T);
-        res.second += baseCost;
-        for (szt i : e) MCMF::eraseEdge(i);
-        return pair{res.first == sum, res};
-    }
-
-    // {allow, {flow, cost}}
-    pair<bool, pll> feasible(szt s, szt t) {
-        szt e = MCMF::addEdge(t, s, INF, 0);
-        auto [allow, res] = feasible();
-        szt flow = flowOn(e);
-        MCMF::eraseEdge(e);
-        return {allow, {flow, res.second}};
-    }
-
-    szt flowOn(szt id) const { return MCMF::flowOn(id); }
-    void clear(szt N = 0) { n = N, d.assign(n, 0), MCMF::clear(n + 2), baseCost = 0; }
-    void resize(szt N) { n = N, d.assign(n, 0), MCMF::resize(n + 2); }
-    void reassign() { clear(n); }
-  private:
-    szt n;
-  protected:
-    vll d;
-    ll baseCost;
-};
-
 auto Main(int = 0) {
     szt n, m;
     cin >> n >> m;
     szt s = 0, t = n * 2 + 1, N = t + 1;
-    BoundCostFlow g(N);
+    MCMF g(N);
     for (szt i = 1; i <= n; i++) {
         szt x;
         cin >> x;
-        g.addEdge(0, i, 0, 1, x);
-        g.addEdge(i, i + n, 1, 1, 0);
-        g.addEdge(i + n, t, 0, 1, 0);
+        g.addEdge(0, i, 1, 0);
+        g.addEdge(0, i + n, 1, x);
+        g.addEdge(i + n, t, 1, 0);
     }
     while (m--) {
         szt u, v;
         ll w;
         cin >> u >> v >> w;
         if (u > v) swap(u, v);
-        g.addEdge(u + n, v, 0, 1, w);
+        g.addEdge(u, n + v, 1, w);
     }
-    return g.feasible(s, t).second.second;
+    return g.run(s, t).second;
 }
 
 int main() {
